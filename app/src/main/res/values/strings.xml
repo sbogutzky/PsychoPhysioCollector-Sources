@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">DataCollector</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="no_sensors">Keine Sensoren vorhanden</string>
+    <string name="action_add_sensor">Sensor hinzufügen</string>
+
+</resources>
