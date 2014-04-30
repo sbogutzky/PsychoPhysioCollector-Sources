@@ -21,6 +21,7 @@ import com.shimmerresearch.service.MultiShimmerTemplateService;
 import com.shimmerresearch.service.MultiShimmerTemplateService.LocalBinder;
 
 import de.bogutzky.datacollector.app.R;
+import de.bogutzky.datacollector.app.fragments.FlowFragment;
 
 /**
  * An activity representing a single Item detail screen. This activity is only
@@ -157,6 +158,13 @@ public class ItemDetailActivity extends FragmentActivity {
                 fragment.setArguments(arguments);
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.item_detail_container, fragment, "Blank").commit();
+            } else if (getIntent().getStringExtra(ItemDetailFragment.ARG_ITEM_ID).equals("7")) {
+                Bundle arguments = new Bundle();
+                arguments.putString(ItemDetailFragment.ARG_ITEM_ID, getIntent().getStringExtra(ItemDetailFragment.ARG_ITEM_ID));
+                FlowFragment fragment = new FlowFragment();
+                fragment.setArguments(arguments);
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.item_detail_container, fragment, "Flow").commit();
             } else if (getIntent().getStringExtra(ItemDetailFragment.ARG_ITEM_ID).equals("9")) {
 
             } else if (getIntent().getStringExtra(ItemDetailFragment.ARG_ITEM_ID).equals("1")) {
@@ -258,4 +266,7 @@ public class ItemDetailActivity extends FragmentActivity {
         TVNew.setText(text);
     }
 
+    public MultiShimmerTemplateService getService() {
+        return mService;
+    }
 }

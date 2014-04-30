@@ -66,10 +66,11 @@ public class ItemListFragment extends ListFragment {
             mService.mMenuContent.clear();
             mService.mMenuContent.addItem(new MenuItem("1", "Control"));
             mService.mMenuContent.addItem(new MenuItem("2", "Configure"));
-            mService.mMenuContent.addItem(new MenuItem("3", "Plot"));
-            mService.mMenuContent.addItem(new MenuItem("4", "Log"));
-            mService.mMenuContent.addItem(new MenuItem("5", "Heart Rate"));
+            //mService.mMenuContent.addItem(new MenuItem("3", "Plot"));
+            //mService.mMenuContent.addItem(new MenuItem("4", "Log"));
+            //mService.mMenuContent.addItem(new MenuItem("5", "Heart Rate"));
             mService.mMenuContent.addItem(new MenuItem("6", "Blank"));
+            mService.mMenuContent.addItem(new MenuItem("7", "Flow"));
             setListAdapter(new ArrayAdapter<MenuContent.MenuItem>(getActivity(),
                     android.R.layout.simple_list_item_activated_1,
                     android.R.id.text1, mService.mMenuContent.ITEMS));

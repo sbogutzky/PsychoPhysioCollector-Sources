@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">MultiShimmerTemplate</string>
+    <string name="app_name">DataCollector</string>
     <string name="main">Main</string>
     <string name="title_paired_devices">Paired Devices</string>
     <string name="enable_sensors_done">Done</string>
