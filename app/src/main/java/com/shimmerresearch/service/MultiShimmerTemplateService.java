@@ -28,7 +28,7 @@ import com.shimmerresearch.android.Shimmer;
 //import com.shimmerresearch.database.DatabaseHandler;
 import com.shimmerresearch.database.ShimmerConfiguration;
 import com.shimmerresearch.driver.ObjectCluster;
-import com.shimmerresearch.multishimmertemplate.menucontent.MenuContent;
+//import com.shimmerresearch.multishimmertemplate.menucontent.MenuContent;
 import com.shimmerresearch.tools.Logging;
 
 public class MultiShimmerTemplateService extends Service {
@@ -36,7 +36,7 @@ public class MultiShimmerTemplateService extends Service {
     public static final int MESSAGE_NEW_ARROW_ANGLE=33;
     public static final int MESSAGE_CONFIGURATION_CHANGE=34;
     public Shimmer shimmerDevice1 = null;
-    public static Logging shimmerLog1 = null;
+    //public static Logging shimmerLog1 = null;
     private final IBinder mBinder = new LocalBinder();
     public static HashMap<String, Object> mMultiShimmer = new HashMap<String, Object>(7);
     public static HashMap<String, Logging> mLogShimmer = new HashMap<String, Logging>(7);
@@ -62,7 +62,7 @@ public class MultiShimmerTemplateService extends Service {
     public static List<String> mDeviceNametoConnect = new ArrayList<String>(0);
     public List<String> list = new ArrayList<String>(0);
     private static WeakReference<MultiShimmerTemplateService> mService;
-    public DatabaseHandler mDataBase;
+    //public DatabaseHandler mDataBase;
     private static String mDelimiter="\t";
     static HashMap<String, ArrayBlockingQueue<ObjectCluster>> mFiFoMapTemp;
     static HashMap<String, ObjectCluster> mMapObjectTemp;
@@ -72,7 +72,7 @@ public class MultiShimmerTemplateService extends Service {
     private boolean mDisablePacketLossMsgs = false;
     public List<ShimmerConfiguration> mShimmerConfigurationList = new ArrayList<ShimmerConfiguration>();
     private static boolean mRecordGesture=false;
-    public MenuContent mMenuContent = new MenuContent();
+    //public MenuContent mMenuContent = new MenuContent();
     public List<String> mConnectedShimmerBtAddresses = new ArrayList<String>();
     private int mNumberOfBeatsToAverage=5;
 
@@ -93,7 +93,7 @@ public class MultiShimmerTemplateService extends Service {
     public void onCreate() {
         //Toast.makeText(this, "My Service Created", Toast.LENGTH_LONG).show();
         Log.d(TAG, "onCreate");
-        mDataBase = new DatabaseHandler(this);
+        //mDataBase = new DatabaseHandler(this);
         for (int[] row: mGroupChildColor){
             Arrays.fill(row, Color.rgb(0, 0, 0));
         }
@@ -394,7 +394,7 @@ public class MultiShimmerTemplateService extends Service {
                                         sc.setLowPowerMagEnabled(shimmer.getLowPowerMagEnabled());
                                     }
                                     service.mShimmerConfigurationList.set(i, sc);
-                                    service.mDataBase.saveShimmerConfigurations("Temp", service.mShimmerConfigurationList);
+                                    //service.mDataBase.saveShimmerConfigurations("Temp", service.mShimmerConfigurationList);
                                 }
                             }
                             mHandlerGraph.obtainMessage(MESSAGE_CONFIGURATION_CHANGE, 1, 1, 1).sendToTarget();
