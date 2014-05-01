@@ -35,7 +35,7 @@ import de.bogutzky.datacollector.app.tools.Logging;
 
 public class FlowFragment extends Fragment {
 
-    private static String TAG = "FlowFragment";
+    private static final String TAG = "FlowFragment";
     private Dialog dialog;
     private List<String> connectedShimmers = new ArrayList<String>();
     private List<String> streamingShimmers = new ArrayList<String>();
@@ -82,7 +82,7 @@ public class FlowFragment extends Fragment {
         view = inflater.inflate(R.layout.log_main, container, false);
 
         editTextLoggingFileName = (EditText) view.findViewById(R.id.editTextLogFileName);
-        editTextLoggingFileName.setText("msttest");
+        editTextLoggingFileName.setText("testfile");
         buttonStartLogging = (Button) view.findViewById(R.id.buttonStartLogging);
         buttonStartLogging.setBackgroundColor(Color.GREEN);
         buttonStartLogging.setOnClickListener(new View.OnClickListener() {
@@ -95,7 +95,7 @@ public class FlowFragment extends Fragment {
                             buttonStartLogging.setText("Stop Logging");
                             buttonStartLogging.setBackgroundColor(Color.RED);
                             filename = editTextLoggingFileName.getText().toString();
-                            logging = new Logging(filename, ",", "MultiShimmerTemplate");
+                            logging = new Logging(filename, ",", "DataCollector");
                             if (logging.mOutputFile.exists()) {
                                 showReplaceDialog("File already exist in file system. Would you like to overwrite it?");
                             } else {

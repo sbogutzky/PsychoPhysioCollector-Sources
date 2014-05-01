@@ -16,6 +16,7 @@ import java.util.Iterator;
 
 
 public class Logging {
+    private static final String TAG = "Logging";
     public File mOutputFile;
     boolean mFirstWrite = true;
     String[] mSensorNames;
@@ -26,53 +27,42 @@ public class Logging {
     String mDelimiter = ","; //default is comma
 
     /**
-     * @param myName is the file name which will be used
+     * @param filename is the filename which will be used
      */
-    public Logging(String myName) {
-        mFileName = myName;
+    public Logging(String filename) {
+        mFileName = filename;
         File root = Environment.getExternalStorageDirectory();
-        Log.d("AbsolutePath", root.getAbsolutePath());
-        mOutputFile = new File(root, mFileName + ".dat");
-//		if (mOutputFile.exists()) {
-//			LogFragment.showReplaceDialog("File already exist in file system. Would you like to overwrite it?");
-//		} else {
-//			LogFragment.mLoggingEnabled=true;
-//		}
-    }
-
-    public Logging(String myName, String delimiter) {
-        mFileName = myName;
-        mDelimiter = delimiter;
-        File root = Environment.getExternalStorageDirectory();
-        Log.d("AbsolutePath", root.getAbsolutePath());
-        mOutputFile = new File(root, mFileName + ".dat");
-//		if (mOutputFile.exists()) {
-//			LogFragment.showReplaceDialog("File already exist in file system. Would you like to overwrite it?");
-//		} else {
-//			LogFragment.mLoggingEnabled=true;
-//		}
+        mOutputFile = new File(root, mFileName + ".csv");
     }
 
     /**
-     * @param myName
-     * @param delimiter
-     * @param folderName will create a new folder if it does not exist
+     * @param filename  is the filename which will be used
+     * @param delimiter is the delimiter which will be used
      */
-    public Logging(String myName, String delimiter, String folderName) {
-        mFileName = myName;
+    public Logging(String filename, String delimiter) {
+        mFileName = filename;
+        mDelimiter = delimiter;
+        File root = Environment.getExternalStorageDirectory();
+        mOutputFile = new File(root, mFileName + ".csv");
+    }
+
+    /**
+     * @param filename is the filename which will be used
+     * @param delimiter is the delimiter which will be used
+     * @param directoryName will create a new directory if it does not exist
+     */
+    public Logging(String filename, String delimiter, String directoryName) {
+        mFileName = filename;
         mDelimiter = delimiter;
 
-        File root = new File(Environment.getExternalStorageDirectory() + "/" + folderName);
+        File root = new File(Environment.getExternalStorageDirectory() + "/" + directoryName);
 
         if (!root.exists()) {
-            if (root.mkdir()) ; //directory is created;
+            if (root.mkdir()) {
+                Log.d(TAG, "Directory " + directoryName + " created");
+            }
         }
-        mOutputFile = new File(root, mFileName + ".dat");
-//		   if (mOutputFile.exists()) {
-//			   LogFragment.showReplaceDialog("File already exist in file system. Would you like to overwrite it?");
-//		   } else {
-//			   LogFragment.mLoggingEnabled=true;
-//		   }
+        mOutputFile = new File(root, mFileName + ".csv");
     }
 
 
