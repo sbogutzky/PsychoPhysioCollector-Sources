@@ -26,12 +26,12 @@ import com.shimmerresearch.multishimmertemplate.ControlFragment;
 import com.shimmerresearch.multishimmertemplate.ItemDetailActivity;
 import com.shimmerresearch.multishimmertemplate.ItemListActivity;
 import com.shimmerresearch.service.MultiShimmerTemplateService;
-import com.shimmerresearch.tools.Logging;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import de.bogutzky.datacollector.app.R;
+import de.bogutzky.datacollector.app.tools.Logging;
 
 public class FlowFragment extends Fragment {
 
