@@ -54,6 +54,7 @@ public class ItemDetailActivity extends FragmentActivity {
             LogFragment logF = (LogFragment) getSupportFragmentManager().findFragmentByTag("Log");
             BlankFragment bF = (BlankFragment) getSupportFragmentManager().findFragmentByTag("Blank");
             PPGFragment ppgF = (PPGFragment) getSupportFragmentManager().findFragmentByTag("Heart Rate");
+            FlowFragment flowFragment = (FlowFragment) getSupportFragmentManager().findFragmentByTag("Flow");
 
             if (controlF != null) {
                 controlF.mService = mService;
@@ -67,6 +68,9 @@ public class ItemDetailActivity extends FragmentActivity {
             } else if (logF != null) {
                 logF.mService = mService;
                 logF.setup();
+            } else if (flowFragment != null) {
+                flowFragment.setMultiShimmerTemplateService(mService);
+                flowFragment.setup();
             } else if (bF != null) {
                 bF.mService = mService;
                 bF.setup();
@@ -235,6 +239,7 @@ public class ItemDetailActivity extends FragmentActivity {
         PlotFragment plotF = (PlotFragment) getSupportFragmentManager().findFragmentByTag("Plot");
         LogFragment logF = (LogFragment) getSupportFragmentManager().findFragmentByTag("Log");
         PPGFragment ppgF = (PPGFragment) getSupportFragmentManager().findFragmentByTag("Heart Rate");
+        FlowFragment flowFragment = (FlowFragment) getSupportFragmentManager().findFragmentByTag("Flow");
 
         if (controlF != null) {
             getMenuInflater().inflate(R.menu.activity_main, menu);
@@ -243,6 +248,8 @@ public class ItemDetailActivity extends FragmentActivity {
         } else if (plotF != null) {
             getMenuInflater().inflate(R.menu.activity_main_plot, menu);
         } else if (logF != null) {
+            getMenuInflater().inflate(R.menu.activity_main, menu);
+        } else if (flowFragment != null) {
             getMenuInflater().inflate(R.menu.activity_main, menu);
         } else if (ppgF != null) {
             getMenuInflater().inflate(R.menu.activity_main, menu);
