@@ -11,8 +11,10 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
+import java.util.Collections;
+import java.util.List;
 
 
 public class Logging {
@@ -23,28 +25,28 @@ public class Logging {
     String[] mSensorFormats;
     String[] mSensorUnits;
     String mFileName = "";
-    BufferedWriter writer = null;
-    String mDelimiter = ","; //default is comma
+    BufferedWriter mWriter = null;
+    String mDelimiter = ","; // default is comma
 
     /**
      * @param filename is the filename which will be used
-     */
+
     public Logging(String filename) {
         mFileName = filename;
         File root = Environment.getExternalStorageDirectory();
         mOutputFile = new File(root, mFileName + ".csv");
-    }
+    }*/
 
     /**
-     * @param filename  is the filename which will be used
+     * @param filename is the filename which will be used
      * @param delimiter is the delimiter which will be used
-     */
+
     public Logging(String filename, String delimiter) {
         mFileName = filename;
         mDelimiter = delimiter;
         File root = Environment.getExternalStorageDirectory();
         mOutputFile = new File(root, mFileName + ".csv");
-    }
+    }*/
 
     /**
      * @param filename is the filename which will be used
@@ -71,148 +73,135 @@ public class Logging {
      *
      * @param objectCluster data which will be written into the file
      */
-    public void logData(ObjectCluster objectCluster) {
-        ObjectCluster objectClusterLog = objectCluster;
+    public void logData(ObjectCluster objectCluster, String format, Boolean logUnits) {
         try {
+            if (mFirstWrite) {
+                mWriter = new BufferedWriter(new FileWriter(mOutputFile, false));
 
-            if (mFirstWrite == true) {
-                writer = new BufferedWriter(new FileWriter(mOutputFile, true));
-
-                //First retrieve all the unique keys from the objectClusterLog
-                Multimap<String, FormatCluster> m = objectClusterLog.mPropertyCluster;
-
-                int size = m.size();
-                System.out.print(size);
+                // First retrieve all the unique keys from the objectCluster
+                Multimap<String, FormatCluster> propertyCluster = objectCluster.mPropertyCluster;
+                int size = propertyCluster.size() / 2;
                 mSensorNames = new String[size];
                 mSensorFormats = new String[size];
                 mSensorUnits = new String[size];
                 int i = 0;
-                int p = 0;
-                for (String key : m.keys()) {
-                    //first check that there are no repeat entries
-
-                    if (compareStringArray(mSensorNames, key) == true) {
-                        for (FormatCluster formatCluster : m.get(key)) {
-                            mSensorFormats[p] = formatCluster.mFormat;
-                            mSensorUnits[p] = formatCluster.mUnits;
-                            //Log.d("Shimmer",key + " " + mSensorFormats[p] + " " + mSensorUnits[p]);
-                            p++;
+                Collection<String> unsortedKeys = propertyCluster.keys();
+                List<String> keys = new ArrayList<String>(unsortedKeys);
+                Collections.sort(keys);
+                for (String key : keys) {
+                    Collection<FormatCluster> formatClusters = propertyCluster.get(key);
+                    if (!isStringInArray(key, mSensorNames)) {
+                        for (FormatCluster formatCluster : formatClusters) {
+                            if (formatCluster.mFormat.equals(format)) {
+                                mSensorFormats[i] = formatCluster.mFormat;
+                                mSensorUnits[i] = formatCluster.mUnits;
+                                mSensorNames[i] = key;
+                                Log.d(TAG, "Data column " + (i + 1) + ": " + key + " " + mSensorFormats[i] + " " + mSensorUnits[i]);
+                                i++;
+                            }
                         }
-
                     }
-
-                    mSensorNames[i] = key;
-                    i++;
                 }
 
-
-                // write header to a file
-
-                writer = new BufferedWriter(new FileWriter(mOutputFile, false));
+//                // Write header to a file
+//                for (int k = 0; k < mSensorNames.length; k++) {
+//                    mWriter.write("\"" + objectCluster.mMyName + "\"");
+//                    if(mSensorNames.length - 1 > k) {
+//                        mWriter.write(mDelimiter);
+//                    }
+//                }
+//                mWriter.newLine(); // Notepad recognized new lines as \r\n
 
                 for (int k = 0; k < mSensorNames.length; k++) {
-                    writer.write(objectClusterLog.mMyName);
-                    writer.write(mDelimiter);
-                }
-                writer.newLine(); // notepad recognized new lines as \r\n
-
-                for (int k = 0; k < mSensorNames.length; k++) {
-                    writer.write(mSensorNames[k]);
-                    writer.write(mDelimiter);
-                }
-                writer.newLine();
-
-                for (int k = 0; k < mSensorFormats.length; k++) {
-                    writer.write(mSensorFormats[k]);
-
-                    writer.write(mDelimiter);
-                }
-                writer.newLine();
-
-                for (int k = 0; k < mSensorUnits.length; k++) {
-                    if (mSensorUnits[k] == "u8") {
-                        writer.write("");
-                    } else if (mSensorUnits[k] == "i8") {
-                        writer.write("");
-                    } else if (mSensorUnits[k] == "u12") {
-                        writer.write("");
-                    } else if (mSensorUnits[k] == "u16") {
-                        writer.write("");
-                    } else if (mSensorUnits[k] == "i16") {
-                        writer.write("");
-                    } else {
-                        writer.write(mSensorUnits[k]);
+                    mWriter.write("\"" + mSensorNames[k] + "\"");
+                    if (mSensorNames.length - 1 > k) {
+                        mWriter.write(mDelimiter);
                     }
-                    writer.write(mDelimiter);
                 }
-                writer.newLine();
-                Log.d("Shimmer", "Data Written");
+                mWriter.newLine();
+
+//                for (int k = 0; k < mSensorFormats.length; k++) {
+//                    mWriter.write("\"" + mSensorFormats[k] + "\"");
+//                    if(mSensorFormats.length - 1 > k) {
+//                        mWriter.write(mDelimiter);
+//                    }
+//                }
+//                mWriter.newLine();
+
+                if (logUnits) {
+                    for (int k = 0; k < mSensorUnits.length; k++) {
+                        if (mSensorUnits[k].equals("u8")) {
+                            mWriter.write("");
+                        } else if (mSensorUnits[k].equals("i8")) {
+                            mWriter.write("");
+                        } else if (mSensorUnits[k].equals("u12")) {
+                            mWriter.write("");
+                        } else if (mSensorUnits[k].equals("u16")) {
+                            mWriter.write("");
+                        } else if (mSensorUnits[k].equals("i16")) {
+                            mWriter.write("");
+                        } else {
+                            mWriter.write("\"" + mSensorUnits[k] + "\"");
+                        }
+                        if (mSensorUnits.length - 1 > k) {
+                            mWriter.write(mDelimiter);
+                        }
+                    }
+                    mWriter.newLine();
+                }
+                closeFile();
                 mFirstWrite = false;
             }
+            mWriter = new BufferedWriter(new FileWriter(mOutputFile, true));
 
-            //now print data
-            for (int r = 0; r < mSensorNames.length; r++) {
-                Collection<FormatCluster> dataFormats = objectClusterLog.mPropertyCluster.get(mSensorNames[r]);
-                FormatCluster formatCluster = (FormatCluster) returnFormatCluster(dataFormats, mSensorFormats[r], mSensorUnits[r]);  // retrieve the calibrated data
-                Log.d("Shimmer", "Data : " + mSensorNames[r] + formatCluster.mData + " " + formatCluster.mUnits);
-                writer.write(Double.toString(formatCluster.mData));
-                writer.write(mDelimiter);
+            // Write data
+            for (int k = 0; k < mSensorNames.length; k++) {
+                Collection<FormatCluster> formatClusterCollection = objectCluster.mPropertyCluster.get(mSensorNames[k]);
+                FormatCluster formatCluster = getCurrentFormatCluster(formatClusterCollection, format, mSensorUnits[k]);
+                Log.d(TAG, "Write " + mSensorNames[k] + " data: " + formatCluster.mData + " " + formatCluster.mUnits);
+                mWriter.write(Double.toString(formatCluster.mData));
+                if (mSensorNames.length - 1 > k) {
+                    mWriter.write(mDelimiter);
+                }
             }
-            writer.newLine();
-
-
+            mWriter.newLine();
+            closeFile();
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            Log.d("Shimmer", "Error with bufferedwriter");
+            Log.e(TAG, "Error while writing in file", e);
         }
     }
 
     public void closeFile() {
-        if (writer != null) {
+        if (mWriter != null) {
             try {
-                writer.close();
+                mWriter.close();
             } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                Log.e(TAG, "Error while closing in file", e);
             }
         }
+    }
+
+    private boolean isStringInArray(String string, String[] stringArray) {
+        for (String stringFromArray : stringArray) {
+            if (string.equals(stringFromArray)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private FormatCluster getCurrentFormatCluster(Collection<FormatCluster> formatClusterCollection, String format, String units) {
+        for (FormatCluster formatCluster : formatClusterCollection) {
+            if (formatCluster.mFormat.equals(format) && formatCluster.mUnits.equals(units)) {
+                return formatCluster;
+            }
+        }
+        return null;
     }
 
     public String getName() {
         return mFileName;
     }
-
-    public String getAbsoluteName() {
-        return mOutputFile.getAbsolutePath();
-    }
-
-    private boolean compareStringArray(String[] stringArray, String string) {
-        boolean uniqueString = true;
-        int size = stringArray.length;
-        for (int i = 0; i < size; i++) {
-            if (stringArray[i] == string) {
-                uniqueString = false;
-            }
-
-        }
-        return uniqueString;
-    }
-
-    private FormatCluster returnFormatCluster(Collection<FormatCluster> collectionFormatCluster, String format, String units) {
-        Iterator<FormatCluster> iFormatCluster = collectionFormatCluster.iterator();
-        FormatCluster formatCluster;
-        FormatCluster returnFormatCluster = null;
-
-        while (iFormatCluster.hasNext()) {
-            formatCluster = (FormatCluster) iFormatCluster.next();
-            if (formatCluster.mFormat == format && formatCluster.mUnits == units) {
-                returnFormatCluster = formatCluster;
-            }
-        }
-        return returnFormatCluster;
-    }
-
 }
 
 

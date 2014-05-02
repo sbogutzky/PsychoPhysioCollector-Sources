@@ -6,6 +6,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -59,7 +60,8 @@ public class FlowFragment extends Fragment {
                             Toast.makeText(getActivity(), "No Device Connected", Toast.LENGTH_LONG).show();
                         }
                         if (loggingEnabled && objectCluster.mBluetoothAddress.equals(bluetoothAddress)) {
-                            logging.logData(objectCluster);
+                            //logging.logData(objectCluster);
+                            new logData().execute(objectCluster);
                         }
                     }
                     break;
@@ -225,5 +227,14 @@ public class FlowFragment extends Fragment {
 
     public void setMultiShimmerTemplateService(MultiShimmerTemplateService multiShimmerTemplateService) {
         this.multiShimmerTemplateService = multiShimmerTemplateService;
+    }
+
+    class logData extends AsyncTask<ObjectCluster, Integer, String> {
+
+        @Override
+        protected String doInBackground(ObjectCluster... objectClusters) {
+            logging.logData(objectClusters[0], "CAL", false);
+            return null;
+        }
     }
 }
