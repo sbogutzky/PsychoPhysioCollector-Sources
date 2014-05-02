@@ -77,6 +77,7 @@ public class FlowFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setRetainInstance(true);
     }
 
     @Override
@@ -96,6 +97,13 @@ public class FlowFragment extends Fragment {
                         if (streamingShimmers.contains(connectedShimmers.get(0))) {
                             buttonStartLogging.setText("Stop Logging");
                             buttonStartLogging.setBackgroundColor(Color.RED);
+
+                            if (loggingEnabled) {
+                                buttonStartLogging.setText("Stop Logging");
+                                buttonStartLogging.setBackgroundColor(Color.RED);
+                                editTextLoggingFileName.setText(logging.getName());
+                            }
+
                             filename = editTextLoggingFileName.getText().toString();
                             logging = new Logging(filename, ",", "DataCollector");
                             if (logging.mOutputFile.exists()) {
