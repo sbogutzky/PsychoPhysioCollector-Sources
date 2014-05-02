@@ -2,7 +2,6 @@ package de.bogutzky.datacollector.app.fragments;
 
 import android.app.Activity;
 import android.app.ActivityManager;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -29,18 +28,18 @@ import com.shimmerresearch.multishimmertemplate.ItemListActivity;
 import com.shimmerresearch.service.MultiShimmerTemplateService;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import de.bogutzky.datacollector.app.R;
-import de.bogutzky.datacollector.app.tools.Logging;
+import de.bogutzky.datacollector.app.tools.Logger;
 
 public class FlowFragment extends Fragment {
 
     private static final String TAG = "FlowFragment";
-    private Dialog dialog;
     private List<String> connectedShimmers = new ArrayList<String>();
     private List<String> streamingShimmers = new ArrayList<String>();
-    private Logging logging;
+    private HashMap <String, Logger> loggers;
     private Boolean loggingEnabled = false;
     private Handler mHandler = new Handler() {
 
@@ -52,16 +51,12 @@ public class FlowFragment extends Fragment {
                 case Shimmer.MESSAGE_READ:
                     if ((msg.obj instanceof ObjectCluster)) {
                         ObjectCluster objectCluster = (ObjectCluster) msg.obj;
-                        String bluetoothAddress;
                         if (connectedShimmers.size() > 0) {
-                            bluetoothAddress = connectedShimmers.get(0);
+                            if (loggingEnabled) {
+                                new logData().execute(objectCluster);
+                            }
                         } else {
-                            bluetoothAddress = "";
                             Toast.makeText(getActivity(), "No Device Connected", Toast.LENGTH_LONG).show();
-                        }
-                        if (loggingEnabled && objectCluster.mBluetoothAddress.equals(bluetoothAddress)) {
-                            //logging.logData(objectCluster);
-                            new logData().execute(objectCluster);
                         }
                     }
                     break;
@@ -71,7 +66,6 @@ public class FlowFragment extends Fragment {
     private View view;
     private EditText editTextLoggingFileName;
     private Button buttonStartLogging;
-    private String filename;
     private MultiShimmerTemplateService multiShimmerTemplateService;
 
     @Override
@@ -98,19 +92,8 @@ public class FlowFragment extends Fragment {
                             buttonStartLogging.setText("Stop Logging");
                             buttonStartLogging.setBackgroundColor(Color.RED);
 
-                            if (loggingEnabled) {
-                                buttonStartLogging.setText("Stop Logging");
-                                buttonStartLogging.setBackgroundColor(Color.RED);
-                                editTextLoggingFileName.setText(logging.getName());
-                            }
-
-                            filename = editTextLoggingFileName.getText().toString();
-                            logging = new Logging(filename, ",", "DataCollector");
-                            if (logging.mOutputFile.exists()) {
-                                showReplaceDialog("File already exist in file system. Would you like to overwrite it?");
-                            } else {
-                                setLoggingEnabled(true);
-                            }
+                            setLoggers();
+                            setLoggingEnabled(true);
                         } else {
                             setLoggingEnabled(false);
                             Toast.makeText(getActivity(), "Connected Device Is Not Streaming", Toast.LENGTH_LONG).show();
@@ -121,7 +104,6 @@ public class FlowFragment extends Fragment {
                     }
                 } else {
                     setLoggingEnabled(false);
-                    logging.closeFile();
                 }
             }
         });
@@ -139,13 +121,25 @@ public class FlowFragment extends Fragment {
         return view;
     }
 
+    private void setLoggers() {
+        loggers = new HashMap<String, Logger>();
+        int i = 0;
+        String filename = editTextLoggingFileName.getText().toString();
+        for (String bluetoothAddress : streamingShimmers) {
+            Logger logger = new Logger(filename + "_" + i, ",", "DataCollector");
+            loggers.put(bluetoothAddress, logger);
+            i++;
+        }
+    }
+
     @Override
     public void onResume() {
         super.onResume();
         if (loggingEnabled) {
             buttonStartLogging.setText("Stop Logging");
             buttonStartLogging.setBackgroundColor(Color.RED);
-            editTextLoggingFileName.setText(logging.getName());
+            //TODO: Text setzen
+            //editTextLoggingFileName.setText(logger.Filename());
         }
     }
 
@@ -164,37 +158,6 @@ public class FlowFragment extends Fragment {
         super.onDetach();
     }
 
-    private void showReplaceDialog(String text) {
-        dialog.setContentView(R.layout.log_popup);
-        dialog.setTitle("Replace File?");
-
-        TextView tv = (TextView) dialog.findViewById(R.id.textViewDialog);
-        tv.setText(text);
-
-        Button buttonYes = (Button) dialog.findViewById(R.id.ButtonYes);
-        Button buttonNo = (Button) dialog.findViewById(R.id.ButtonNo);
-        buttonYes.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View arg0) {
-                loggingEnabled = true;
-                dialog.dismiss();
-            }
-        });
-
-        buttonNo.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View arg0) {
-                loggingEnabled = false;
-                buttonStartLogging.setText("Start Logging");
-                buttonStartLogging.setBackgroundColor(Color.GREEN);
-                dialog.dismiss();
-            }
-        });
-
-        dialog.setCancelable(true);
-        dialog.show();
-    }
-
     public void setup() {
         DatabaseHandler db = multiShimmerTemplateService.mDataBase;
         multiShimmerTemplateService.mShimmerConfigurationList = db.getShimmerConfigurations("Temp");
@@ -203,7 +166,6 @@ public class FlowFragment extends Fragment {
         TextView mTVShimmerId = (TextView) view.findViewById(R.id.textViewShimmerId);
         connectedShimmers = ControlFragment.connectedShimmerAddresses;
         streamingShimmers = ControlFragment.streamingShimmerAddresses;
-        dialog = new Dialog(getActivity());
         if (connectedShimmers.size() > 0) {
             String bluetoothAddress = connectedShimmers.get(0);
             mTVShimmerId.setText(bluetoothAddress);
@@ -241,7 +203,9 @@ public class FlowFragment extends Fragment {
 
         @Override
         protected String doInBackground(ObjectCluster... objectClusters) {
-            logging.logData(objectClusters[0], "CAL", false);
+            ObjectCluster objectCluster = objectClusters[0];
+            Logger logger = loggers.get(objectCluster.mBluetoothAddress);
+            logger.logData(objectClusters[0], "CAL", false);
             return null;
         }
     }
