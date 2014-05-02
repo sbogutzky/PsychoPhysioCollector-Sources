@@ -17,11 +17,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.shimmerresearch.android.Shimmer;
 import com.shimmerresearch.database.DatabaseHandler;
+import com.shimmerresearch.driver.FormatCluster;
 import com.shimmerresearch.driver.ObjectCluster;
 import com.shimmerresearch.multishimmertemplate.ControlFragment;
 import com.shimmerresearch.multishimmertemplate.ItemDetailActivity;
@@ -75,6 +77,9 @@ public class FlowFragment extends Fragment {
     private Handler timerHandler;
     private Thread timerThread;
     private boolean timerShouldContinue = false;
+
+    private static final String SCALE = "Flow Short Scale";
+    private static final int SCALE_ITEM_COUNT = 16;
 
 
     @Override
@@ -139,6 +144,8 @@ public class FlowFragment extends Fragment {
             loggers.put(bluetoothAddress, logger);
             i++;
         }
+        Logger logger = new Logger(filename + "_" + i, ",", "DataCollector");
+        loggers.put(SCALE, logger);
     }
 
     @Override
@@ -238,7 +245,7 @@ public class FlowFragment extends Fragment {
             }
         };
 
-        long timerInterval = 1000 * 60 * TIMER_CYCLE_IN_MIN;
+        long timerInterval = (long) (1000 * 60 * TIMER_CYCLE_IN_MIN);
         final long endTime = System.currentTimeMillis() + timerInterval;
 
         timerThread = new Thread(new Runnable() {
@@ -261,9 +268,9 @@ public class FlowFragment extends Fragment {
                     // Update time
                     now = System.currentTimeMillis();
                 }
-                Message msg = new Message();
-                msg.what = TIMER_END;
-                timerHandler.sendMessage(msg);
+                Message message = new Message();
+                message.what = TIMER_END;
+                timerHandler.sendMessage(message);
             }
         });
         timerThread.start();
@@ -278,29 +285,38 @@ public class FlowFragment extends Fragment {
         timerThread = null;
     }
 
-    private long formTime = 0;
-
     private void showLikertScaleDialog() {
-        //formTime = System.currentTimeMillis();
         final Dialog dialog = new Dialog(getActivity());
         dialog.setContentView(R.layout.flow_short_scale);
-        dialog.setTitle("Feedback");
-        dialog.setCancelable(true);
+        dialog.setTitle(getActivity().getString(R.string.feedback));
+        dialog.setCancelable(false);
 
-//        Button saveButton = (Button)mFormDialog.findViewById(R.id.save_form);
-//        saveButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                collectData(mFormDialog);
-//                mFormDialog.dismiss();
-//                if(startTimerAgain) {
-//                    startTimer();
-//                } else {
-//                    saveFormData();
-//                }
-//            }
-//        });
+        Button saveButton = (Button) dialog.findViewById(R.id.button_save);
+        saveButton.setOnClickListener(new View.OnClickListener() {
 
+            @Override
+            public void onClick(View view) {
+                saveItems(dialog, SCALE, SCALE_ITEM_COUNT);
+                dialog.dismiss();
+                if(loggingEnabled) {
+                    startTimer();
+                }
+            }
+        });
         dialog.show();
+    }
+
+    private void saveItems(final Dialog dialog, String scale, int items) {
+
+        ObjectCluster objectCluster = new ObjectCluster(scale, scale);
+        objectCluster.mPropertyCluster.put("Timestamp", new FormatCluster("CAL", "mSecs", System.currentTimeMillis()));
+        for(int i = 1; i <= items; i++) {
+            int identifier = getResources().getIdentifier("q" + i, "id", getActivity().getPackageName());
+            if(identifier != 0) {
+                RatingBar ratingBar = (RatingBar)dialog.findViewById(identifier);
+                objectCluster.mPropertyCluster.put("Item " + String.format("%02d", i), new FormatCluster("CAL", "n. u.", (int) ratingBar.getRating()));
+            }
+        }
+        new logData().execute(objectCluster);
     }
 }

@@ -21,9 +21,9 @@ public class Logger {
     private static final String TAG = "Logger";
     public File mOutputFile;
     boolean mFirstWrite = true;
-    String[] mSensorNames;
-    String[] mSensorFormats;
-    String[] mSensorUnits;
+    ArrayList <String> mSensorNames;
+    ArrayList <String> mSensorFormats;
+    ArrayList <String> mSensorUnits;
     String mFileName = "";
     BufferedWriter mWriter = null;
     String mDelimiter = ","; // default is comma
@@ -80,23 +80,22 @@ public class Logger {
 
                 // First retrieve all the unique keys from the objectCluster
                 Multimap<String, FormatCluster> propertyCluster = objectCluster.mPropertyCluster;
-                int size = propertyCluster.size() / 2;
-                mSensorNames = new String[size];
-                mSensorFormats = new String[size];
-                mSensorUnits = new String[size];
+                mSensorNames = new ArrayList<String>();
+                mSensorFormats = new ArrayList<String>();
+                mSensorUnits = new ArrayList<String>();
                 int i = 0;
                 Collection<String> unsortedKeys = propertyCluster.keys();
                 List<String> keys = new ArrayList<String>(unsortedKeys);
                 Collections.sort(keys);
                 for (String key : keys) {
                     Collection<FormatCluster> formatClusters = propertyCluster.get(key);
-                    if (!isStringInArray(key, mSensorNames)) {
+                    if (!mSensorNames.contains(key)) {
                         for (FormatCluster formatCluster : formatClusters) {
                             if (formatCluster.mFormat.equals(format)) {
-                                mSensorFormats[i] = formatCluster.mFormat;
-                                mSensorUnits[i] = formatCluster.mUnits;
-                                mSensorNames[i] = key;
-                                Log.d(TAG, "Data column " + (i + 1) + ": " + key + " " + mSensorFormats[i] + " " + mSensorUnits[i]);
+                                mSensorFormats.add(formatCluster.mFormat);
+                                mSensorUnits.add(formatCluster.mUnits);
+                                mSensorNames.add(key);
+                                Log.d(TAG, "Data column " + (i + 1) + ": " + key + " " + mSensorFormats.get(i) + " " + mSensorUnits.get(i));
                                 i++;
                             }
                         }
@@ -104,46 +103,46 @@ public class Logger {
                 }
 
 //                // Write header to a file
-//                for (int k = 0; k < mSensorNames.length; k++) {
+//                for (int k = 0; k < mSensorNames.size(); k++) {
 //                    mWriter.write("\"" + objectCluster.mMyName + "\"");
-//                    if(mSensorNames.length - 1 > k) {
+//                    if(mSensorNames.size()- 1 > k) {
 //                        mWriter.write(mDelimiter);
 //                    }
 //                }
 //                mWriter.newLine(); // Notepad recognized new lines as \r\n
 
-                for (int k = 0; k < mSensorNames.length; k++) {
-                    mWriter.write("\"" + mSensorNames[k] + "\"");
-                    if (mSensorNames.length - 1 > k) {
+                for (int k = 0; k < mSensorNames.size(); k++) {
+                    mWriter.write("\"" + mSensorNames.get(k) + "\"");
+                    if (mSensorNames.size() - 1 > k) {
                         mWriter.write(mDelimiter);
                     }
                 }
                 mWriter.newLine();
 
-//                for (int k = 0; k < mSensorFormats.length; k++) {
-//                    mWriter.write("\"" + mSensorFormats[k] + "\"");
-//                    if(mSensorFormats.length - 1 > k) {
+//                for (int k = 0; k < mSensorFormats.size(); k++) {
+//                    mWriter.write("\"" + mSensorFormats.get(k) + "\"");
+//                    if(mSensorFormats.size() - 1 > k) {
 //                        mWriter.write(mDelimiter);
 //                    }
 //                }
 //                mWriter.newLine();
 
                 if (logUnits) {
-                    for (int k = 0; k < mSensorUnits.length; k++) {
-                        if (mSensorUnits[k].equals("u8")) {
+                    for (int k = 0; k < mSensorUnits.size(); k++) {
+                        if (mSensorUnits.get(k).equals("u8")) {
                             mWriter.write("");
-                        } else if (mSensorUnits[k].equals("i8")) {
+                        } else if (mSensorUnits.get(k).equals("i8")) {
                             mWriter.write("");
-                        } else if (mSensorUnits[k].equals("u12")) {
+                        } else if (mSensorUnits.get(k).equals("u12")) {
                             mWriter.write("");
-                        } else if (mSensorUnits[k].equals("u16")) {
+                        } else if (mSensorUnits.get(k).equals("u16")) {
                             mWriter.write("");
-                        } else if (mSensorUnits[k].equals("i16")) {
+                        } else if (mSensorUnits.get(k).equals("i16")) {
                             mWriter.write("");
                         } else {
-                            mWriter.write("\"" + mSensorUnits[k] + "\"");
+                            mWriter.write("\"" + mSensorUnits.get(k) + "\"");
                         }
-                        if (mSensorUnits.length - 1 > k) {
+                        if (mSensorUnits.size() - 1 > k) {
                             mWriter.write(mDelimiter);
                         }
                     }
@@ -155,12 +154,12 @@ public class Logger {
             mWriter = new BufferedWriter(new FileWriter(mOutputFile, true));
 
             // Write data
-            for (int k = 0; k < mSensorNames.length; k++) {
-                Collection<FormatCluster> formatClusterCollection = objectCluster.mPropertyCluster.get(mSensorNames[k]);
-                FormatCluster formatCluster = getCurrentFormatCluster(formatClusterCollection, format, mSensorUnits[k]);
-                Log.d(TAG, "Write " + mSensorNames[k] + " data in file "+ mFileName +": " + formatCluster.mData + " " + formatCluster.mUnits);
+            for (int k = 0; k < mSensorNames.size(); k++) {
+                Collection<FormatCluster> formatClusterCollection = objectCluster.mPropertyCluster.get(mSensorNames.get(k));
+                FormatCluster formatCluster = getCurrentFormatCluster(formatClusterCollection, format, mSensorUnits.get(k));
+                Log.d(TAG, "Write " + mSensorNames.get(k) + " data in file "+ mFileName +": " + formatCluster.mData + " " + formatCluster.mUnits);
                 mWriter.write(Double.toString(formatCluster.mData));
-                if (mSensorNames.length - 1 > k) {
+                if (mSensorNames.size() - 1 > k) {
                     mWriter.write(mDelimiter);
                 }
             }
@@ -179,15 +178,6 @@ public class Logger {
                 Log.e(TAG, "Error while closing in file", e);
             }
         }
-    }
-
-    private boolean isStringInArray(String string, String[] stringArray) {
-        for (String stringFromArray : stringArray) {
-            if (string.equals(stringFromArray)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private FormatCluster getCurrentFormatCluster(Collection<FormatCluster> formatClusterCollection, String format, String units) {

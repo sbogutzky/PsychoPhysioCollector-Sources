@@ -633,7 +633,7 @@
             android:layout_width="wrap_content"
             android:text="@string/speichern"
             android:layout_centerHorizontal="true"
-            android:id="@+id/save_form"
+            android:id="@+id/button_save"
             android:layout_gravity="center_horizontal"/>
 
     </RelativeLayout>
