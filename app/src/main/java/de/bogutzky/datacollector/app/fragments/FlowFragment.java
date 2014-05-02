@@ -6,6 +6,13 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -37,7 +44,7 @@ import java.util.List;
 import de.bogutzky.datacollector.app.R;
 import de.bogutzky.datacollector.app.tools.Logger;
 
-public class FlowFragment extends Fragment {
+public class FlowFragment extends Fragment implements SensorEventListener {
 
     private static final String TAG = "FlowFragment";
     private List<String> connectedShimmers = new ArrayList<String>();
@@ -52,15 +59,16 @@ public class FlowFragment extends Fragment {
                     Log.d(TAG, msg.getData().getString(Shimmer.TOAST));
 
                 case Shimmer.MESSAGE_READ:
-                    if ((msg.obj instanceof ObjectCluster)) {
-                        ObjectCluster objectCluster = (ObjectCluster) msg.obj;
-                        if (connectedShimmers.size() > 0) {
-                            if (loggingEnabled) {
-                                new logData().execute(objectCluster);
+                    if (connectedShimmers.size() > 0) {
+                        if (loggingEnabled) {
+                            if ((msg.obj instanceof ObjectCluster)) {
+                                ObjectCluster objectCluster = (ObjectCluster) msg.obj;
+                                objectCluster.mPropertyCluster.put("System Timestamp", new FormatCluster("CAL", "mSecs", System.currentTimeMillis()));
+                                new LogData().execute(objectCluster);
                             }
-                        } else {
-                            Toast.makeText(getActivity(), "No Device Connected", Toast.LENGTH_LONG).show();
                         }
+                    } else {
+                        Toast.makeText(getActivity(), "No Device Connected", Toast.LENGTH_LONG).show();
                     }
                     break;
             }
@@ -81,11 +89,34 @@ public class FlowFragment extends Fragment {
     private static final String SCALE = "Flow Short Scale";
     private static final int SCALE_ITEM_COUNT = 16;
 
+    private static final String ACCELEROMETER = "Internal Accelerometer";
+    private static final String GYROSCOPE = "Internal Gyroscope";
+    private static final String GPS = "GPS";
+
+    // Internal sensors
+    private SensorManager mSensorManager;
+    private android.hardware.Sensor mAccelerometer;
+    private android.hardware.Sensor mGyroscope;
+
+    // Location manager
+    private LocationManager mLocationManager;
+    private LocationListener mLocationListener;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
+
+        // Internal sensors
+        mSensorManager = (SensorManager) getActivity().getSystemService(Context.SENSOR_SERVICE);
+        mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        mGyroscope = mSensorManager.getDefaultSensor(android.hardware.Sensor.TYPE_GYROSCOPE);
+
+        // Location manager
+        mLocationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+
+        startCollectingInternalSensorData();
     }
 
     @Override
@@ -93,7 +124,7 @@ public class FlowFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_flow, container, false);
 
         editTextLoggingFileName = (EditText) view.findViewById(R.id.editTextLogFileName);
-        editTextLoggingFileName.setText("testfile");
+        editTextLoggingFileName.setText("testfile_9");
         textViewTimer = (TextView) view.findViewById(R.id.timer);
         buttonStartLogging = (Button) view.findViewById(R.id.buttonStartLogging);
         buttonStartLogging.setBackgroundColor(Color.GREEN);
@@ -102,19 +133,19 @@ public class FlowFragment extends Fragment {
             @Override
             public void onClick(View arg0) {
                 if (buttonStartLogging.getText().equals(getActivity().getString(R.string.start_logging))) {
-                    //if (connectedShimmers.size() > 0) {
-                        //if (streamingShimmers.contains(connectedShimmers.get(0))) {
+                    if (connectedShimmers.size() > 0) {
+                        if (streamingShimmers.contains(connectedShimmers.get(0))) {
+                            setLoggers();
                             setLoggingEnabled(true);
                             startTimer();
-                            setLoggers();
-                        //} else {
-                          //  setLoggingEnabled(false);
-                          //  Toast.makeText(getActivity(), "Connected Device Is Not Streaming", Toast.LENGTH_LONG).show();
-                        //}
-                    //} else {
-                      //  setLoggingEnabled(false);
-                      //  Toast.makeText(getActivity(), "No Device Connected", Toast.LENGTH_LONG).show();
-                    //}
+                        } else {
+                            setLoggingEnabled(false);
+                            Toast.makeText(getActivity(), "Connected Device Is Not Streaming", Toast.LENGTH_LONG).show();
+                        }
+                    } else {
+                        setLoggingEnabled(false);
+                        Toast.makeText(getActivity(), "No Device Connected", Toast.LENGTH_LONG).show();
+                    }
                 } else {
                     setLoggingEnabled(false);
                     stopTimer();
@@ -144,8 +175,14 @@ public class FlowFragment extends Fragment {
             loggers.put(bluetoothAddress, logger);
             i++;
         }
-        Logger logger = new Logger(filename + "_" + i, ",", "DataCollector");
-        loggers.put(SCALE, logger);
+        Logger scaleLogger = new Logger(filename + "_scale", ",", "DataCollector");
+        loggers.put(SCALE, scaleLogger);
+        Logger accelerometerLogger = new Logger(filename + "_accelerometer", ",", "DataCollector");
+        loggers.put(ACCELEROMETER, accelerometerLogger);
+        Logger gyroscopeLogger = new Logger(filename + "_gyroscope", ",", "DataCollector");
+        loggers.put(GYROSCOPE, gyroscopeLogger);
+        Logger gpsLogger = new Logger(filename + "_gps", ",", "DataCollector");
+        loggers.put(GPS, gpsLogger);
     }
 
     @Override
@@ -172,6 +209,12 @@ public class FlowFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
+    }
+
+    @Override
+    public void onDestroyView() {
+        stopCollectingInternalSensorData();
+        super.onDestroyView();
     }
 
     public void setup() {
@@ -208,7 +251,7 @@ public class FlowFragment extends Fragment {
         this.multiShimmerTemplateService = multiShimmerTemplateService;
     }
 
-    class logData extends AsyncTask<ObjectCluster, Integer, String> {
+    class LogData extends AsyncTask<ObjectCluster, Integer, String> {
 
         @Override
         protected String doInBackground(ObjectCluster... objectClusters) {
@@ -309,7 +352,7 @@ public class FlowFragment extends Fragment {
     private void saveItems(final Dialog dialog, String scale, int items) {
 
         ObjectCluster objectCluster = new ObjectCluster(scale, scale);
-        objectCluster.mPropertyCluster.put("Timestamp", new FormatCluster("CAL", "mSecs", System.currentTimeMillis()));
+        objectCluster.mPropertyCluster.put("System Timestamp", new FormatCluster("CAL", "mSecs", System.currentTimeMillis()));
         for(int i = 1; i <= items; i++) {
             int identifier = getResources().getIdentifier("q" + i, "id", getActivity().getPackageName());
             if(identifier != 0) {
@@ -317,6 +360,76 @@ public class FlowFragment extends Fragment {
                 objectCluster.mPropertyCluster.put("Item " + String.format("%02d", i), new FormatCluster("CAL", "n. u.", (int) ratingBar.getRating()));
             }
         }
-        new logData().execute(objectCluster);
+        new LogData().execute(objectCluster);
+    }
+
+    // Internal sensors
+    private void startCollectingInternalSensorData() {
+
+        mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);
+        mSensorManager.registerListener(this, mGyroscope, SensorManager.SENSOR_DELAY_FASTEST);
+
+        mLocationListener = new GPSListener();
+        mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, mLocationListener);
+    }
+
+    private void stopCollectingInternalSensorData() {
+        mSensorManager.unregisterListener(this);
+        mLocationManager.removeUpdates(mLocationListener);
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        if(loggingEnabled) {
+            if (event.sensor.getType() == android.hardware.Sensor.TYPE_ACCELEROMETER) {
+                ObjectCluster objectCluster = new ObjectCluster(ACCELEROMETER, ACCELEROMETER);
+                objectCluster.mPropertyCluster.put("Timestamp", new FormatCluster("CAL", "nSecs", event.timestamp));
+                objectCluster.mPropertyCluster.put("Accelerometer X", new FormatCluster("CAL", "m/s^2", event.values[0]));
+                objectCluster.mPropertyCluster.put("Accelerometer Y", new FormatCluster("CAL", "m/s^2", event.values[1]));
+                objectCluster.mPropertyCluster.put("Accelerometer Z", new FormatCluster("CAL", "m/s^2", event.values[2]));
+                objectCluster.mPropertyCluster.put("System Timestamp", new FormatCluster("CAL", "mSecs", System.currentTimeMillis()));
+                new LogData().execute(objectCluster);
+            }
+            if (event.sensor.getType() == android.hardware.Sensor.TYPE_GYROSCOPE) {
+                ObjectCluster objectCluster = new ObjectCluster(GYROSCOPE, GYROSCOPE);
+                objectCluster.mPropertyCluster.put("Timestamp", new FormatCluster("CAL", "nSecs", event.timestamp));
+                objectCluster.mPropertyCluster.put("Gyroscope X", new FormatCluster("CAL", "deg/s", event.values[0] * 180 / Math.PI));
+                objectCluster.mPropertyCluster.put("Gyroscope Y", new FormatCluster("CAL", "deg/s", event.values[1] * 180 / Math.PI));
+                objectCluster.mPropertyCluster.put("Gyroscope Z", new FormatCluster("CAL", "deg/s", event.values[2] * 180 / Math.PI));
+                objectCluster.mPropertyCluster.put("System Timestamp", new FormatCluster("CAL", "mSecs", System.currentTimeMillis()));
+                new LogData().execute(objectCluster);
+            }
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int i) { }
+
+    public class GPSListener implements LocationListener {
+        @Override
+        public void onLocationChanged(Location location) {
+            if (loggingEnabled) {
+                ObjectCluster objectCluster = new ObjectCluster(GPS, GPS);
+                objectCluster.mPropertyCluster.put("System Timestamp", new FormatCluster("CAL", "mSecs", location.getTime()));
+                objectCluster.mPropertyCluster.put("Latitude", new FormatCluster("CAL", "mSecs", location.getLatitude()));
+                objectCluster.mPropertyCluster.put("Longitude", new FormatCluster("CAL", "mSecs", location.getLongitude()));
+                objectCluster.mPropertyCluster.put("Altitude", new FormatCluster("CAL", "mSecs", location.getAltitude()));
+                new LogData().execute(objectCluster);
+            }
+        }
+
+        @Override
+        public void onProviderDisabled(String provider) {
+            Toast.makeText(getActivity(), "GPS ist nicht verfügbar.", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onProviderEnabled(String provider) {
+        }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+        }
+
     }
 }
