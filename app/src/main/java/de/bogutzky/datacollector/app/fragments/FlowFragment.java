@@ -2,6 +2,7 @@ package de.bogutzky.datacollector.app.fragments;
 
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -63,10 +64,18 @@ public class FlowFragment extends Fragment {
             }
         }
     };
-    private View view;
     private EditText editTextLoggingFileName;
     private Button buttonStartLogging;
     private MultiShimmerTemplateService multiShimmerTemplateService;
+
+    private static final int TIMER_UPDATE = 1;
+    private static final int TIMER_END = 2;
+    private static final int TIMER_CYCLE_IN_MIN = 1;
+    private TextView textViewTimer;
+    private Handler timerHandler;
+    private Thread timerThread;
+    private boolean timerShouldContinue = false;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -76,34 +85,34 @@ public class FlowFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        view = inflater.inflate(R.layout.log_main, container, false);
+        View view = inflater.inflate(R.layout.fragment_flow, container, false);
 
         editTextLoggingFileName = (EditText) view.findViewById(R.id.editTextLogFileName);
         editTextLoggingFileName.setText("testfile");
+        textViewTimer = (TextView) view.findViewById(R.id.timer);
         buttonStartLogging = (Button) view.findViewById(R.id.buttonStartLogging);
         buttonStartLogging.setBackgroundColor(Color.GREEN);
         buttonStartLogging.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View arg0) {
-                if (buttonStartLogging.getText().equals("Start Logging")) {
-                    if (connectedShimmers.size() > 0) {
-                        if (streamingShimmers.contains(connectedShimmers.get(0))) {
-                            buttonStartLogging.setText("Stop Logging");
-                            buttonStartLogging.setBackgroundColor(Color.RED);
-
-                            setLoggers();
+                if (buttonStartLogging.getText().equals(getActivity().getString(R.string.start_logging))) {
+                    //if (connectedShimmers.size() > 0) {
+                        //if (streamingShimmers.contains(connectedShimmers.get(0))) {
                             setLoggingEnabled(true);
-                        } else {
-                            setLoggingEnabled(false);
-                            Toast.makeText(getActivity(), "Connected Device Is Not Streaming", Toast.LENGTH_LONG).show();
-                        }
-                    } else {
-                        setLoggingEnabled(false);
-                        Toast.makeText(getActivity(), "No Device Connected", Toast.LENGTH_LONG).show();
-                    }
+                            startTimer();
+                            setLoggers();
+                        //} else {
+                          //  setLoggingEnabled(false);
+                          //  Toast.makeText(getActivity(), "Connected Device Is Not Streaming", Toast.LENGTH_LONG).show();
+                        //}
+                    //} else {
+                      //  setLoggingEnabled(false);
+                      //  Toast.makeText(getActivity(), "No Device Connected", Toast.LENGTH_LONG).show();
+                    //}
                 } else {
                     setLoggingEnabled(false);
+                    stopTimer();
                 }
             }
         });
@@ -136,7 +145,7 @@ public class FlowFragment extends Fragment {
     public void onResume() {
         super.onResume();
         if (loggingEnabled) {
-            buttonStartLogging.setText("Stop Logging");
+            buttonStartLogging.setText(getActivity().getString(R.string.stop_logging));
             buttonStartLogging.setBackgroundColor(Color.RED);
             //TODO: Text setzen
             //editTextLoggingFileName.setText(logger.Filename());
@@ -163,15 +172,8 @@ public class FlowFragment extends Fragment {
         multiShimmerTemplateService.mShimmerConfigurationList = db.getShimmerConfigurations("Temp");
         multiShimmerTemplateService.setGraphHandler(mHandler, "");
         multiShimmerTemplateService.enableGraphingHandler(true);
-        TextView mTVShimmerId = (TextView) view.findViewById(R.id.textViewShimmerId);
         connectedShimmers = ControlFragment.connectedShimmerAddresses;
         streamingShimmers = ControlFragment.streamingShimmerAddresses;
-        if (connectedShimmers.size() > 0) {
-            String bluetoothAddress = connectedShimmers.get(0);
-            mTVShimmerId.setText(bluetoothAddress);
-        } else {
-            mTVShimmerId.setText("No Shimmer Connected");
-        }
     }
 
     private boolean isMultiShimmerTemplateRunning() {
@@ -186,10 +188,10 @@ public class FlowFragment extends Fragment {
 
     public void setLoggingEnabled(Boolean loggingEnabled) {
         if (loggingEnabled) {
-            buttonStartLogging.setText("Stop Logging");
+            buttonStartLogging.setText(getActivity().getString(R.string.stop_logging));
             buttonStartLogging.setBackgroundColor(Color.RED);
         } else {
-            buttonStartLogging.setText("Start Logging");
+            buttonStartLogging.setText(getActivity().getString(R.string.start_logging));
             buttonStartLogging.setBackgroundColor(Color.GREEN);
         }
         this.loggingEnabled = loggingEnabled;
@@ -208,5 +210,97 @@ public class FlowFragment extends Fragment {
             logger.logData(objectClusters[0], "CAL", false);
             return null;
         }
+    }
+
+    private void startTimer() {
+        timerHandler = new Handler() {
+
+            @Override
+            public void handleMessage(Message msg) {
+                super.handleMessage(msg);
+                switch(msg.what) {
+                    case TIMER_UPDATE:
+                        if(textViewTimer.getVisibility() == View.INVISIBLE) {
+                            textViewTimer.setVisibility(View.VISIBLE);
+                            textViewTimer.requestLayout();
+                        }
+                        int minutes = msg.arg1 / 1000 / 60;
+                        int seconds = msg.arg1 / 1000 % 60;
+                        String time = String.format("%02d:%02d", minutes, seconds);
+                        textViewTimer.setText(time);
+                        break;
+
+                    case TIMER_END:
+                        textViewTimer.setVisibility(View.INVISIBLE);
+                        showLikertScaleDialog();
+                        break;
+                }
+            }
+        };
+
+        long timerInterval = 1000 * 60 * TIMER_CYCLE_IN_MIN;
+        final long endTime = System.currentTimeMillis() + timerInterval;
+
+        timerThread = new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                long now = System.currentTimeMillis();
+                timerShouldContinue = true;
+                while(now < endTime && timerShouldContinue) {
+                    Message message = new Message();
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    message.what = TIMER_UPDATE;
+                    message.arg1 = (int)(endTime - now);
+                    timerHandler.sendMessage(message);
+
+                    // Update time
+                    now = System.currentTimeMillis();
+                }
+                Message msg = new Message();
+                msg.what = TIMER_END;
+                timerHandler.sendMessage(msg);
+            }
+        });
+        timerThread.start();
+    }
+
+    private void stopTimer() {
+        if(timerThread.isAlive()) {
+            timerShouldContinue = false;
+            textViewTimer.setVisibility(View.INVISIBLE);
+            timerThread.interrupt();
+        }
+        timerThread = null;
+    }
+
+    private long formTime = 0;
+
+    private void showLikertScaleDialog() {
+        //formTime = System.currentTimeMillis();
+        final Dialog dialog = new Dialog(getActivity());
+        dialog.setContentView(R.layout.flow_short_scale);
+        dialog.setTitle("Feedback");
+        dialog.setCancelable(true);
+
+//        Button saveButton = (Button)mFormDialog.findViewById(R.id.save_form);
+//        saveButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                collectData(mFormDialog);
+//                mFormDialog.dismiss();
+//                if(startTimerAgain) {
+//                    startTimer();
+//                } else {
+//                    saveFormData();
+//                }
+//            }
+//        });
+
+        dialog.show();
     }
 }
