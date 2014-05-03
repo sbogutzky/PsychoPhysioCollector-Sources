@@ -37,7 +37,9 @@ import com.shimmerresearch.multishimmertemplate.ItemDetailActivity;
 import com.shimmerresearch.multishimmertemplate.ItemListActivity;
 import com.shimmerresearch.service.MultiShimmerTemplateService;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -124,7 +126,7 @@ public class FlowFragment extends Fragment implements SensorEventListener {
         View view = inflater.inflate(R.layout.fragment_flow, container, false);
 
         editTextLoggingFileName = (EditText) view.findViewById(R.id.editTextLogFileName);
-        editTextLoggingFileName.setText("testfile_9");
+
         textViewTimer = (TextView) view.findViewById(R.id.timer);
         buttonStartLogging = (Button) view.findViewById(R.id.buttonStartLogging);
         buttonStartLogging.setBackgroundColor(Color.GREEN);
@@ -168,20 +170,24 @@ public class FlowFragment extends Fragment implements SensorEventListener {
 
     private void setLoggers() {
         loggers = new HashMap<String, Logger>();
-        int i = 0;
-        String filename = editTextLoggingFileName.getText().toString();
+
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat simpleTimeFormat = new SimpleDateFormat("HH-mm-ss");
+        String dateString = simpleDateFormat.format(new Date());
+        String timeString = simpleTimeFormat.format(new Date());
+        String directoryName = "DataCollector/" + dateString + "_" + timeString;
         for (String bluetoothAddress : streamingShimmers) {
-            Logger logger = new Logger(filename + "_" + i, ",", "DataCollector");
+            String btRadioID = bluetoothAddress.replace(":", "").substring(8).toUpperCase();
+            Logger logger = new Logger("sensor_" + btRadioID, ",", directoryName);
             loggers.put(bluetoothAddress, logger);
-            i++;
         }
-        Logger scaleLogger = new Logger(filename + "_scale", ",", "DataCollector");
+        Logger scaleLogger = new Logger("scale", ",", directoryName);
         loggers.put(SCALE, scaleLogger);
-        Logger accelerometerLogger = new Logger(filename + "_accelerometer", ",", "DataCollector");
+        Logger accelerometerLogger = new Logger("accelerometer", ",", directoryName);
         loggers.put(ACCELEROMETER, accelerometerLogger);
-        Logger gyroscopeLogger = new Logger(filename + "_gyroscope", ",", "DataCollector");
+        Logger gyroscopeLogger = new Logger("gyroscope", ",", directoryName);
         loggers.put(GYROSCOPE, gyroscopeLogger);
-        Logger gpsLogger = new Logger(filename + "_gps", ",", "DataCollector");
+        Logger gpsLogger = new Logger("gps", ",", directoryName);
         loggers.put(GPS, gpsLogger);
     }
 
