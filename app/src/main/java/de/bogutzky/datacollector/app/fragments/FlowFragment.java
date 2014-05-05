@@ -14,7 +14,6 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.media.MediaPlayer;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -61,6 +60,7 @@ public class FlowFragment extends Fragment implements SensorEventListener {
             switch (msg.what) {
                 case Shimmer.MESSAGE_TOAST:
                     Log.d(TAG, msg.getData().getString(Shimmer.TOAST));
+                    Log.d("Hilfe", "0");
                     if ("Device connection was lost".equals(msg.getData().getString(Shimmer.TOAST))) {
                         mVibrator.vibrate(mVibratorPatternConnectionLost, -1);
                     }
@@ -72,11 +72,18 @@ public class FlowFragment extends Fragment implements SensorEventListener {
                             if ((msg.obj instanceof ObjectCluster)) {
                                 ObjectCluster objectCluster = (ObjectCluster) msg.obj;
                                 objectCluster.mPropertyCluster.put("System Timestamp", new FormatCluster("CAL", "mSecs", System.currentTimeMillis()));
-                                new LogData().execute(objectCluster);
+                                Logger logger = loggers.get(objectCluster.mBluetoothAddress);
+                                logger.addObjectCluster(objectCluster);
                             }
+                            else {
+                                Log.d("Hilfe", "1");
+                            }
+                        } else {
+                            Log.d("Hilfe", "2");
                         }
                     } else {
                         Toast.makeText(getActivity(), "No Device Connected", Toast.LENGTH_LONG).show();
+                        Log.d("Hilfe", "3");
                     }
                     break;
             }
@@ -91,7 +98,9 @@ public class FlowFragment extends Fragment implements SensorEventListener {
     private TextView textViewTimer;
     private Handler timerHandler;
     private Thread timerThread;
-    private boolean timerShouldContinue = false;
+    private Thread saveThread;
+    private boolean timerThreadShouldContinue = false;
+    private boolean saveThreadShouldContinue = false;
     private double timerCycleInMin;
 
     private static final String SCALE = "Flow Short Scale";
@@ -153,7 +162,7 @@ public class FlowFragment extends Fragment implements SensorEventListener {
                             timerCycleInMin = Integer.parseInt(editTextSetMinutesForFeedback.getText().toString());
                             setLoggers();
                             setLoggingEnabled(true);
-                            startTimer();
+                            startTreads();
                         } else {
                             setLoggingEnabled(false);
                             Toast.makeText(getActivity(), "Connected Device Is Not Streaming", Toast.LENGTH_LONG).show();
@@ -164,7 +173,7 @@ public class FlowFragment extends Fragment implements SensorEventListener {
                     }
                 } else {
                     setLoggingEnabled(false);
-                    stopTimer();
+                    stopTimerThread();
                 }
             }
         });
@@ -233,6 +242,15 @@ public class FlowFragment extends Fragment implements SensorEventListener {
     public void onDestroyView() {
         stopCollectingInternalSensorData();
         setLoggingEnabled(false);
+
+        if (timerThread != null) {
+            stopTimerThread();
+        }
+
+        if (saveThread != null) {
+            stopSaveThread();
+        }
+
         super.onDestroyView();
     }
 
@@ -270,18 +288,10 @@ public class FlowFragment extends Fragment implements SensorEventListener {
         this.multiShimmerTemplateService = multiShimmerTemplateService;
     }
 
-    class LogData extends AsyncTask<ObjectCluster, Integer, String> {
+    private void startTreads() {
+        timerThreadShouldContinue = true;
+        saveThreadShouldContinue = true;
 
-        @Override
-        protected String doInBackground(ObjectCluster... objectClusters) {
-            ObjectCluster objectCluster = objectClusters[0];
-            Logger logger = loggers.get(objectCluster.mBluetoothAddress);
-            logger.logData(objectClusters[0], "CAL", false);
-            return null;
-        }
-    }
-
-    private void startTimer() {
         timerHandler = new Handler() {
 
             @Override
@@ -316,8 +326,7 @@ public class FlowFragment extends Fragment implements SensorEventListener {
             @Override
             public void run() {
                 long now = System.currentTimeMillis();
-                timerShouldContinue = true;
-                while(now < endTime && timerShouldContinue) {
+                while(now < endTime && timerThreadShouldContinue) {
                     Message message = new Message();
                     try {
                         Thread.sleep(1000);
@@ -337,15 +346,42 @@ public class FlowFragment extends Fragment implements SensorEventListener {
             }
         });
         timerThread.start();
+
+        saveThread = new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                while(saveThreadShouldContinue) {
+                    try {
+                        Thread.sleep(5000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    for (Logger logger : loggers.values()) {
+                        logger.writeObjectClusters("CAL", false);
+                    }
+                }
+            }
+        });
+        saveThread.start();
     }
 
-    private void stopTimer() {
+
+    private void stopTimerThread() {
+        timerThreadShouldContinue = false;
         if(timerThread.isAlive()) {
-            timerShouldContinue = false;
             textViewTimer.setVisibility(View.INVISIBLE);
             timerThread.interrupt();
         }
         timerThread = null;
+    }
+
+    private void stopSaveThread() {
+        saveThreadShouldContinue = false;
+        if(saveThread.isAlive()) {
+            saveThread.interrupt();
+        }
+        saveThread = null;
     }
 
     private void showLikertScaleDialog() {
@@ -363,7 +399,7 @@ public class FlowFragment extends Fragment implements SensorEventListener {
                 saveItems(dialog, SCALE, SCALE_ITEM_COUNT, timestamp);
                 dialog.dismiss();
                 if(loggingEnabled) {
-                    startTimer();
+                    startTreads();
                 }
             }
         });
@@ -382,7 +418,8 @@ public class FlowFragment extends Fragment implements SensorEventListener {
                 objectCluster.mPropertyCluster.put("Item " + String.format("%02d", i), new FormatCluster("CAL", "n. u.", (int) ratingBar.getRating()));
             }
         }
-        new LogData().execute(objectCluster);
+        Logger logger = loggers.get(scale);
+        logger.addObjectCluster(objectCluster);
     }
 
     // Internal sensors
@@ -410,7 +447,8 @@ public class FlowFragment extends Fragment implements SensorEventListener {
                 objectCluster.mPropertyCluster.put("Accelerometer Y", new FormatCluster("CAL", "m/s^2", event.values[1]));
                 objectCluster.mPropertyCluster.put("Accelerometer Z", new FormatCluster("CAL", "m/s^2", event.values[2]));
                 objectCluster.mPropertyCluster.put("System Timestamp", new FormatCluster("CAL", "mSecs", System.currentTimeMillis()));
-                new LogData().execute(objectCluster);
+                Logger logger = loggers.get(ACCELEROMETER);
+                logger.addObjectCluster(objectCluster);
             }
             if (event.sensor.getType() == android.hardware.Sensor.TYPE_GYROSCOPE) {
                 ObjectCluster objectCluster = new ObjectCluster(GYROSCOPE, GYROSCOPE);
@@ -419,7 +457,8 @@ public class FlowFragment extends Fragment implements SensorEventListener {
                 objectCluster.mPropertyCluster.put("Gyroscope Y", new FormatCluster("CAL", "deg/s", event.values[1] * 180 / Math.PI));
                 objectCluster.mPropertyCluster.put("Gyroscope Z", new FormatCluster("CAL", "deg/s", event.values[2] * 180 / Math.PI));
                 objectCluster.mPropertyCluster.put("System Timestamp", new FormatCluster("CAL", "mSecs", System.currentTimeMillis()));
-                new LogData().execute(objectCluster);
+                Logger logger = loggers.get(GYROSCOPE);
+                logger.addObjectCluster(objectCluster);
             }
         }
     }
@@ -436,7 +475,8 @@ public class FlowFragment extends Fragment implements SensorEventListener {
                 objectCluster.mPropertyCluster.put("Latitude", new FormatCluster("CAL", "mSecs", location.getLatitude()));
                 objectCluster.mPropertyCluster.put("Longitude", new FormatCluster("CAL", "mSecs", location.getLongitude()));
                 objectCluster.mPropertyCluster.put("Altitude", new FormatCluster("CAL", "mSecs", location.getAltitude()));
-                new LogData().execute(objectCluster);
+                Logger logger = loggers.get(GPS);
+                logger.addObjectCluster(objectCluster);
             }
         }
 

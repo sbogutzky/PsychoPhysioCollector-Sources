@@ -24,6 +24,7 @@ public class Logger {
     ArrayList <String> mSensorNames;
     ArrayList <String> mSensorFormats;
     ArrayList <String> mSensorUnits;
+    ArrayList <ObjectCluster> objectClusters;
     String mFileName = "";
     BufferedWriter mWriter = null;
     String mDelimiter = ","; // default is comma
@@ -65,6 +66,7 @@ public class Logger {
             }
         }
         mOutputFile = new File(root, mFileName + ".csv");
+        objectClusters = new ArrayList<ObjectCluster>();
     }
 
 
@@ -73,7 +75,7 @@ public class Logger {
      *
      * @param objectCluster data which will be written into the file
      */
-    public void logData(ObjectCluster objectCluster, String format, Boolean logUnits) {
+    private void logData(ObjectCluster objectCluster, String format, Boolean logUnits) {
         try {
             if (mFirstWrite) {
                 mWriter = new BufferedWriter(new FileWriter(mOutputFile, false));
@@ -170,7 +172,7 @@ public class Logger {
         }
     }
 
-    public void closeFile() {
+    private void closeFile() {
         if (mWriter != null) {
             try {
                 mWriter.flush();
@@ -188,6 +190,18 @@ public class Logger {
             }
         }
         return null;
+    }
+
+    public void addObjectCluster(ObjectCluster objectCluster) {
+        objectClusters.add(objectCluster);
+    }
+
+    public void writeObjectClusters(String format, Boolean logUnits) {
+        ArrayList<ObjectCluster> currentObjectClusters = new ArrayList<ObjectCluster>(objectClusters);
+        objectClusters.clear();
+        for (ObjectCluster objectCluster : currentObjectClusters) {
+            logData(objectCluster, format, logUnits);
+        }
     }
 }
 
