@@ -1,16 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="de.bogutzky.datacollector.app"
-    android:versionCode="1"
-    android:versionName="1.0">
+    package="de.bogutzky.datacollector.app">
 
-    <uses-sdk
-        android:minSdkVersion="11"
-        android:targetSdkVersion="11" />
-
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"></uses-permission>
-    <uses-permission android:name="android.permission.BLUETOOTH"></uses-permission>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"></uses-permission>
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
@@ -33,7 +27,8 @@
         </activity>
         <activity
             android:name="com.shimmerresearch.multishimmertemplate.ItemDetailActivity"
-            android:label="@string/main"
+            android:screenOrientation="portrait"
+            android:label="@string/app_name"
             android:parentActivityName="com.shimmerresearch.multishimmertemplate.ItemListActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -43,15 +38,15 @@
         <activity
             android:name="com.shimmerresearch.multishimmertemplate.DeviceListActivity"
             android:label="Select Device"
-            android:theme="@android:style/Theme.Dialog"></activity>
+            android:theme="@android:style/Theme.Dialog" />
         <activity
             android:name="com.shimmerresearch.multishimmertemplate.CommandsActivity"
             android:label="Commands"
-            android:theme="@android:style/Theme.Dialog"></activity>
+            android:theme="@android:style/Theme.Dialog" />
         <activity
             android:name="com.shimmerresearch.multishimmertemplate.ConfigureSensorsActivity"
             android:label="@string/configure_device"
-            android:theme="@android:style/Theme.Dialog"></activity>
+            android:theme="@android:style/Theme.Dialog" />
 
         <service
             android:name="com.shimmerresearch.service.MultiShimmerTemplateService"

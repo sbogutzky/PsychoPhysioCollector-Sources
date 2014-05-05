@@ -164,7 +164,7 @@ public class Logger {
                 }
             }
             mWriter.newLine();
-            closeFile();
+            mWriter.flush();
         } catch (IOException e) {
             Log.e(TAG, "Error while writing in file", e);
         }
@@ -173,6 +173,7 @@ public class Logger {
     public void closeFile() {
         if (mWriter != null) {
             try {
+                mWriter.flush();
                 mWriter.close();
             } catch (IOException e) {
                 Log.e(TAG, "Error while closing in file", e);
@@ -187,10 +188,6 @@ public class Logger {
             }
         }
         return null;
-    }
-
-    public String Filename() {
-        return mFileName;
     }
 }
 

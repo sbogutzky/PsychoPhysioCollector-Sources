@@ -13,10 +13,12 @@ import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.Vibrator;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -59,6 +61,10 @@ public class FlowFragment extends Fragment implements SensorEventListener {
             switch (msg.what) {
                 case Shimmer.MESSAGE_TOAST:
                     Log.d(TAG, msg.getData().getString(Shimmer.TOAST));
+                    if ("Device connection was lost".equals(msg.getData().getString(Shimmer.TOAST))) {
+                        mVibrator.vibrate(mVibratorPatternConnectionLost, -1);
+                    }
+                    break;
 
                 case Shimmer.MESSAGE_READ:
                     if (connectedShimmers.size() > 0) {
@@ -76,17 +82,17 @@ public class FlowFragment extends Fragment implements SensorEventListener {
             }
         }
     };
-    private EditText editTextLoggingFileName;
+    private EditText editTextSetMinutesForFeedback;
     private Button buttonStartLogging;
     private MultiShimmerTemplateService multiShimmerTemplateService;
 
     private static final int TIMER_UPDATE = 1;
     private static final int TIMER_END = 2;
-    private static final int TIMER_CYCLE_IN_MIN = 1;
     private TextView textViewTimer;
     private Handler timerHandler;
     private Thread timerThread;
     private boolean timerShouldContinue = false;
+    private double timerCycleInMin;
 
     private static final String SCALE = "Flow Short Scale";
     private static final int SCALE_ITEM_COUNT = 16;
@@ -104,6 +110,11 @@ public class FlowFragment extends Fragment implements SensorEventListener {
     private LocationManager mLocationManager;
     private LocationListener mLocationListener;
 
+    // Vibration
+    private Vibrator mVibrator;
+    private long[] mVibratorPatternFeedback = {0, 500, 200, 100, 100, 100, 100, 100};
+    private long[] mVibratorPatternConnectionLost = {0, 100, 100, 100, 100, 100, 100, 100};
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -118,6 +129,8 @@ public class FlowFragment extends Fragment implements SensorEventListener {
         // Location manager
         mLocationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
 
+        mVibrator = (Vibrator) getActivity().getSystemService(Context.VIBRATOR_SERVICE);
+
         startCollectingInternalSensorData();
     }
 
@@ -125,9 +138,9 @@ public class FlowFragment extends Fragment implements SensorEventListener {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_flow, container, false);
 
-        editTextLoggingFileName = (EditText) view.findViewById(R.id.editTextLogFileName);
-
         textViewTimer = (TextView) view.findViewById(R.id.timer);
+        editTextSetMinutesForFeedback = (EditText) view.findViewById(R.id.editTextSetMinuteForFeedback);
+        editTextSetMinutesForFeedback.setText("15");
         buttonStartLogging = (Button) view.findViewById(R.id.buttonStartLogging);
         buttonStartLogging.setBackgroundColor(Color.GREEN);
         buttonStartLogging.setOnClickListener(new View.OnClickListener() {
@@ -137,6 +150,7 @@ public class FlowFragment extends Fragment implements SensorEventListener {
                 if (buttonStartLogging.getText().equals(getActivity().getString(R.string.start_logging))) {
                     if (connectedShimmers.size() > 0) {
                         if (streamingShimmers.contains(connectedShimmers.get(0))) {
+                            timerCycleInMin = Integer.parseInt(editTextSetMinutesForFeedback.getText().toString());
                             setLoggers();
                             setLoggingEnabled(true);
                             startTimer();
@@ -197,8 +211,6 @@ public class FlowFragment extends Fragment implements SensorEventListener {
         if (loggingEnabled) {
             buttonStartLogging.setText(getActivity().getString(R.string.stop_logging));
             buttonStartLogging.setBackgroundColor(Color.RED);
-            //TODO: Text setzen
-            //editTextLoggingFileName.setText(logger.Filename());
         }
     }
 
@@ -220,6 +232,7 @@ public class FlowFragment extends Fragment implements SensorEventListener {
     @Override
     public void onDestroyView() {
         stopCollectingInternalSensorData();
+        setLoggingEnabled(false);
         super.onDestroyView();
     }
 
@@ -287,6 +300,7 @@ public class FlowFragment extends Fragment implements SensorEventListener {
                         break;
 
                     case TIMER_END:
+                        feedbackNotification();
                         textViewTimer.setVisibility(View.INVISIBLE);
                         showLikertScaleDialog();
                         break;
@@ -294,7 +308,7 @@ public class FlowFragment extends Fragment implements SensorEventListener {
             }
         };
 
-        long timerInterval = (long) (1000 * 60 * TIMER_CYCLE_IN_MIN);
+        long timerInterval = (long) (1000 * 60 * timerCycleInMin);
         final long endTime = System.currentTimeMillis() + timerInterval;
 
         timerThread = new Thread(new Runnable() {
@@ -336,6 +350,7 @@ public class FlowFragment extends Fragment implements SensorEventListener {
 
     private void showLikertScaleDialog() {
         final Dialog dialog = new Dialog(getActivity());
+        final long timestamp = System.currentTimeMillis();
         dialog.setContentView(R.layout.flow_short_scale);
         dialog.setTitle(getActivity().getString(R.string.feedback));
         dialog.setCancelable(false);
@@ -345,7 +360,7 @@ public class FlowFragment extends Fragment implements SensorEventListener {
 
             @Override
             public void onClick(View view) {
-                saveItems(dialog, SCALE, SCALE_ITEM_COUNT);
+                saveItems(dialog, SCALE, SCALE_ITEM_COUNT, timestamp);
                 dialog.dismiss();
                 if(loggingEnabled) {
                     startTimer();
@@ -355,10 +370,11 @@ public class FlowFragment extends Fragment implements SensorEventListener {
         dialog.show();
     }
 
-    private void saveItems(final Dialog dialog, String scale, int items) {
+    private void saveItems(final Dialog dialog, String scale, int items, long timestamp) {
 
         ObjectCluster objectCluster = new ObjectCluster(scale, scale);
-        objectCluster.mPropertyCluster.put("System Timestamp", new FormatCluster("CAL", "mSecs", System.currentTimeMillis()));
+        objectCluster.mPropertyCluster.put("System Timestamp 01", new FormatCluster("CAL", "mSecs", timestamp));
+        objectCluster.mPropertyCluster.put("System Timestamp 02", new FormatCluster("CAL", "mSecs", System.currentTimeMillis()));
         for(int i = 1; i <= items; i++) {
             int identifier = getResources().getIdentifier("q" + i, "id", getActivity().getPackageName());
             if(identifier != 0) {
@@ -437,5 +453,21 @@ public class FlowFragment extends Fragment implements SensorEventListener {
         public void onStatusChanged(String provider, int status, Bundle extras) {
         }
 
+    }
+
+    private void feedbackNotification() {
+        mVibrator.vibrate(mVibratorPatternFeedback, -1);
+        playFeedbackSound();
+    }
+
+    private void playFeedbackSound() {
+        MediaPlayer mediaPlayer = MediaPlayer.create(getActivity(), R.raw.notifcation);
+        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                mp.release();
+            }
+        });
+        mediaPlayer.start();
     }
 }
