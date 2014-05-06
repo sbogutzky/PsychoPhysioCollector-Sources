@@ -52,15 +52,7 @@ public class MainActivity extends ListActivity {
                             break;
                         case Shimmer.STATE_NONE:
                             Log.d(TAG, "None State: " + bluetoothAddress);
-//                            mMultiShimmer.remove(((ObjectCluster) msg.obj).mBluetoothAddress);
-//                            if (mBluetoothAddresstoConnect.size() != 0) {
-//                                mBluetoothAddresstoConnect.remove(0);
-//                                mDeviceNametoConnect.remove(0);
-//                                if (mBluetoothAddresstoConnect.size() != 0) {
-//                                    MultiShimmerTemplateService service = mService.get();
-//                                    service.connectShimmer(mBluetoothAddresstoConnect.get(0), mDeviceNametoConnect.get(0));
-//                                }
-//                            }
+                            getConnectedShimmers().remove(bluetoothAddress);
                             break;
                         case Shimmer.MSG_STATE_FULLY_INITIALIZED:
                             Log.d(TAG, "Fully initialized: " + bluetoothAddress);
@@ -177,16 +169,30 @@ public class MainActivity extends ListActivity {
     }
 
     public void connectShimmer(String bluetoothAddress, String deviceName) {
-        Shimmer shimmer = new Shimmer(this, handler, deviceName, false);
+        Shimmer shimmer;
         if (!getShimmers().containsKey(bluetoothAddress)) {
+            shimmer = new Shimmer(this, handler, deviceName, false);
             getShimmers().put(bluetoothAddress, shimmer);
         } else {
             Log.d(TAG, "Already added");
+            if (!getConnectedShimmers().containsKey(bluetoothAddress)) {
+                shimmer = (Shimmer) getShimmers().get(bluetoothAddress);
+                shimmer.connect(bluetoothAddress, "default");
+            } else {
+                Log.d(TAG, "Already connected");
+                //shimmer = (Shimmer) getConnectedShimmers().get(bluetoothAddress);
+                //shimmer.toggleLed();
+                disconnectShimmer(bluetoothAddress);
+            }
         }
-        if (!getConnectedShimmers().containsKey(bluetoothAddress)) {
-            shimmer.connect(bluetoothAddress, "default");
-        } else {
-            Log.d(TAG, "Already connected");
+    }
+
+    public void disconnectShimmer(String bluetoothAddress) {
+        if (getConnectedShimmers().containsKey(bluetoothAddress)) {
+            Shimmer shimmer = (Shimmer) getConnectedShimmers().get(bluetoothAddress);
+            if (shimmer.getShimmerState() == Shimmer.STATE_CONNECTED) {
+                shimmer.stop();
+            }
         }
     }
 }
