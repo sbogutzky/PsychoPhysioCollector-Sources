@@ -31,7 +31,7 @@ public class MainActivity extends ListActivity {
                 case Shimmer.MESSAGE_READ:
                     if ((msg.obj instanceof ObjectCluster)) {
                         ObjectCluster objectCluster = (ObjectCluster) msg.obj;
-                        Log.d(TAG, "Data from: " + objectCluster.mBluetoothAddress);
+                        //Log.d(TAG, "Data from: " + objectCluster.mBluetoothAddress);
                     }
                     break;
                 case Shimmer.MESSAGE_TOAST:
@@ -58,6 +58,17 @@ public class MainActivity extends ListActivity {
                             Log.d(TAG, "Fully initialized: " + bluetoothAddress);
                             getConnectedShimmers().put(bluetoothAddress, getShimmers().get(bluetoothAddress));
                             break;
+                        case Shimmer.MSG_STATE_STREAMING:
+                            Log.d(TAG, "Streaming: " + bluetoothAddress);
+                            getStreamingShimmers().put(bluetoothAddress, getConnectedShimmers().get(bluetoothAddress));
+                            break;
+                        case Shimmer.MSG_STATE_STOP_STREAMING:
+                            Log.d(TAG, "Stop streaming: " + bluetoothAddress);
+                            getStreamingShimmers().remove(bluetoothAddress);
+                            break;
+                        case Shimmer.MESSAGE_STOP_STREAMING_COMPLETE:
+                            Log.d(TAG, "Stop streaming complete:" + bluetoothAddress);
+                            break;
                     }
                     break;
                 case Shimmer.MESSAGE_PACKET_LOSS_DETECTED:
@@ -69,9 +80,9 @@ public class MainActivity extends ListActivity {
     private static final int MSG_BLUETOOTH_ADDRESS = 1;
     private static HashMap<String, Object> shimmers;
     private static HashMap<String, Object> connectedShimmers;
+    private static HashMap<String, Object> streamingShimmers;
     private ArrayAdapter adapter;
     private ArrayList<String> bluetoothAddresses;
-    private boolean noShimmerIsStreaming = true;
 
     public static HashMap<String, Object> getShimmers() {
         if (shimmers == null) {
@@ -85,6 +96,13 @@ public class MainActivity extends ListActivity {
             connectedShimmers = new HashMap<String, Object>(4);
         }
         return connectedShimmers;
+    }
+
+    public static HashMap<String, Object> getStreamingShimmers() {
+        if (streamingShimmers == null) {
+            streamingShimmers = new HashMap<String, Object>(4);
+        }
+        return streamingShimmers;
     }
 
     @Override
@@ -160,7 +178,7 @@ public class MainActivity extends ListActivity {
     }
 
     public void findBluetoothAddress() {
-        if (noShimmerIsStreaming) {
+        if (!shimmersAreStreaming()) {
             Intent intent = new Intent(this, DeviceListActivity.class);
             startActivityForResult(intent, MSG_BLUETOOTH_ADDRESS);
         } else {
@@ -182,7 +200,8 @@ public class MainActivity extends ListActivity {
                 Log.d(TAG, "Already connected");
                 //shimmer = (Shimmer) getConnectedShimmers().get(bluetoothAddress);
                 //shimmer.toggleLed();
-                disconnectShimmer(bluetoothAddress);
+                //disconnectShimmer(bluetoothAddress);
+                startStreaming(bluetoothAddress);
             }
         }
     }
@@ -194,5 +213,27 @@ public class MainActivity extends ListActivity {
                 shimmer.stop();
             }
         }
+    }
+
+    public void startStreaming(String bluetoothAddress) {
+        if (getConnectedShimmers().containsKey(bluetoothAddress)) {
+            Shimmer shimmer = (Shimmer) getConnectedShimmers().get(bluetoothAddress);
+            if (shimmer.getShimmerState() == Shimmer.STATE_CONNECTED && !shimmer.getStreamingStatus()) {
+                shimmer.startStreaming();
+            }
+        }
+    }
+
+    public void stopStreaming(String bluetoothAddress) {
+        if (getConnectedShimmers().containsKey(bluetoothAddress)) {
+            Shimmer shimmer = (Shimmer) getStreamingShimmers().get(bluetoothAddress);
+            if (shimmer.getBluetoothAddress().equals(bluetoothAddress) && shimmer.getShimmerState() == Shimmer.STATE_CONNECTED && shimmer.getStreamingStatus()) {
+                shimmer.stopStreaming();
+            }
+        }
+    }
+
+    public boolean shimmersAreStreaming() {
+        return !getStreamingShimmers().isEmpty();
     }
 }
