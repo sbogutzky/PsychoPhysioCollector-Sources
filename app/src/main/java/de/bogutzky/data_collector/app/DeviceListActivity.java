@@ -1,4 +1,4 @@
-package de.bogutzky.datacollector.app;
+package de.bogutzky.data_collector.app;
 /*
  * Copyright (C) 2009 The Android Open Source Project
  *

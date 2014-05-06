@@ -1,4 +1,4 @@
-package de.bogutzky.datacollector.app;
+package de.bogutzky.data_collector.app;
 
 import android.app.Activity;
 import android.app.ListActivity;
