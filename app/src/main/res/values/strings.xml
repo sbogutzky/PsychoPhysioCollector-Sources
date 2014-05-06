@@ -2,9 +2,15 @@
 <resources>
 
     <string name="app_name">DataCollector</string>
-    <string name="hello_world">Hello world!</string>
-    <string name="action_settings">Settings</string>
-    <string name="no_sensors">Keine Sensoren vorhanden</string>
     <string name="action_add_sensor">Sensor hinzufügen</string>
+    <string name="ensure_no_device_is_streaming">Bitte gehe sicher, dass kein Gerät gerade Daten überträgt</string>
+    <string name="device_is_already_in_list">Gerät ist schon in der Liste</string>
+    <string name="paired_devices">Gekoppelte Geräte</string>
+    <string name="other_devices">Weitere Geräte</string>
+    <string name="scan">Scan</string>
+    <string name="select_device">Wähle Gerät aus</string>
+    <string name="non_paired">Keine gekoppelt</string>
+    <string name="scanning">Scanning</string>
+    <string name="none_found">Keine gefunden</string>
 
 </resources>

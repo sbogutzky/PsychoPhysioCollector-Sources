@@ -1,27 +1,33 @@
 package de.bogutzky.datacollector.app;
 
+import android.app.Activity;
 import android.app.ListActivity;
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
-import android.widget.SimpleCursorAdapter;
+import android.widget.Toast;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 
 public class MainActivity extends ListActivity {
 
-    // This is the Adapter being used to display the list's data
+    private static final String TAG = "MainActivity";
+    private static final int MSG_BLUETOOTH_ADDRESS = 1;
+
     ArrayAdapter adapter;
-    ArrayList<String> sensors;
+    ArrayList<String> bluetoothAddresses;
+    boolean noDeviceIsStreaming = true;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, getSensors());
+        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, getBluetoothAddresses());
         setListAdapter(adapter);
     }
 
@@ -40,20 +46,55 @@ public class MainActivity extends ListActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         if (id == R.id.action_add_sensor) {
+            findBluetoothAddress();
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
-    public ArrayList<String> getSensors() {
-        if (sensors == null) {
-            sensors = new ArrayList<String>();
-            sensors.add(getString(R.string.no_sensors));
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        switch (requestCode) {
+            case MSG_BLUETOOTH_ADDRESS:
+
+                // When DeviceListActivity returns with a device address to connect
+                if (resultCode == Activity.RESULT_OK) {
+                    String bluetoothAddress = data.getExtras().getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
+                    Log.d(TAG, "Bluetooth Address: " + bluetoothAddress);
+
+                    // Check if the bluetooth address has been previously selected
+                    boolean isNewAddress = !bluetoothAddresses.contains(bluetoothAddress);
+
+                    if (isNewAddress) {
+                        addBluetoothAddress(bluetoothAddress);
+                    } else {
+                        Toast.makeText(this, getString(R.string.device_is_already_in_list), Toast.LENGTH_LONG).show();
+                    }
+                }
+                break;
         }
-        return sensors;
     }
 
-    public void setSensors(ArrayList<String> sensors) {
-        this.sensors = sensors;
+    public ArrayList<String> getBluetoothAddresses() {
+        if (bluetoothAddresses == null) {
+            bluetoothAddresses = new ArrayList<String>();
+        }
+        return bluetoothAddresses;
+    }
+
+    public void addBluetoothAddress(String bluetoothAddress) {
+        bluetoothAddresses.add(bluetoothAddress);
+        adapter.notifyDataSetChanged();
+    }
+
+    public void findBluetoothAddress() {
+        if (noDeviceIsStreaming) {
+            Intent intent = new Intent(this, DeviceListActivity.class);
+            startActivityForResult(intent, MSG_BLUETOOTH_ADDRESS);
+        } else {
+            Toast.makeText(this, getString(R.string.ensure_no_device_is_streaming), Toast.LENGTH_LONG).show();
+        }
     }
 }
