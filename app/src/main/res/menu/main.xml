@@ -1,9 +1,20 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="de.bogutzky.datacollector.app.MainActivity" >
-    <item android:id="@+id/action_add_sensor"
-        android:title="@string/action_add_sensor"
+    tools:context="de.bogutzky.datacollector.app.MainActivity">
+    <item
+        android:id="@+id/action_add_sensor"
         android:orderInCategory="100"
+        android:title="@string/action_add_sensor"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_start_logging"
+        android:orderInCategory="100"
+        android:title="@string/action_start"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_stop_logging"
+        android:orderInCategory="100"
+        android:title="@string/action_stop_logging"
         app:showAsAction="never" />
 </menu>
