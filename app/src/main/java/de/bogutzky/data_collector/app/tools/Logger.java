@@ -139,7 +139,7 @@ public class Logger {
             for (int k = 0; k < sensorNames.size(); k++) {
                 Collection<FormatCluster> formatClusterCollection = objectCluster.mPropertyCluster.get(sensorNames.get(k));
                 FormatCluster formatCluster = getCurrentFormatCluster(formatClusterCollection, format, sensorUnits.get(k));
-                Log.d(TAG, "Write " + sensorNames.get(k) + " data in file "+ filename +": " + formatCluster.mData + " " + formatCluster.mUnits);
+                //Log.d(TAG, "Write " + sensorNames.get(k) + " data in file "+ filename +": " + formatCluster.mData + " " + formatCluster.mUnits);
                 writer.write(Double.toString(formatCluster.mData));
                 if (sensorNames.size() - 1 > k) {
                     writer.write(delimiter);
@@ -177,7 +177,9 @@ public class Logger {
     }
 
     public void writeObjectClusters(String format, Boolean logUnits) {
+
         ArrayList<ObjectCluster> currentObjectClusters = new ArrayList<ObjectCluster>(objectClusters);
+        Log.d(TAG, "Write " + currentObjectClusters.size() + " objectCluster");
         objectClusters.clear();
         for (ObjectCluster objectCluster : currentObjectClusters) {
             logData(objectCluster, format, logUnits);
