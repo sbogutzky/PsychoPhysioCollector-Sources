@@ -8,6 +8,26 @@
         android:title="@string/action_add_sensor"
         app:showAsAction="never" />
     <item
+        android:id="@+id/action_connect"
+        android:orderInCategory="100"
+        android:title="@string/action_connect"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_disconnect"
+        android:orderInCategory="100"
+        android:title="@string/action_disconnect"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_start_streaming"
+        android:orderInCategory="100"
+        android:title="@string/action_start_streaming"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_stop_streaming"
+        android:orderInCategory="100"
+        android:title="@string/action_stop_streaming"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/action_start_logging"
         android:orderInCategory="100"
         android:title="@string/action_start"
@@ -16,5 +36,10 @@
         android:id="@+id/action_stop_logging"
         android:orderInCategory="100"
         android:title="@string/action_stop_logging"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_toggle_led"
+        android:orderInCategory="100"
+        android:title="@string/action_toggle_led"
         app:showAsAction="never" />
 </menu>

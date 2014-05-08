@@ -43,5 +43,10 @@
     <string name="high">hoch</string>
     <string name="easy">leicht</string>
     <string name="difficult">schwer</string>
+    <string name="action_connect">Verbinden</string>
+    <string name="action_disconnect">Trennen</string>
+    <string name="action_stop_streaming">Abrufen stoppen</string>
+    <string name="action_start_streaming">Abrufen starten</string>
+    <string name="action_toggle_led">LEDs ein/ausschalten</string>
 
 </resources>
