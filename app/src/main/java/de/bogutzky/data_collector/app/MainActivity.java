@@ -14,6 +14,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Vibrator;
@@ -32,8 +33,13 @@ import com.shimmerresearch.android.Shimmer;
 import com.shimmerresearch.driver.FormatCluster;
 import com.shimmerresearch.driver.ObjectCluster;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -65,8 +71,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private Thread timerThread;
     private boolean timerThreadShouldContinue = false;
     private double timerCycleInMin;
-    private Thread logThread;
-    private boolean logThreadShouldContinue = false;
     private SensorManager sensorManager;
     private android.hardware.Sensor accelerometer;
     private android.hardware.Sensor gyroscope;
@@ -75,66 +79,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private Vibrator vibrator;
     private long[] vibratorPatternFeedback = {0, 500, 200, 100, 100, 100, 100, 100};
     private long[] vibratorPatternConnectionLost = {0, 100, 100, 100, 100, 100, 100, 100};
-    private Handler shimmerHandler = new Handler() {
-        public void handleMessage(Message msg) {
-
-            switch (msg.what) {
-                case Shimmer.MESSAGE_READ:
-                    if (loggingEnabled) {
-                        if (msg.obj instanceof ObjectCluster) {
-                            ObjectCluster objectCluster = (ObjectCluster) msg.obj;
-                            objectCluster.mPropertyCluster.put("System Timestamp", new FormatCluster("CAL", "mSecs", System.currentTimeMillis()));
-                            Logger logger = getLoggers().get(objectCluster.mBluetoothAddress);
-                            logger.addObjectCluster(objectCluster);
-                        }
-                    }
-                    break;
-                case Shimmer.MESSAGE_TOAST:
-                    Log.d(TAG, msg.getData().getString(Shimmer.TOAST));
-                    if ("Device connection was lost".equals(msg.getData().getString(Shimmer.TOAST))) {
-                        vibrator.vibrate(vibratorPatternConnectionLost, -1);
-                    }
-                    break;
-                case Shimmer.MESSAGE_STATE_CHANGE:
-                    String bluetoothAddress = "None";
-                    if ((msg.obj instanceof ObjectCluster)) {
-                        ObjectCluster objectCluster = (ObjectCluster) msg.obj;
-                        bluetoothAddress = objectCluster.mBluetoothAddress;
-                    }
-                    switch (msg.arg1) {
-                        case Shimmer.STATE_CONNECTED:
-                            Log.d(TAG, "Connected: " + bluetoothAddress);
-                            break;
-                        case Shimmer.STATE_CONNECTING:
-                            Log.d(TAG, "Connecting: " + bluetoothAddress);
-                            break;
-                        case Shimmer.STATE_NONE:
-                            Log.d(TAG, "None State: " + bluetoothAddress);
-                            getConnectedShimmers().remove(bluetoothAddress);
-                            break;
-                        case Shimmer.MSG_STATE_FULLY_INITIALIZED:
-                            Log.d(TAG, "Fully initialized: " + bluetoothAddress);
-                            getConnectedShimmers().put(bluetoothAddress, getShimmers().get(bluetoothAddress));
-                            break;
-                        case Shimmer.MSG_STATE_STREAMING:
-                            Log.d(TAG, "Streaming: " + bluetoothAddress);
-                            getStreamingShimmers().put(bluetoothAddress, getConnectedShimmers().get(bluetoothAddress));
-                            break;
-                        case Shimmer.MSG_STATE_STOP_STREAMING:
-                            Log.d(TAG, "Stop streaming: " + bluetoothAddress);
-                            getStreamingShimmers().remove(bluetoothAddress);
-                            break;
-                        case Shimmer.MESSAGE_STOP_STREAMING_COMPLETE:
-                            Log.d(TAG, "Stop streaming complete:" + bluetoothAddress);
-                            break;
-                    }
-                    break;
-                case Shimmer.MESSAGE_PACKET_LOSS_DETECTED:
-                    Log.d(TAG, "Packet loss detected");
-                    break;
-            }
-        }
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -158,8 +102,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
         //startStreamingInternalSensorData();
-
-        startLogThread();
     }
 
     @Override
@@ -220,9 +162,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             stopTimerThread();
         }
 
-        if (logThread != null) {
-            stopLogThread();
-        }
         super.onDestroy();
     }
 
@@ -310,7 +249,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 deviceType = Shimmer.SENSOR_ACCEL; //Shimmer.SENSOR_ECG;
                 sampleRate = ECG_SAMPLE_RATE;
             }
-            shimmer = new Shimmer(this, shimmerHandler, deviceName, sampleRate, 0, 0, deviceType, false);
+            shimmer = new Shimmer(this, new ShimmerHandler(), deviceName, sampleRate, 0, 0, deviceType, false);
             getShimmers().put(bluetoothAddress, shimmer);
         } else {
             Log.d(TAG, "Already added");
@@ -487,36 +426,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         timerThread = null;
     }
 
-    private void startLogThread() {
-        logThreadShouldContinue = true;
-
-        logThread = new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-                while (logThreadShouldContinue) {
-                    try {
-                        Thread.sleep(5000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    for (Logger logger : getLoggers().values()) {
-                        logger.writeObjectClusters("CAL", false);
-                    }
-                }
-            }
-        });
-        logThread.start();
-    }
-
-    private void stopLogThread() {
-        logThreadShouldContinue = false;
-        if (logThread.isAlive()) {
-            logThread.interrupt();
-        }
-        logThread = null;
-    }
-
     private void showLikertScaleDialog() {
         final Dialog dialog = new Dialog(this);
         final long timestamp = System.currentTimeMillis();
@@ -642,5 +551,149 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         public void onStatusChanged(String provider, int status, Bundle extras) {
         }
 
+    }
+
+    class ShimmerHandler extends Handler {
+
+        private static final String TAG = "ShimmerHandler";
+        int i = 0;
+        String outputString  = "";
+
+        @Override
+        public void handleMessage(Message msg) {
+
+            switch (msg.what) {
+                case Shimmer.MESSAGE_READ:
+                    if (msg.obj instanceof ObjectCluster) {
+                        ObjectCluster objectCluster = (ObjectCluster) msg.obj;
+                        outputString = append(outputString, objectCluster);
+                        i++;
+                        if (i > 4999) {
+                            Log.d(TAG, "Write data");
+                            i = 0;
+                            String oString = outputString;
+                            outputString = "";
+                            try {
+                                File root = new File(Environment.getExternalStorageDirectory() + "/" + "DataCollector");
+                                BufferedWriter writer = new BufferedWriter(new FileWriter(new File(root, "test-0815.csv"), true));
+                                writer.write(oString);
+                                writer.flush();
+                                writer.close();
+                            } catch (IOException e) {
+                                Log.e(TAG, "Error while writing in file", e);
+                            }
+                        }
+                    }
+                    break;
+                case Shimmer.MESSAGE_TOAST:
+                    Log.d(TAG, msg.getData().getString(Shimmer.TOAST));
+                    if ("Device connection was lost".equals(msg.getData().getString(Shimmer.TOAST))) {
+                        vibrator.vibrate(vibratorPatternConnectionLost, -1);
+                    }
+                    break;
+                case Shimmer.MESSAGE_STATE_CHANGE:
+                    String bluetoothAddress = "None";
+                    if ((msg.obj instanceof ObjectCluster)) {
+                        ObjectCluster objectCluster = (ObjectCluster) msg.obj;
+                        bluetoothAddress = objectCluster.mBluetoothAddress;
+                    }
+                    switch (msg.arg1) {
+                        case Shimmer.STATE_CONNECTED:
+                            Log.d(TAG, "Connected: " + bluetoothAddress);
+                            break;
+                        case Shimmer.STATE_CONNECTING:
+                            Log.d(TAG, "Connecting: " + bluetoothAddress);
+                            break;
+                        case Shimmer.STATE_NONE:
+                            Log.d(TAG, "None State: " + bluetoothAddress);
+                            getConnectedShimmers().remove(bluetoothAddress);
+                            break;
+                        case Shimmer.MSG_STATE_FULLY_INITIALIZED:
+                            Log.d(TAG, "Fully initialized: " + bluetoothAddress);
+                            getConnectedShimmers().put(bluetoothAddress, getShimmers().get(bluetoothAddress));
+                            break;
+                        case Shimmer.MSG_STATE_STREAMING:
+                            Log.d(TAG, "Streaming: " + bluetoothAddress);
+                            getStreamingShimmers().put(bluetoothAddress, getConnectedShimmers().get(bluetoothAddress));
+                            break;
+                        case Shimmer.MSG_STATE_STOP_STREAMING:
+                            Log.d(TAG, "Stop streaming: " + bluetoothAddress);
+                            getStreamingShimmers().remove(bluetoothAddress);
+                            break;
+                        case Shimmer.MESSAGE_STOP_STREAMING_COMPLETE:
+                            Log.d(TAG, "Stop streaming complete:" + bluetoothAddress);
+                            break;
+                    }
+                    break;
+                case Shimmer.MESSAGE_PACKET_LOSS_DETECTED:
+                    Log.d(TAG, "Packet loss detected");
+                    break;
+            }
+        }
+
+
+        private String append(String string, ObjectCluster objectCluster) {
+            Collection<FormatCluster> clusterCollection;
+            FormatCluster formatCluster;
+
+            clusterCollection = objectCluster.mPropertyCluster.get("TimeStamp");
+            if (!clusterCollection.isEmpty()) {
+                formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
+                string += Double.toString(formatCluster.mData);
+                string += ",";
+            }
+
+            clusterCollection = objectCluster.mPropertyCluster.get("AccelerometerX");
+            if (!clusterCollection.isEmpty()) {
+                formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
+                string += Double.toString(formatCluster.mData);
+                string += ",";
+            }
+
+            clusterCollection = objectCluster.mPropertyCluster.get("AccelerometerY");
+            if (!clusterCollection.isEmpty()) {
+                formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
+                string += Double.toString(formatCluster.mData);
+                string += ",";
+            }
+
+            clusterCollection = objectCluster.mPropertyCluster.get("AccelerometerZ");
+            if (!clusterCollection.isEmpty()) {
+                formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
+                string += Double.toString(formatCluster.mData);
+                string += ",";
+            }
+
+            clusterCollection = objectCluster.mPropertyCluster.get("GyroscopeX");
+            if (!clusterCollection.isEmpty()) {
+                formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
+                string += Double.toString(formatCluster.mData);
+                string += ",";
+            }
+
+            clusterCollection = objectCluster.mPropertyCluster.get("GyroscopeY");
+            if (!clusterCollection.isEmpty()) {
+                formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
+                string += Double.toString(formatCluster.mData);
+                string += ",";
+            }
+
+            clusterCollection = objectCluster.mPropertyCluster.get("GyroscopeZ");
+            if (!clusterCollection.isEmpty()) {
+                formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
+                string += Double.toString(formatCluster.mData);
+                string += ",";
+            }
+
+            clusterCollection = objectCluster.mPropertyCluster.get("SystemTime");
+            if (!clusterCollection.isEmpty()) {
+                formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
+                string += Double.toString(formatCluster.mData);
+                string += ",";
+            }
+
+            string += "\n";
+            return string;
+        }
     }
 }
