@@ -39,6 +39,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -558,6 +559,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         private static final String TAG = "ShimmerHandler";
         int i = 0;
         String outputString  = "";
+        String[][] values = new String[5000][5];
 
         @Override
         public void handleMessage(Message msg) {
@@ -567,17 +569,54 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                     if (msg.obj instanceof ObjectCluster) {
                         ObjectCluster objectCluster = (ObjectCluster) msg.obj;
                         objectCluster.mPropertyCluster.put("System Timestamp", new FormatCluster("CAL", "mSecs", System.currentTimeMillis()));
-                        outputString = append(outputString, objectCluster);
+
+                        Collection<FormatCluster> clusterCollection = objectCluster.mPropertyCluster.get("Timestamp");
+                        if (!clusterCollection.isEmpty()) {
+                            FormatCluster formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
+                            values[i][0] = Double.toString(formatCluster.mData);
+                        }
+
+                        clusterCollection = objectCluster.mPropertyCluster.get("Accelerometer X");
+                        if (!clusterCollection.isEmpty()) {
+                            FormatCluster formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
+                            values[i][1] = Double.toString(formatCluster.mData);
+                        }
+
+                        clusterCollection = objectCluster.mPropertyCluster.get("Accelerometer Y");
+                        if (!clusterCollection.isEmpty()) {
+                            FormatCluster formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
+                            values[i][2] = Double.toString(formatCluster.mData);
+                        }
+
+                        clusterCollection = objectCluster.mPropertyCluster.get("Accelerometer Z");
+                        if (!clusterCollection.isEmpty()) {
+                            FormatCluster formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
+                            values[i][3] = Double.toString(formatCluster.mData);
+                        }
+
+                        clusterCollection = objectCluster.mPropertyCluster.get("System Timestamp");
+                        if (!clusterCollection.isEmpty()) {
+                            FormatCluster formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
+                            values[i][4] = Double.toString(formatCluster.mData);
+                        }
+
                         i++;
                         if (i > 4999) {
                             Log.d(TAG, "Write data");
                             i = 0;
-                            String oString = outputString;
-                            outputString = "";
+                            String[][] copies = new String[5000][5];
+                            System.arraycopy(values, 0, copies, 0, 4999);
+                            values = new String[5000][5];
                             try {
                                 File root = new File(Environment.getExternalStorageDirectory() + "/" + "DataCollector");
                                 BufferedWriter writer = new BufferedWriter(new FileWriter(new File(root, "test-0815.csv"), true));
-                                writer.write(oString);
+
+                                for(int j = 0; j < copies.length; j++) {
+                                    if (copies[j] != null) {
+                                        writer.write(copies[j][0] + "," + copies[j][1]);
+                                        writer.newLine();
+                                    }
+                                }
                                 writer.flush();
                                 writer.close();
                             } catch (IOException e) {
@@ -630,71 +669,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                     Log.d(TAG, "Packet loss detected");
                     break;
             }
-        }
-
-
-        private String append(String string, ObjectCluster objectCluster) {
-            Collection<FormatCluster> clusterCollection;
-            FormatCluster formatCluster;
-
-            clusterCollection = objectCluster.mPropertyCluster.get("Timestamp");
-            if (!clusterCollection.isEmpty()) {
-                formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
-                string += Double.toString(formatCluster.mData);
-                string += ",";
-            }
-
-            clusterCollection = objectCluster.mPropertyCluster.get("Accelerometer X");
-            if (!clusterCollection.isEmpty()) {
-                formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
-                string += Double.toString(formatCluster.mData);
-                string += ",";
-            }
-
-            clusterCollection = objectCluster.mPropertyCluster.get("Accelerometer Y");
-            if (!clusterCollection.isEmpty()) {
-                formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
-                string += Double.toString(formatCluster.mData);
-                string += ",";
-            }
-
-            clusterCollection = objectCluster.mPropertyCluster.get("Accelerometer Z");
-            if (!clusterCollection.isEmpty()) {
-                formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
-                string += Double.toString(formatCluster.mData);
-                string += ",";
-            }
-
-            clusterCollection = objectCluster.mPropertyCluster.get("Gyroscope X");
-            if (!clusterCollection.isEmpty()) {
-                formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
-                string += Double.toString(formatCluster.mData);
-                string += ",";
-            }
-
-            clusterCollection = objectCluster.mPropertyCluster.get("Gyroscope Y");
-            if (!clusterCollection.isEmpty()) {
-                formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
-                string += Double.toString(formatCluster.mData);
-                string += ",";
-            }
-
-            clusterCollection = objectCluster.mPropertyCluster.get("Gyroscope Z");
-            if (!clusterCollection.isEmpty()) {
-                formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
-                string += Double.toString(formatCluster.mData);
-                string += ",";
-            }
-
-            clusterCollection = objectCluster.mPropertyCluster.get("System Timestamp");
-            if (!clusterCollection.isEmpty()) {
-                formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
-                string += Double.toString(formatCluster.mData);
-                string += ",";
-            }
-
-            string += "\n";
-            return string;
         }
     }
 }
