@@ -250,7 +250,13 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 deviceType = Shimmer.SENSOR_ACCEL; //Shimmer.SENSOR_ECG;
                 sampleRate = ECG_SAMPLE_RATE;
             }
-            shimmer = new Shimmer(this, new ShimmerHandler(), deviceName, sampleRate, 0, 0, deviceType, false);
+
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            SimpleDateFormat simpleTimeFormat = new SimpleDateFormat("HH-mm-ss");
+            String dateString = simpleDateFormat.format(new Date());
+            String timeString = simpleTimeFormat.format(new Date());
+            String directoryName = "DataCollector/" + dateString + "_" + timeString;
+            shimmer = new Shimmer(this, new ShimmerHandler("sensor_" + deviceName + ".csv", directoryName), deviceName, sampleRate, 0, 0, deviceType, false);
             getShimmers().put(bluetoothAddress, shimmer);
         } else {
             Log.d(TAG, "Already added");
@@ -557,9 +563,24 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     class ShimmerHandler extends Handler {
 
         private static final String TAG = "ShimmerHandler";
-        int i = 0;
-        String outputString  = "";
-        String[][] values = new String[5000][5];
+        private String filename;
+        private String directoryName;
+        private File root;
+        private int i = 0;
+        private String[][] values = new String[5000][5];
+
+        ShimmerHandler(String filename, String directoryName) {
+            this.filename = filename;
+            this.directoryName = directoryName;
+
+            this.root = new File(Environment.getExternalStorageDirectory() + "/" + "DataCollector" + "/" + directoryName);
+
+            if (!this.root.exists()) {
+                if (this.root.mkdir()) {
+                    Log.d(TAG, "Directory " + "/" + "DataCollector" + "/" + directoryName + " created");
+                }
+            }
+        }
 
         @Override
         public void handleMessage(Message msg) {
@@ -608,12 +629,11 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                             System.arraycopy(values, 0, copies, 0, 4999);
                             values = new String[5000][5];
                             try {
-                                File root = new File(Environment.getExternalStorageDirectory() + "/" + "DataCollector");
-                                BufferedWriter writer = new BufferedWriter(new FileWriter(new File(root, "test-0815.csv"), true));
+                                BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, this.filename), true));
 
                                 for(int j = 0; j < copies.length; j++) {
                                     if (copies[j] != null) {
-                                        writer.write(copies[j][0] + "," + copies[j][1]);
+                                        writer.write(copies[j][0] + "," + copies[j][1] + "," + copies[j][2] + "," + copies[j][3] + "," + copies[j][4]);
                                         writer.newLine();
                                     }
                                 }
