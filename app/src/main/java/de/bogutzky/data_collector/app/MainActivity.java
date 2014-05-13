@@ -566,6 +566,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 case Shimmer.MESSAGE_READ:
                     if (msg.obj instanceof ObjectCluster) {
                         ObjectCluster objectCluster = (ObjectCluster) msg.obj;
+                        objectCluster.mPropertyCluster.put("System Timestamp", new FormatCluster("CAL", "mSecs", System.currentTimeMillis()));
                         outputString = append(outputString, objectCluster);
                         i++;
                         if (i > 4999) {
@@ -636,56 +637,56 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             Collection<FormatCluster> clusterCollection;
             FormatCluster formatCluster;
 
-            clusterCollection = objectCluster.mPropertyCluster.get("TimeStamp");
+            clusterCollection = objectCluster.mPropertyCluster.get("Timestamp");
             if (!clusterCollection.isEmpty()) {
                 formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
                 string += Double.toString(formatCluster.mData);
                 string += ",";
             }
 
-            clusterCollection = objectCluster.mPropertyCluster.get("AccelerometerX");
+            clusterCollection = objectCluster.mPropertyCluster.get("Accelerometer X");
             if (!clusterCollection.isEmpty()) {
                 formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
                 string += Double.toString(formatCluster.mData);
                 string += ",";
             }
 
-            clusterCollection = objectCluster.mPropertyCluster.get("AccelerometerY");
+            clusterCollection = objectCluster.mPropertyCluster.get("Accelerometer Y");
             if (!clusterCollection.isEmpty()) {
                 formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
                 string += Double.toString(formatCluster.mData);
                 string += ",";
             }
 
-            clusterCollection = objectCluster.mPropertyCluster.get("AccelerometerZ");
+            clusterCollection = objectCluster.mPropertyCluster.get("Accelerometer Z");
             if (!clusterCollection.isEmpty()) {
                 formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
                 string += Double.toString(formatCluster.mData);
                 string += ",";
             }
 
-            clusterCollection = objectCluster.mPropertyCluster.get("GyroscopeX");
+            clusterCollection = objectCluster.mPropertyCluster.get("Gyroscope X");
             if (!clusterCollection.isEmpty()) {
                 formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
                 string += Double.toString(formatCluster.mData);
                 string += ",";
             }
 
-            clusterCollection = objectCluster.mPropertyCluster.get("GyroscopeY");
+            clusterCollection = objectCluster.mPropertyCluster.get("Gyroscope Y");
             if (!clusterCollection.isEmpty()) {
                 formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
                 string += Double.toString(formatCluster.mData);
                 string += ",";
             }
 
-            clusterCollection = objectCluster.mPropertyCluster.get("GyroscopeZ");
+            clusterCollection = objectCluster.mPropertyCluster.get("Gyroscope Z");
             if (!clusterCollection.isEmpty()) {
                 formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
                 string += Double.toString(formatCluster.mData);
                 string += ",";
             }
 
-            clusterCollection = objectCluster.mPropertyCluster.get("SystemTime");
+            clusterCollection = objectCluster.mPropertyCluster.get("System Timestamp");
             if (!clusterCollection.isEmpty()) {
                 formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
                 string += Double.toString(formatCluster.mData);
