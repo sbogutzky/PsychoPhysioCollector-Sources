@@ -2,41 +2,49 @@
 <resources>
 
     <string name="app_name">DataCollector</string>
-    <string name="main">Main</string>
-    <string name="title_paired_devices">Paired Devices</string>
-    <string name="enable_sensors_done">Done</string>
-    <string name="configure_device">Configure Shimmer</string>
-    <string name="start_logging">Start Logging</string>
-    <string name="stop_logging">Stop Logging</string>
-    <item name="PARENT_ID" type="id" />
-    <item name="CHILD_ID" type="id" />
-
-    <string name="trifft_nicht_zu">Trifft nicht zu</string>
-    <string name="trifft_zu">Trifft zu</string>
-    <string name="q1">Ich fühle mich optimal beansprucht.</string>
-    <string name="q2">Meine Gedanken bzw. Aktivitäten laufen flüssig und glatt.</string>
-    <string name="q3">Ich merke gar nicht, wie die Zeit vergeht.</string>
-    <string name="q4">Ich habe keine Mühe, mich zu konzentrieren.</string>
-    <string name="q5">Mein Kopf ist völlig klar.</string>
-    <string name="q6">Ich bin ganz vertieft in das, was ich gerade mache.</string>
-    <string name="q7">Die richtigen Gedanken/Bewegungen kommen wie von selbst.</string>
-    <string name="q8">Ich weiß bei jedem Schritt, was ich zu tun habe.</string>
-    <string name="q9">Ich habe das Gefühl, den Ablauf unter Kontrolle zu haben.</string>
-    <string name="q10">Ich bin völlig selbstvergessen.</string>
-    <string name="q11">Es steht etwas für mich Wichtiges auf dem Spiel.</string>
-    <string name="q12">Ich darf jetzt keine Fehler machen.</string>
-    <string name="q13">Ich mache mir Sorgen über einen Misserfolg.</string>
-    <string name="q14">Verglichen mit allen anderen Tätigkeiten, die ich sonst mache, ist die
+    <string name="action_add_sensor">Sensor hinzufügen</string>
+    <string name="ensure_no_device_is_streaming">Bitte gehe sicher, dass kein Gerät gerade Daten überträgt</string>
+    <string name="device_is_already_in_list">Gerät ist schon in der Liste</string>
+    <string name="paired_devices">Gekoppelte Geräte</string>
+    <string name="other_devices">Weitere Geräte</string>
+    <string name="scan">Scan</string>
+    <string name="select_device">Wähle Gerät aus</string>
+    <string name="non_paired">Keine gekoppelt</string>
+    <string name="scanning">Scanning</string>
+    <string name="none_found">Keine gefunden</string>
+    <string name="feedback">Feedback</string>
+    <string name="gps_not_available">GPS ist nicht verfügbar.</string>
+    <string name="not_agree">Trifft nicht zu</string>
+    <string name="agree">Trifft zu</string>
+    <string name="item01">Ich fühle mich optimal beansprucht.</string>
+    <string name="item02">Meine Gedanken bzw. Aktivitäten laufen flüssig und glatt.</string>
+    <string name="item03">Ich merke gar nicht, wie die Zeit vergeht.</string>
+    <string name="item04">Ich habe keine Mühe, mich zu konzentrieren.</string>
+    <string name="item05">Mein Kopf ist völlig klar.</string>
+    <string name="item06">Ich bin ganz vertieft in das, was ich gerade mache.</string>
+    <string name="item07">Die richtigen Gedanken/Bewegungen kommen wie von selbst.</string>
+    <string name="item08">Ich weiß bei jedem Schritt, was ich zu tun habe.</string>
+    <string name="item09">Ich habe das Gefühl, den Ablauf unter Kontrolle zu haben.</string>
+    <string name="item10">Ich bin völlig selbstvergessen.</string>
+    <string name="item11">Es steht etwas für mich Wichtiges auf dem Spiel.</string>
+    <string name="item12">Ich darf jetzt keine Fehler machen.</string>
+    <string name="item13">Ich mache mir Sorgen über einen Misserfolg.</string>
+    <string name="item14">Verglichen mit allen anderen Tätigkeiten, die ich sonst mache, ist die
         jetzige Tätigkeit...
     </string>
-    <string name="q15">Ich denke, meine Fähigkeiten auf diesem Gebiet sind...</string>
-    <string name="q16">Für mich persönlich sind die jetzigen Anforderungen...</string>
-    <string name="zu_niedrig">zu gering</string>
-    <string name="zu_hoch">zu hoch</string>
-    <string name="speichern">Speichern</string>
-    <string name="niedrig">niedrig</string>
-    <string name="hoch">hoch</string>
-    <string name="leicht">leicht</string>
-    <string name="schwer">schwer</string>
-    <string name="feedback">Feedback</string>
+    <string name="item15">Ich denke, meine Fähigkeiten auf diesem Gebiet sind...</string>
+    <string name="item16">Für mich persönlich sind die jetzigen Anforderungen...</string>
+    <string name="too_low">zu gering</string>
+    <string name="too_high">zu hoch</string>
+    <string name="save">Speichern</string>
+    <string name="low">niedrig</string>
+    <string name="high">hoch</string>
+    <string name="easy">leicht</string>
+    <string name="difficult">schwer</string>
+    <string name="action_connect">Verbinden</string>
+    <string name="action_disconnect">Trennen</string>
+    <string name="action_stop_streaming">Abrufen stoppen</string>
+    <string name="action_start_streaming">Abrufen starten</string>
+    <string name="action_toggle_led">LEDs ein/ausschalten</string>
+
 </resources>
