@@ -146,6 +146,27 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         if (id == R.id.action_start_streaming) {
             loggingEnabled = true;
             startAllStreaming();
+
+            try {
+                BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, "scale.csv"), true));
+
+
+                String outputString = "\"System Timestamp 01\",\"System Timestamp 02\",";
+                for (int i = 1; i <= SCALE_ITEM_COUNT; i++) {
+                    if (i != SCALE_ITEM_COUNT) {
+                        outputString += "\"Item " + String.format("%02d", i) + "\",";
+                    } else {
+                        outputString += "\"Item " + String.format("%02d", i);
+                    }
+                }
+                writer.write(outputString);
+                writer.newLine();
+                writer.flush();
+                writer.close();
+            } catch (IOException e) {
+                Log.e(TAG, "Error while writing in file", e);
+            }
+
             startTimerTread();
             startStreamingInternalSensorData();
         }
@@ -432,7 +453,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
     private void saveScaleItems(final Dialog dialog, int items, long timestamp) {
 
-        String outputString = Long.toString(timestamp) + "," + Long.toString(timestamp) + ",";
+        String outputString = Long.toString(timestamp) + "," + Long.toString(System.currentTimeMillis()) + ",";
         for (int i = 1; i <= items; i++) {
             int identifier = getResources().getIdentifier("item" + i, "id", getPackageName());
             if (identifier != 0) {
@@ -462,6 +483,28 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         accelerometerValueCount = 0;
         gyroscopeValues = new String[1000][5];
         gyroscopeValueCount = 0;
+
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, "accelerometer.csv"), true));
+            String outputString = "\"Timestamp\",\"Accelerometer X\",\"Accelerometer Y\",\"Accelerometer Z\",\"System Timestamp\"";
+            writer.write(outputString);
+            writer.newLine();
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            Log.e(TAG, "Error while writing in file", e);
+        }
+
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, "gyroscope.csv"), true));
+            String outputString = "\"Timestamp\",\"Gyroscope X\",\"Gyroscope Y\",\"Gyroscope Z\",\"System Timestamp\"";
+            writer.write(outputString);
+            writer.newLine();
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            Log.e(TAG, "Error while writing in file", e);
+        }
 
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_FASTEST);
         sensorManager.registerListener(this, gyroscope, SensorManager.SENSOR_DELAY_FASTEST);
@@ -496,7 +539,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, "accelerometer.csv"), true));
 
                         for (String[] copy : accelerometerValueCopies) {
-                            if (copy != null) {
+                            if (copy[0] != null) {
                                 writer.write(copy[0] + "," + copy[1] + "," + copy[2] + "," + copy[3] + "," + copy[4]);
                                 writer.newLine();
                             }
@@ -526,7 +569,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, "gyroscope.csv"), true));
 
                         for (String[] copy : gyroscopeValueCopies) {
-                            if (copy != null) {
+                            if (copy[0] != null) {
                                 writer.write(copy[0] + "," + copy[1] + "," + copy[2] + "," + copy[3] + "," + copy[4]);
                                 writer.newLine();
                             }
@@ -583,6 +626,17 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
             this.maxValueCount = maxValueCount;
             this.values = new String[maxValueCount][4];
+
+            try {
+                BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, this.filename), true));
+                String outputString = "\"System Timestamp\",\"Latitude\",\"Longitude\",\"Altitude\"";
+                writer.write(outputString);
+                writer.newLine();
+                writer.flush();
+                writer.close();
+            } catch (IOException e) {
+                Log.e(TAG, "Error while writing in file", e);
+            }
         }
 
         @Override
@@ -604,7 +658,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, this.filename), true));
 
                         for (String[] copy : copies) {
-                            if (copy != null) {
+                            if (copy[0] != null) {
                                 writer.write(copy[0] + "," + copy[1] + "," + copy[2] + "," + copy[3]);
                                 writer.newLine();
                             }
@@ -658,6 +712,24 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             this.maxValueCount = maxValueCount;
             this.fields = fields;
             this.values = new String[maxValueCount][fields.length];
+
+            try {
+                BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, this.filename), true));
+                String outputString = "";
+                for (int k = 0; k < fields.length; k++) {
+                    if (fields.length - 1 != k) {
+                        outputString += "\"" + fields[k] + "\",";
+                    } else {
+                        outputString += "\"" + fields[k] + "\"";
+                    }
+                }
+                writer.write(outputString);
+                writer.newLine();
+                writer.flush();
+                writer.close();
+            } catch (IOException e) {
+                Log.e(TAG, "Error while writing in file", e);
+            }
         }
 
         @Override
@@ -690,10 +762,10 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                                     BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, this.filename), true));
 
                                     for (String[] copy : copies) {
-                                        if (copy != null) {
+                                        if (copy[0] != null) {
                                             String outputString = "";
                                             for (int k = 0; k < fields.length; k++) {
-                                                if (fields.length != k) {
+                                                if (fields.length - 1 != k) {
                                                     outputString += copy[k] + ",";
                                                 } else {
                                                     outputString += copy[k];
