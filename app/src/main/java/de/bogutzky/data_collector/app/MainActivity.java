@@ -50,10 +50,11 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private static final int TIMER_END = 2;
     private static final int SCALE_ITEM_COUNT = 16;
     private static final String ECG_SENSOR_ADDRESS = "00:06:66:46:BD:38";
-    private static final int MOTION_SAMPLE_RATE = 56; // Max. 512 Hz
-    private static final int ECG_SAMPLE_RATE = 512; // Max. ca. 1300 Hz
-    private static final String[] MOTION_FIELDS = {};
-    private static final String[] ECG_FIELDS = {};
+    private static final int MOTION_SAMPLE_RATE = 56;
+    private static final int ECG_SAMPLE_RATE = 512;
+    private static final String[] MOTION_FIELDS = {"Timestamp", "Accelerometer X", "Accelerometer Y", "Accelerometer Z", "Gyroscope X", "Gyroscope Y", "Gyroscope Z", "System Timestamp"};
+    private static final String[] ECG_FIELDS = {"Timestamp", "Accelerometer X", "Accelerometer Y", "Accelerometer Z", "System Timestamp"};
+    //private static final String[] ECG_FIELDS = {"Timestamp", "ECG RA-LL", "ECG LA-LL", "System Timestamp"};
     private HashMap<String, Shimmer> shimmers;
     private HashMap<String, Shimmer> connectedShimmers;
     private HashMap<String, Shimmer> streamingShimmers;
@@ -252,15 +253,17 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private void connectShimmer(String bluetoothAddress, String deviceName) {
         Shimmer shimmer;
         if (!getShimmers().containsKey(bluetoothAddress)) {
-            int deviceType = Shimmer.SENSOR_ACCEL; //| Shimmer.SENSOR_GYRO;
+            int deviceType = Shimmer.SENSOR_ACCEL | Shimmer.SENSOR_GYRO;
             int sampleRate = MOTION_SAMPLE_RATE;
             int maxValue = 250;
+            String[] fields = MOTION_FIELDS;
             if (bluetoothAddress.equals(ECG_SENSOR_ADDRESS)) {
                 deviceType = Shimmer.SENSOR_ACCEL; //Shimmer.SENSOR_ECG;
                 sampleRate = ECG_SAMPLE_RATE;
                 maxValue = 5000;
+                fields = ECG_FIELDS;
             }
-            shimmer = new Shimmer(this, new ShimmerHandler("sensor_" + deviceName + ".csv", this.directoryName, maxValue), deviceName, sampleRate, 0, 0, deviceType, false);
+            shimmer = new Shimmer(this, new ShimmerHandler("sensor_" + deviceName + ".csv", this.directoryName, maxValue, fields), deviceName, sampleRate, 0, 0, deviceType, false);
             getShimmers().put(bluetoothAddress, shimmer);
         } else {
             Log.d(TAG, "Already added");
@@ -639,8 +642,9 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         private int i = 0;
         private int maxValueCount;
         private String[][] values;
+        private String[] fields;
 
-        ShimmerHandler(String filename, String directoryName, int maxValueCount) {
+        ShimmerHandler(String filename, String directoryName, int maxValueCount, String[] fields) {
             this.filename = filename;
             this.directoryName = directoryName;
 
@@ -652,7 +656,8 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             }
 
             this.maxValueCount = maxValueCount;
-            this.values = new String[maxValueCount][5];
+            this.fields = fields;
+            this.values = new String[maxValueCount][fields.length];
         }
 
         @Override
@@ -665,49 +670,36 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                             ObjectCluster objectCluster = (ObjectCluster) msg.obj;
                             objectCluster.mPropertyCluster.put("System Timestamp", new FormatCluster("CAL", "mSecs", System.currentTimeMillis()));
 
-                            Collection<FormatCluster> clusterCollection = objectCluster.mPropertyCluster.get("Timestamp");
-                            if (!clusterCollection.isEmpty()) {
-                                FormatCluster formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
-                                values[i][0] = Double.toString(formatCluster.mData);
-                            }
+                            for (int j = 0; j < fields.length; j++) {
 
-                            clusterCollection = objectCluster.mPropertyCluster.get("Accelerometer X");
-                            if (!clusterCollection.isEmpty()) {
-                                FormatCluster formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
-                                values[i][1] = Double.toString(formatCluster.mData);
-                            }
-
-                            clusterCollection = objectCluster.mPropertyCluster.get("Accelerometer Y");
-                            if (!clusterCollection.isEmpty()) {
-                                FormatCluster formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
-                                values[i][2] = Double.toString(formatCluster.mData);
-                            }
-
-                            clusterCollection = objectCluster.mPropertyCluster.get("Accelerometer Z");
-                            if (!clusterCollection.isEmpty()) {
-                                FormatCluster formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
-                                values[i][3] = Double.toString(formatCluster.mData);
-                            }
-
-                            clusterCollection = objectCluster.mPropertyCluster.get("System Timestamp");
-                            if (!clusterCollection.isEmpty()) {
-                                FormatCluster formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
-                                values[i][4] = Double.toString(formatCluster.mData);
+                                Collection<FormatCluster> clusterCollection = objectCluster.mPropertyCluster.get(fields[j]);
+                                if (!clusterCollection.isEmpty()) {
+                                    FormatCluster formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
+                                    values[i][j] = Double.toString(formatCluster.mData);
+                                }
                             }
 
                             i++;
                             if (i > maxValueCount -1) {
                                 Log.d(TAG, "Write data in " + this.filename);
                                 i = 0;
-                                String[][] copies = new String[maxValueCount][5];
+                                String[][] copies = new String[maxValueCount][fields.length];
                                 System.arraycopy(values, 0, copies, 0, maxValueCount -1);
-                                values = new String[maxValueCount][5];
+                                values = new String[maxValueCount][fields.length];
                                 try {
                                     BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, this.filename), true));
 
                                     for (String[] copy : copies) {
                                         if (copy != null) {
-                                            writer.write(copy[0] + "," + copy[1] + "," + copy[2] + "," + copy[3] + "," + copy[4]);
+                                            String outputString = "";
+                                            for (int k = 0; k < fields.length; k++) {
+                                                if (fields.length != k) {
+                                                    outputString += copy[k] + ",";
+                                                } else {
+                                                    outputString += copy[k];
+                                                }
+                                            }
+                                            writer.write(outputString);
                                             writer.newLine();
                                         }
                                     }
