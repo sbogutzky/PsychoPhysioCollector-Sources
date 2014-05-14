@@ -553,9 +553,9 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             }
             if (event.sensor.getType() == android.hardware.Sensor.TYPE_GYROSCOPE) {
                 gyroscopeValues[gyroscopeValueCount][0] = Long.toString(event.timestamp);
-                gyroscopeValues[gyroscopeValueCount][1] = Double.toString(event.values[0] * 180.0 / Math.PI);
-                gyroscopeValues[gyroscopeValueCount][2] = Double.toString(event.values[1] * 180.0 / Math.PI);
-                gyroscopeValues[gyroscopeValueCount][3] = Double.toString(event.values[2] * 180.0 / Math.PI);
+                gyroscopeValues[gyroscopeValueCount][1] = Float.toString((float) (event.values[0] * 180.0 / Math.PI));
+                gyroscopeValues[gyroscopeValueCount][2] = Float.toString((float) (event.values[1] * 180.0 / Math.PI));
+                gyroscopeValues[gyroscopeValueCount][3] = Float.toString((float) (event.values[2] * 180.0 / Math.PI));
                 gyroscopeValues[gyroscopeValueCount][4] = Long.toString(System.currentTimeMillis());
 
                 gyroscopeValueCount++;
@@ -643,9 +643,9 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         public void onLocationChanged(Location location) {
             if (loggingEnabled) {
                 values[i][0] = Long.toString(location.getTime());
-                values[i][1] = Double.toString(location.getLatitude());
-                values[i][2] = Double.toString(location.getLongitude());
-                values[i][3] = Double.toString(location.getAltitude());
+                values[i][1] = Float.toString((float) location.getLatitude());
+                values[i][2] = Float.toString((float) location.getLongitude());
+                values[i][3] = Float.toString((float) location.getAltitude());
 
                 i++;
                 if (i > maxValueCount -1) {
@@ -747,7 +747,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                                 Collection<FormatCluster> clusterCollection = objectCluster.mPropertyCluster.get(fields[j]);
                                 if (!clusterCollection.isEmpty()) {
                                     FormatCluster formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
-                                    values[i][j] = Double.toString(formatCluster.mData);
+                                    values[i][j] = Float.toString((float) formatCluster.mData);
                                 }
                             }
 
