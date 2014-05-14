@@ -22,7 +22,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.RatingBar;
@@ -39,12 +38,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-
-import de.bogutzky.data_collector.app.tools.Logger;
 
 public class MainActivity extends ListActivity implements SensorEventListener {
 
@@ -58,12 +54,11 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private static final String GYROSCOPE = "Internal Gyroscope";
     private static final String GPS = "GPS";
     private static final String ECG_SENSOR_ADDRESS = "00:06:66:46:BD:38";
-    private static final int MOTION_SAMPLE_RATE = 512; // Max. 512 Hz
+    private static final int MOTION_SAMPLE_RATE = 56; // Max. 512 Hz
     private static final int ECG_SAMPLE_RATE = 512; // Max. ca. 1300 Hz
     private HashMap<String, Shimmer> shimmers;
     private HashMap<String, Shimmer> connectedShimmers;
     private HashMap<String, Shimmer> streamingShimmers;
-    private HashMap<String, Logger> loggers;
     private boolean loggingEnabled = false;
     private ArrayAdapter adapter;
     private ArrayList<String> bluetoothAddresses;
@@ -72,6 +67,8 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private Thread timerThread;
     private boolean timerThreadShouldContinue = false;
     private double timerCycleInMin;
+    private String directoryName;
+    private File root;
     private SensorManager sensorManager;
     private android.hardware.Sensor accelerometer;
     private android.hardware.Sensor gyroscope;
@@ -80,21 +77,20 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private Vibrator vibrator;
     private long[] vibratorPatternFeedback = {0, 500, 200, 100, 100, 100, 100, 100};
     private long[] vibratorPatternConnectionLost = {0, 100, 100, 100, 100, 100, 100, 100};
+    private String[][] accelerometerValues = new String[1000][5];
+    private int accelerometerValueCount = 0;
+    private String[][] gyroscopeValues = new String[1000][5];
+    private int gyroscopeValueCount = 0;
+    private String[][] gpsValues = new String[250][5];
+    private int gpsValueCount = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
 
         adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, getBluetoothAddresses());
         setListAdapter(adapter);
-        getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Log.d(TAG, "Connect to: " + getBluetoothAddresses().get(i));
-                //String btRadioID = getBluetoothAddresses().get(i).replace(":", "").substring(8).toUpperCase();
-                //connectShimmer(getBluetoothAddresses().get(i), btRadioID);
-            }
-        });
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -102,7 +98,12 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
-        //startStreamingInternalSensorData();
+        timerCycleInMin = 1;
+
+        textViewTimer = (TextView)findViewById(R.id.text_view_timer);
+        textViewTimer.setVisibility(View.INVISIBLE);
+
+        startStreamingInternalSensorData();
     }
 
     @Override
@@ -124,28 +125,39 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         }
 
         if (id == R.id.action_connect) {
+            if (this.directoryName == null) {
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                SimpleDateFormat simpleTimeFormat = new SimpleDateFormat("HH-mm-ss");
+                String dateString = simpleDateFormat.format(new Date());
+                String timeString = simpleTimeFormat.format(new Date());
+                this.directoryName = "DataCollector/" + dateString + "_" + timeString;
+
+                this.root = new File(Environment.getExternalStorageDirectory() + "/" + this.directoryName);
+                if (this.root.exists()) {
+                    if (this.root.mkdir()) {
+                        Log.d(TAG, "Directory " + this.directoryName + " created");
+                    }
+                }
+            }
+
             connectedAllShimmers();
         }
 
         if (id == R.id.action_disconnect) {
             disconnectedAllShimmers();
+            this.directoryName = null;
         }
 
         if (id == R.id.action_start_streaming) {
+            loggingEnabled = true;
             startAllStreaming();
+            startTimerTread();
         }
 
         if (id == R.id.action_stop_streaming) {
-            stopAllStreaming();
-        }
-
-        if (id == R.id.action_start_logging) {
-            initializeLoggers();
-            loggingEnabled = true;
-        }
-
-        if (id == R.id.action_stop_logging) {
             loggingEnabled = false;
+            stopAllStreaming();
+            stopTimerThread();
         }
 
         if (id == R.id.action_toggle_led) {
@@ -156,7 +168,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
     @Override
     protected void onDestroy() {
-        //stopStreamingInternalSensorData();
+        stopStreamingInternalSensorData();
         loggingEnabled = false;
 
         if (timerThread != null) {
@@ -250,13 +262,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 deviceType = Shimmer.SENSOR_ACCEL; //Shimmer.SENSOR_ECG;
                 sampleRate = ECG_SAMPLE_RATE;
             }
-
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-            SimpleDateFormat simpleTimeFormat = new SimpleDateFormat("HH-mm-ss");
-            String dateString = simpleDateFormat.format(new Date());
-            String timeString = simpleTimeFormat.format(new Date());
-            String directoryName = "DataCollector/" + dateString + "_" + timeString;
-            shimmer = new Shimmer(this, new ShimmerHandler("sensor_" + deviceName + ".csv", directoryName), deviceName, sampleRate, 0, 0, deviceType, false);
+            shimmer = new Shimmer(this, new ShimmerHandler("sensor_" + deviceName + ".csv", this.directoryName), deviceName, sampleRate, 0, 0, deviceType, false);
             getShimmers().put(bluetoothAddress, shimmer);
         } else {
             Log.d(TAG, "Already added");
@@ -331,38 +337,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
     private boolean shimmersAreStreaming() {
         return !getStreamingShimmers().isEmpty();
-    }
-
-
-
-    private HashMap<String, Logger> getLoggers() {
-        if (loggers == null) {
-            loggers = new HashMap<String, Logger>(8);
-        }
-        return loggers;
-    }
-
-    private void initializeLoggers() {
-        getLoggers().clear();
-
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        SimpleDateFormat simpleTimeFormat = new SimpleDateFormat("HH-mm-ss");
-        String dateString = simpleDateFormat.format(new Date());
-        String timeString = simpleTimeFormat.format(new Date());
-        String directoryName = "DataCollector/" + dateString + "_" + timeString;
-        for (String bluetoothAddress : getStreamingShimmers().keySet()) {
-            String btRadioID = bluetoothAddress.replace(":", "").substring(8).toUpperCase();
-            Logger logger = new Logger("sensor_" + btRadioID, ",", directoryName);
-            getLoggers().put(bluetoothAddress, logger);
-        }
-        Logger scaleLogger = new Logger("scale", ",", directoryName);
-        getLoggers().put(SCALE, scaleLogger);
-        Logger accelerometerLogger = new Logger("accelerometer", ",", directoryName);
-        getLoggers().put(ACCELEROMETER, accelerometerLogger);
-        Logger gyroscopeLogger = new Logger("gyroscope", ",", directoryName);
-        getLoggers().put(GYROSCOPE, gyroscopeLogger);
-        Logger gpsLogger = new Logger("gps", ",", directoryName);
-        getLoggers().put(GPS, gpsLogger);
     }
 
     private void startTimerTread() {
@@ -457,18 +431,28 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
     private void saveScaleItems(final Dialog dialog, String scale, int items, long timestamp) {
 
-        ObjectCluster objectCluster = new ObjectCluster(scale, scale);
-        objectCluster.mPropertyCluster.put("System Timestamp 01", new FormatCluster("CAL", "mSecs", timestamp));
-        objectCluster.mPropertyCluster.put("System Timestamp 02", new FormatCluster("CAL", "mSecs", System.currentTimeMillis()));
+        String outputString = Long.toString(timestamp) + "," + Long.toString(timestamp) + ",";
         for (int i = 1; i <= items; i++) {
             int identifier = getResources().getIdentifier("item" + i, "id", getPackageName());
             if (identifier != 0) {
                 RatingBar ratingBar = (RatingBar) dialog.findViewById(identifier);
-                objectCluster.mPropertyCluster.put("Item " + String.format("%02d", i), new FormatCluster("CAL", "n. u.", (int) ratingBar.getRating()));
+                if(i != items) {
+                    outputString += Float.toString(ratingBar.getRating()) + ",";
+                } else {
+                    outputString += Float.toString(ratingBar.getRating());
+                }
             }
         }
-        Logger logger = loggers.get(scale);
-        logger.addObjectCluster(objectCluster);
+
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(root, "scale.csv"), true));
+            writer.write(outputString);
+            writer.newLine();
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            Log.e(TAG, "Error while writing in file", e);
+        }
     }
 
     private void startStreamingInternalSensorData() {
@@ -489,25 +473,45 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     public void onSensorChanged(SensorEvent event) {
         if (loggingEnabled) {
             if (event.sensor.getType() == android.hardware.Sensor.TYPE_ACCELEROMETER) {
-                ObjectCluster objectCluster = new ObjectCluster(ACCELEROMETER, ACCELEROMETER);
-                objectCluster.mPropertyCluster.put("Timestamp", new FormatCluster("CAL", "nSecs", event.timestamp));
-                objectCluster.mPropertyCluster.put("Accelerometer X", new FormatCluster("CAL", "m/s^2", event.values[0]));
-                objectCluster.mPropertyCluster.put("Accelerometer Y", new FormatCluster("CAL", "m/s^2", event.values[1]));
-                objectCluster.mPropertyCluster.put("Accelerometer Z", new FormatCluster("CAL", "m/s^2", event.values[2]));
-                objectCluster.mPropertyCluster.put("System Timestamp", new FormatCluster("CAL", "mSecs", System.currentTimeMillis()));
-                Logger logger = loggers.get(ACCELEROMETER);
-                logger.addObjectCluster(objectCluster);
+                accelerometerValues[accelerometerValueCount][0] = Long.toString(event.timestamp);
+                accelerometerValues[accelerometerValueCount][1] = Float.toString(event.values[0]);
+                accelerometerValues[accelerometerValueCount][2] = Float.toString(event.values[1]);
+                accelerometerValues[accelerometerValueCount][3] = Float.toString(event.values[2]);
+                accelerometerValues[accelerometerValueCount][4] = Long.toString(System.currentTimeMillis());
+
+                accelerometerValueCount++;
+                if (accelerometerValueCount > 1000) {
+                    Log.d(TAG, "Write accelerometer data");
+                    accelerometerValueCount = 0;
+                    String[][] accelerometerValueCopies = new String[1000][5];
+                    System.arraycopy(accelerometerValues, 0, accelerometerValueCopies, 0, 999);
+                    accelerometerValues = new String[1000][5];
+                    try {
+                        BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, "accelerometer.csv"), true));
+
+                        for (String[] copy : accelerometerValueCopies) {
+                            if (copy != null) {
+                                writer.write(copy[0] + "," + copy[1] + "," + copy[2] + "," + copy[3] + "," + copy[4]);
+                                writer.newLine();
+                            }
+                        }
+                        writer.flush();
+                        writer.close();
+                    } catch (IOException e) {
+                        Log.e(TAG, "Error while writing in file", e);
+                    }
+                }
             }
-            if (event.sensor.getType() == android.hardware.Sensor.TYPE_GYROSCOPE) {
-                ObjectCluster objectCluster = new ObjectCluster(GYROSCOPE, GYROSCOPE);
-                objectCluster.mPropertyCluster.put("Timestamp", new FormatCluster("CAL", "nSecs", event.timestamp));
-                objectCluster.mPropertyCluster.put("Gyroscope X", new FormatCluster("CAL", "deg/s", event.values[0] * 180 / Math.PI));
-                objectCluster.mPropertyCluster.put("Gyroscope Y", new FormatCluster("CAL", "deg/s", event.values[1] * 180 / Math.PI));
-                objectCluster.mPropertyCluster.put("Gyroscope Z", new FormatCluster("CAL", "deg/s", event.values[2] * 180 / Math.PI));
-                objectCluster.mPropertyCluster.put("System Timestamp", new FormatCluster("CAL", "mSecs", System.currentTimeMillis()));
-                Logger logger = loggers.get(GYROSCOPE);
-                logger.addObjectCluster(objectCluster);
-            }
+//            if (event.sensor.getType() == android.hardware.Sensor.TYPE_GYROSCOPE) {
+//                ObjectCluster objectCluster = new ObjectCluster(GYROSCOPE, GYROSCOPE);
+//                objectCluster.mPropertyCluster.put("Timestamp", new FormatCluster("CAL", "nSecs", event.timestamp));
+//                objectCluster.mPropertyCluster.put("Gyroscope X", new FormatCluster("CAL", "deg/s", event.values[0] * 180 / Math.PI));
+//                objectCluster.mPropertyCluster.put("Gyroscope Y", new FormatCluster("CAL", "deg/s", event.values[1] * 180 / Math.PI));
+//                objectCluster.mPropertyCluster.put("Gyroscope Z", new FormatCluster("CAL", "deg/s", event.values[2] * 180 / Math.PI));
+//                objectCluster.mPropertyCluster.put("System Timestamp", new FormatCluster("CAL", "mSecs", System.currentTimeMillis()));
+//                //Logger logger = loggers.get(GYROSCOPE);
+//                //logger.addObjectCluster(objectCluster);
+//            }
         }
     }
 
@@ -540,8 +544,8 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 objectCluster.mPropertyCluster.put("Latitude", new FormatCluster("CAL", "mSecs", location.getLatitude()));
                 objectCluster.mPropertyCluster.put("Longitude", new FormatCluster("CAL", "mSecs", location.getLongitude()));
                 objectCluster.mPropertyCluster.put("Altitude", new FormatCluster("CAL", "mSecs", location.getAltitude()));
-                Logger logger = loggers.get(GPS);
-                logger.addObjectCluster(objectCluster);
+                //Logger logger = loggers.get(GPS);
+                //logger.addObjectCluster(objectCluster);
             }
         }
 
@@ -573,11 +577,11 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             this.filename = filename;
             this.directoryName = directoryName;
 
-            this.root = new File(Environment.getExternalStorageDirectory() + "/" + "DataCollector" + "/" + directoryName);
+            this.root = new File(Environment.getExternalStorageDirectory() + "/" + this.directoryName);
 
             if (!this.root.exists()) {
                 if (this.root.mkdir()) {
-                    Log.d(TAG, "Directory " + "/" + "DataCollector" + "/" + directoryName + " created");
+                    Log.d(TAG, "Directory " + this.directoryName + " created");
                 }
             }
         }
@@ -587,63 +591,65 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
             switch (msg.what) {
                 case Shimmer.MESSAGE_READ:
-                    if (msg.obj instanceof ObjectCluster) {
-                        ObjectCluster objectCluster = (ObjectCluster) msg.obj;
-                        objectCluster.mPropertyCluster.put("System Timestamp", new FormatCluster("CAL", "mSecs", System.currentTimeMillis()));
 
-                        Collection<FormatCluster> clusterCollection = objectCluster.mPropertyCluster.get("Timestamp");
-                        if (!clusterCollection.isEmpty()) {
-                            FormatCluster formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
-                            values[i][0] = Double.toString(formatCluster.mData);
-                        }
+                        if (msg.obj instanceof ObjectCluster) {
+                            ObjectCluster objectCluster = (ObjectCluster) msg.obj;
+                            objectCluster.mPropertyCluster.put("System Timestamp", new FormatCluster("CAL", "mSecs", System.currentTimeMillis()));
 
-                        clusterCollection = objectCluster.mPropertyCluster.get("Accelerometer X");
-                        if (!clusterCollection.isEmpty()) {
-                            FormatCluster formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
-                            values[i][1] = Double.toString(formatCluster.mData);
-                        }
+                            Collection<FormatCluster> clusterCollection = objectCluster.mPropertyCluster.get("Timestamp");
+                            if (!clusterCollection.isEmpty()) {
+                                FormatCluster formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
+                                values[i][0] = Double.toString(formatCluster.mData);
+                            }
 
-                        clusterCollection = objectCluster.mPropertyCluster.get("Accelerometer Y");
-                        if (!clusterCollection.isEmpty()) {
-                            FormatCluster formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
-                            values[i][2] = Double.toString(formatCluster.mData);
-                        }
+                            clusterCollection = objectCluster.mPropertyCluster.get("Accelerometer X");
+                            if (!clusterCollection.isEmpty()) {
+                                FormatCluster formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
+                                values[i][1] = Double.toString(formatCluster.mData);
+                            }
 
-                        clusterCollection = objectCluster.mPropertyCluster.get("Accelerometer Z");
-                        if (!clusterCollection.isEmpty()) {
-                            FormatCluster formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
-                            values[i][3] = Double.toString(formatCluster.mData);
-                        }
+                            clusterCollection = objectCluster.mPropertyCluster.get("Accelerometer Y");
+                            if (!clusterCollection.isEmpty()) {
+                                FormatCluster formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
+                                values[i][2] = Double.toString(formatCluster.mData);
+                            }
 
-                        clusterCollection = objectCluster.mPropertyCluster.get("System Timestamp");
-                        if (!clusterCollection.isEmpty()) {
-                            FormatCluster formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
-                            values[i][4] = Double.toString(formatCluster.mData);
-                        }
+                            clusterCollection = objectCluster.mPropertyCluster.get("Accelerometer Z");
+                            if (!clusterCollection.isEmpty()) {
+                                FormatCluster formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
+                                values[i][3] = Double.toString(formatCluster.mData);
+                            }
 
-                        i++;
-                        if (i > 4999) {
-                            Log.d(TAG, "Write data");
-                            i = 0;
-                            String[][] copies = new String[5000][5];
-                            System.arraycopy(values, 0, copies, 0, 4999);
-                            values = new String[5000][5];
-                            try {
-                                BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, this.filename), true));
+                            clusterCollection = objectCluster.mPropertyCluster.get("System Timestamp");
+                            if (!clusterCollection.isEmpty()) {
+                                FormatCluster formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
+                                values[i][4] = Double.toString(formatCluster.mData);
+                            }
 
-                                for(int j = 0; j < copies.length; j++) {
-                                    if (copies[j] != null) {
-                                        writer.write(copies[j][0] + "," + copies[j][1] + "," + copies[j][2] + "," + copies[j][3] + "," + copies[j][4]);
-                                        writer.newLine();
+                            i++;
+                            if (i > 4999) {
+                                Log.d(TAG, "Write data");
+                                i = 0;
+                                String[][] copies = new String[5000][5];
+                                System.arraycopy(values, 0, copies, 0, 4999);
+                                values = new String[5000][5];
+                                try {
+                                    BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, this.filename), true));
+
+                                    for (String[] copy : copies) {
+                                        if (copy != null) {
+                                            writer.write(copy[0] + "," + copy[1] + "," + copy[2] + "," + copy[3] + "," + copy[4]);
+                                            writer.newLine();
+                                        }
                                     }
+                                    writer.flush();
+                                    writer.close();
+                                } catch (IOException e) {
+                                    Log.e(TAG, "Error while writing in file", e);
                                 }
-                                writer.flush();
-                                writer.close();
-                            } catch (IOException e) {
-                                Log.e(TAG, "Error while writing in file", e);
                             }
                         }
-                    }
+
                     break;
                 case Shimmer.MESSAGE_TOAST:
                     Log.d(TAG, msg.getData().getString(Shimmer.TOAST));

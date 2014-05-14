@@ -12,8 +12,6 @@
     <string name="non_paired">Keine gekoppelt</string>
     <string name="scanning">Scanning</string>
     <string name="none_found">Keine gefunden</string>
-    <string name="action_start">Logging starten</string>
-    <string name="action_stop_logging">Logging stoppen</string>
     <string name="feedback">Feedback</string>
     <string name="gps_not_available">GPS ist nicht verfügbar.</string>
     <string name="not_agree">Trifft nicht zu</string>
