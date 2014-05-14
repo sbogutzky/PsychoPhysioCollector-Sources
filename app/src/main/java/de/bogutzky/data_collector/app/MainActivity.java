@@ -258,11 +258,13 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         if (!getShimmers().containsKey(bluetoothAddress)) {
             int deviceType = Shimmer.SENSOR_ACCEL; //| Shimmer.SENSOR_GYRO;
             int sampleRate = MOTION_SAMPLE_RATE;
+            int maxValue = 250;
             if (bluetoothAddress.equals(ECG_SENSOR_ADDRESS)) {
                 deviceType = Shimmer.SENSOR_ACCEL; //Shimmer.SENSOR_ECG;
                 sampleRate = ECG_SAMPLE_RATE;
+                maxValue = 5000;
             }
-            shimmer = new Shimmer(this, new ShimmerHandler("sensor_" + deviceName + ".csv", this.directoryName), deviceName, sampleRate, 0, 0, deviceType, false);
+            shimmer = new Shimmer(this, new ShimmerHandler("sensor_" + deviceName + ".csv", this.directoryName, maxValue), deviceName, sampleRate, 0, 0, deviceType, false);
             getShimmers().put(bluetoothAddress, shimmer);
         } else {
             Log.d(TAG, "Already added");
@@ -402,7 +404,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         timerThreadShouldContinue = false;
         if (timerThread.isAlive()) {
             textViewTimer.setVisibility(View.INVISIBLE);
-            timerThread.interrupt();
+            //timerThread.interrupt();
         }
         timerThread = null;
     }
@@ -480,7 +482,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 accelerometerValues[accelerometerValueCount][4] = Long.toString(System.currentTimeMillis());
 
                 accelerometerValueCount++;
-                if (accelerometerValueCount > 1000) {
+                if (accelerometerValueCount > 999) {
                     Log.d(TAG, "Write accelerometer data");
                     accelerometerValueCount = 0;
                     String[][] accelerometerValueCopies = new String[1000][5];
@@ -571,19 +573,22 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         private String directoryName;
         private File root;
         private int i = 0;
-        private String[][] values = new String[5000][5];
+        private int maxValueCount;
+        private String[][] values;
 
-        ShimmerHandler(String filename, String directoryName) {
+        ShimmerHandler(String filename, String directoryName, int maxValueCount) {
             this.filename = filename;
             this.directoryName = directoryName;
 
             this.root = new File(Environment.getExternalStorageDirectory() + "/" + this.directoryName);
-
             if (!this.root.exists()) {
                 if (this.root.mkdir()) {
                     Log.d(TAG, "Directory " + this.directoryName + " created");
                 }
             }
+
+            this.maxValueCount = maxValueCount;
+            this.values = new String[maxValueCount][5];
         }
 
         @Override
@@ -627,12 +632,12 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                             }
 
                             i++;
-                            if (i > 4999) {
+                            if (i > maxValueCount -1) {
                                 Log.d(TAG, "Write data");
                                 i = 0;
-                                String[][] copies = new String[5000][5];
-                                System.arraycopy(values, 0, copies, 0, 4999);
-                                values = new String[5000][5];
+                                String[][] copies = new String[maxValueCount][5];
+                                System.arraycopy(values, 0, copies, 0, maxValueCount -1);
+                                values = new String[maxValueCount][5];
                                 try {
                                     BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, this.filename), true));
 
