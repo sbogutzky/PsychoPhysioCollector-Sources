@@ -48,14 +48,12 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private static final int MSG_BLUETOOTH_ADDRESS = 1;
     private static final int TIMER_UPDATE = 1;
     private static final int TIMER_END = 2;
-    private static final String SCALE = "Flow Short Scale";
     private static final int SCALE_ITEM_COUNT = 16;
-    private static final String ACCELEROMETER = "Internal Accelerometer";
-    private static final String GYROSCOPE = "Internal Gyroscope";
-    private static final String GPS = "GPS";
     private static final String ECG_SENSOR_ADDRESS = "00:06:66:46:BD:38";
     private static final int MOTION_SAMPLE_RATE = 56; // Max. 512 Hz
     private static final int ECG_SAMPLE_RATE = 512; // Max. ca. 1300 Hz
+    private static final String[] MOTION_FIELDS = {};
+    private static final String[] ECG_FIELDS = {};
     private HashMap<String, Shimmer> shimmers;
     private HashMap<String, Shimmer> connectedShimmers;
     private HashMap<String, Shimmer> streamingShimmers;
@@ -77,12 +75,10 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private Vibrator vibrator;
     private long[] vibratorPatternFeedback = {0, 500, 200, 100, 100, 100, 100, 100};
     private long[] vibratorPatternConnectionLost = {0, 100, 100, 100, 100, 100, 100, 100};
-    private String[][] accelerometerValues = new String[1000][5];
-    private int accelerometerValueCount = 0;
-    private String[][] gyroscopeValues = new String[1000][5];
-    private int gyroscopeValueCount = 0;
-    private String[][] gpsValues = new String[250][5];
-    private int gpsValueCount = 0;
+    private String[][] accelerometerValues;
+    private int accelerometerValueCount;
+    private String[][] gyroscopeValues;
+    private int gyroscopeValueCount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,8 +98,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
         textViewTimer = (TextView)findViewById(R.id.text_view_timer);
         textViewTimer.setVisibility(View.INVISIBLE);
-
-        startStreamingInternalSensorData();
     }
 
     @Override
@@ -152,12 +146,14 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             loggingEnabled = true;
             startAllStreaming();
             startTimerTread();
+            startStreamingInternalSensorData();
         }
 
         if (id == R.id.action_stop_streaming) {
             loggingEnabled = false;
             stopAllStreaming();
             stopTimerThread();
+            stopStreamingInternalSensorData();
         }
 
         if (id == R.id.action_toggle_led) {
@@ -421,7 +417,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
             @Override
             public void onClick(View view) {
-                saveScaleItems(dialog, SCALE, SCALE_ITEM_COUNT, timestamp);
+                saveScaleItems(dialog, SCALE_ITEM_COUNT, timestamp);
                 dialog.dismiss();
                 if (loggingEnabled) {
                     startTimerTread();
@@ -431,7 +427,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         dialog.show();
     }
 
-    private void saveScaleItems(final Dialog dialog, String scale, int items, long timestamp) {
+    private void saveScaleItems(final Dialog dialog, int items, long timestamp) {
 
         String outputString = Long.toString(timestamp) + "," + Long.toString(timestamp) + ",";
         for (int i = 1; i <= items; i++) {
@@ -459,10 +455,15 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
     private void startStreamingInternalSensorData() {
 
+        accelerometerValues = new String[1000][5];
+        accelerometerValueCount = 0;
+        gyroscopeValues = new String[1000][5];
+        gyroscopeValueCount = 0;
+
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_FASTEST);
         sensorManager.registerListener(this, gyroscope, SensorManager.SENSOR_DELAY_FASTEST);
 
-        locationListener = new GPSListener();
+        locationListener = new GPSListener("gps.csv", this.directoryName, 100);
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
     }
 
@@ -504,16 +505,36 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                     }
                 }
             }
-//            if (event.sensor.getType() == android.hardware.Sensor.TYPE_GYROSCOPE) {
-//                ObjectCluster objectCluster = new ObjectCluster(GYROSCOPE, GYROSCOPE);
-//                objectCluster.mPropertyCluster.put("Timestamp", new FormatCluster("CAL", "nSecs", event.timestamp));
-//                objectCluster.mPropertyCluster.put("Gyroscope X", new FormatCluster("CAL", "deg/s", event.values[0] * 180 / Math.PI));
-//                objectCluster.mPropertyCluster.put("Gyroscope Y", new FormatCluster("CAL", "deg/s", event.values[1] * 180 / Math.PI));
-//                objectCluster.mPropertyCluster.put("Gyroscope Z", new FormatCluster("CAL", "deg/s", event.values[2] * 180 / Math.PI));
-//                objectCluster.mPropertyCluster.put("System Timestamp", new FormatCluster("CAL", "mSecs", System.currentTimeMillis()));
-//                //Logger logger = loggers.get(GYROSCOPE);
-//                //logger.addObjectCluster(objectCluster);
-//            }
+            if (event.sensor.getType() == android.hardware.Sensor.TYPE_GYROSCOPE) {
+                gyroscopeValues[gyroscopeValueCount][0] = Long.toString(event.timestamp);
+                gyroscopeValues[gyroscopeValueCount][1] = Double.toString(event.values[0] * 180.0 / Math.PI);
+                gyroscopeValues[gyroscopeValueCount][2] = Double.toString(event.values[1] * 180.0 / Math.PI);
+                gyroscopeValues[gyroscopeValueCount][3] = Double.toString(event.values[2] * 180.0 / Math.PI);
+                gyroscopeValues[gyroscopeValueCount][4] = Long.toString(System.currentTimeMillis());
+
+                gyroscopeValueCount++;
+                if (gyroscopeValueCount > 999) {
+                    Log.d(TAG, "Write gyroscope data");
+                    gyroscopeValueCount = 0;
+                    String[][] gyroscopeValueCopies = new String[1000][5];
+                    System.arraycopy(gyroscopeValues, 0, gyroscopeValueCopies, 0, 999);
+                    gyroscopeValues = new String[1000][5];
+                    try {
+                        BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, "gyroscope.csv"), true));
+
+                        for (String[] copy : gyroscopeValueCopies) {
+                            if (copy != null) {
+                                writer.write(copy[0] + "," + copy[1] + "," + copy[2] + "," + copy[3] + "," + copy[4]);
+                                writer.newLine();
+                            }
+                        }
+                        writer.flush();
+                        writer.close();
+                    } catch (IOException e) {
+                        Log.e(TAG, "Error while writing in file", e);
+                    }
+                }
+            }
         }
     }
 
@@ -538,16 +559,59 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     }
 
     public class GPSListener implements LocationListener {
+        private static final String TAG = "GPSListener";
+        private String filename;
+        private String directoryName;
+        private File root;
+        private int i = 0;
+        private int maxValueCount;
+        private String[][] values;
+
+        public GPSListener(String filename, String directoryName, int maxValueCount) {
+            this.filename = filename;
+            this.directoryName = directoryName;
+
+            this.root = new File(Environment.getExternalStorageDirectory() + "/" + this.directoryName);
+            if (!this.root.exists()) {
+                if (this.root.mkdir()) {
+                    Log.d(TAG, "Directory " + this.directoryName + " created");
+                }
+            }
+
+            this.maxValueCount = maxValueCount;
+            this.values = new String[maxValueCount][4];
+        }
+
         @Override
         public void onLocationChanged(Location location) {
             if (loggingEnabled) {
-                ObjectCluster objectCluster = new ObjectCluster(GPS, GPS);
-                objectCluster.mPropertyCluster.put("System Timestamp", new FormatCluster("CAL", "mSecs", location.getTime()));
-                objectCluster.mPropertyCluster.put("Latitude", new FormatCluster("CAL", "mSecs", location.getLatitude()));
-                objectCluster.mPropertyCluster.put("Longitude", new FormatCluster("CAL", "mSecs", location.getLongitude()));
-                objectCluster.mPropertyCluster.put("Altitude", new FormatCluster("CAL", "mSecs", location.getAltitude()));
-                //Logger logger = loggers.get(GPS);
-                //logger.addObjectCluster(objectCluster);
+                values[i][0] = Long.toString(location.getTime());
+                values[i][1] = Double.toString(location.getLatitude());
+                values[i][2] = Double.toString(location.getLongitude());
+                values[i][3] = Double.toString(location.getAltitude());
+
+                i++;
+                if (i > maxValueCount -1) {
+                    Log.d(TAG, "Write data in " + this.filename);
+                    i = 0;
+                    String[][] copies = new String[maxValueCount][5];
+                    System.arraycopy(values, 0, copies, 0, maxValueCount -1);
+                    values = new String[maxValueCount][5];
+                    try {
+                        BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, this.filename), true));
+
+                        for (String[] copy : copies) {
+                            if (copy != null) {
+                                writer.write(copy[0] + "," + copy[1] + "," + copy[2] + "," + copy[3]);
+                                writer.newLine();
+                            }
+                        }
+                        writer.flush();
+                        writer.close();
+                    } catch (IOException e) {
+                        Log.e(TAG, "Error while writing in file", e);
+                    }
+                }
             }
         }
 
@@ -633,7 +697,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
                             i++;
                             if (i > maxValueCount -1) {
-                                Log.d(TAG, "Write data");
+                                Log.d(TAG, "Write data in " + this.filename);
                                 i = 0;
                                 String[][] copies = new String[maxValueCount][5];
                                 System.arraycopy(values, 0, copies, 0, maxValueCount -1);
