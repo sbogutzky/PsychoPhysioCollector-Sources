@@ -156,7 +156,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                     if (i != SCALE_ITEM_COUNT) {
                         outputString += "\"Item " + String.format("%02d", i) + "\",";
                     } else {
-                        outputString += "\"Item " + String.format("%02d", i);
+                        outputString += "\"Item " + String.format("%02d", i)+ "\"";
                     }
                 }
                 writer.write(outputString);
