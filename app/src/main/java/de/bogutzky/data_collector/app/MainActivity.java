@@ -185,7 +185,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
     @Override
     protected void onDestroy() {
-        stopStreamingInternalSensorData();
         loggingEnabled = false;
 
         if (timerThread != null) {
