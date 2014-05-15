@@ -1,16 +1,16 @@
 directory.name <- "2014-05-15_09-19-38"
 
-sensor_BC98 <- read.csv(paste("../data/", directory.name, "/sensor_BC98.csv", sep =""))
-summary(sensor_BC98)
-plot(sensor_BC98$Timestamp)
-nrow(sensor_BC98) / ((sensor_BC98$Timestamp[nrow(sensor_BC98)] - sensor_BC98$Timestamp[1]) / 10^3)
-as.POSIXct(sensor_BC98$System.Timestamp[nrow(sensor_BC98)] / 1000, tz = "Europe/Berlin", origin = "1970-01-01")
+sensor.bc98 <- read.csv(paste("../data/", directory.name, "/sensor_BC98.csv", sep =""))
+summary(sensor.bc98)
+plot(sensor.bc98$Timestamp)
+nrow(sensor.bc98) / ((sensor.bc98$Timestamp[nrow(sensor.bc98)] - sensor.bc98$Timestamp[1]) / 10^3)
+as.POSIXct(sensor.bc98$System.Timestamp[nrow(sensor.bc98)] / 1000, tz = "Europe/Berlin", origin = "1970-01-01")
 
-sensor_BD38 <- read.csv(paste("../data/", directory.name, "/sensor_BD38.csv", sep =""))
-summary(sensor_BD38)
-plot(sensor_BD38$Timestamp)
-nrow(sensor_BD38) / ((sensor_BD38$Timestamp[nrow(sensor_BD38)] - sensor_BD38$Timestamp[1]) / 10^3)
-as.POSIXct(sensor_BD38$System.Timestamp[nrow(sensor_BD38)] / 1000, tz = "Europe/Berlin", origin = "1970-01-01")
+sensor.bd38 <- read.csv(paste("../data/", directory.name, "/sensor_BD38.csv", sep =""))
+summary(sensor.bd38)
+plot(sensor.bd38$Timestamp)
+nrow(sensor.bd38) / ((sensor.bd38$Timestamp[nrow(sensor.bd38)] - sensor.bd38$Timestamp[1]) / 10^3)
+as.POSIXct(sensor.bd38$System.Timestamp[nrow(sensor.bd38)] / 1000, tz = "Europe/Berlin", origin = "1970-01-01")
 
 accelerometer <- read.csv(paste("../data/", directory.name, "/accelerometer.csv", sep =""))
 summary(accelerometer)
