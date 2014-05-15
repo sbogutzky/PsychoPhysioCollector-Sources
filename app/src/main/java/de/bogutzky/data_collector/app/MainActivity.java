@@ -51,10 +51,9 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private static final int SCALE_ITEM_COUNT = 16;
     private static final String ECG_SENSOR_ADDRESS = "00:06:66:46:BD:38";
     private static final int MOTION_SAMPLE_RATE = 56;
-    private static final int ECG_SAMPLE_RATE = 512;
+    private static final int ECG_SAMPLE_RATE = 1024;
     private static final String[] MOTION_FIELDS = {"Timestamp", "Accelerometer X", "Accelerometer Y", "Accelerometer Z", "Gyroscope X", "Gyroscope Y", "Gyroscope Z", "System Timestamp"};
-    private static final String[] ECG_FIELDS = {"Timestamp", "Accelerometer X", "Accelerometer Y", "Accelerometer Z", "System Timestamp"};
-    //private static final String[] ECG_FIELDS = {"Timestamp", "ECG RA-LL", "ECG LA-LL", "System Timestamp"};
+    private static final String[] ECG_FIELDS = {"Timestamp", "ECG RA-LL", "ECG LA-LL", "System Timestamp"};
     private HashMap<String, Shimmer> shimmers;
     private HashMap<String, Shimmer> connectedShimmers;
     private HashMap<String, Shimmer> streamingShimmers;
@@ -95,7 +94,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
-        timerCycleInMin = 1;
+        timerCycleInMin = 10;
 
         textViewTimer = (TextView)findViewById(R.id.text_view_timer);
         textViewTimer.setVisibility(View.INVISIBLE);
@@ -279,9 +278,9 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             int maxValue = 250;
             String[] fields = MOTION_FIELDS;
             if (bluetoothAddress.equals(ECG_SENSOR_ADDRESS)) {
-                deviceType = Shimmer.SENSOR_ACCEL; //Shimmer.SENSOR_ECG;
+                deviceType = Shimmer.SENSOR_ECG;
                 sampleRate = ECG_SAMPLE_RATE;
-                maxValue = 5000;
+                maxValue = 10000;
                 fields = ECG_FIELDS;
             }
             shimmer = new Shimmer(this, new ShimmerHandler("sensor_" + deviceName + ".csv", this.directoryName, maxValue, fields), deviceName, sampleRate, 0, 0, deviceType, false);
