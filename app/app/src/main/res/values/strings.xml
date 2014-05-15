@@ -46,5 +46,6 @@
     <string name="action_stop_streaming">Abrufen stoppen</string>
     <string name="action_start_streaming">Abrufen starten</string>
     <string name="action_toggle_led">LEDs ein/ausschalten</string>
+    <string name="is_ready">ist bereit</string>
 
 </resources>

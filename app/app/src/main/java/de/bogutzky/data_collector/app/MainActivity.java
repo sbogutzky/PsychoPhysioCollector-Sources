@@ -51,7 +51,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private static final int SCALE_ITEM_COUNT = 16;
     private static final String ECG_SENSOR_ADDRESS = "00:06:66:46:BD:38";
     private static final int MOTION_SAMPLE_RATE = 56;
-    private static final int ECG_SAMPLE_RATE = 1024;
+    private static final int ECG_SAMPLE_RATE = 512;
     private static final String[] MOTION_FIELDS = {"Timestamp", "Accelerometer X", "Accelerometer Y", "Accelerometer Z", "Gyroscope X", "Gyroscope Y", "Gyroscope Z", "System Timestamp"};
     private static final String[] ECG_FIELDS = {"Timestamp", "ECG RA-LL", "ECG LA-LL", "System Timestamp"};
     private HashMap<String, Shimmer> shimmers;
@@ -279,7 +279,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             if (bluetoothAddress.equals(ECG_SENSOR_ADDRESS)) {
                 deviceType = Shimmer.SENSOR_ECG;
                 sampleRate = ECG_SAMPLE_RATE;
-                maxValue = 10000;
+                maxValue = 5000;
                 fields = ECG_FIELDS;
             }
             shimmer = new Shimmer(this, new ShimmerHandler("sensor_" + deviceName + ".csv", this.directoryName, maxValue, fields), deviceName, sampleRate, 0, 0, deviceType, false);
@@ -420,10 +420,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
     private void stopTimerThread() {
         timerThreadShouldContinue = false;
-        if (timerThread.isAlive()) {
-            textViewTimer.setVisibility(View.INVISIBLE);
-            //timerThread.interrupt();
-        }
+        textViewTimer.setVisibility(View.INVISIBLE);
         timerThread = null;
     }
 
@@ -807,6 +804,9 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                             break;
                         case Shimmer.MSG_STATE_FULLY_INITIALIZED:
                             Log.d(TAG, "Fully initialized: " + bluetoothAddress);
+                            String btRadioID = bluetoothAddress.replace(":", "").substring(8).toUpperCase();
+                            Toast.makeText(MainActivity.this, btRadioID + " " + getString(R.string.is_ready), Toast.LENGTH_LONG).show();
+
                             getConnectedShimmers().put(bluetoothAddress, getShimmers().get(bluetoothAddress));
                             break;
                         case Shimmer.MSG_STATE_STREAMING:
