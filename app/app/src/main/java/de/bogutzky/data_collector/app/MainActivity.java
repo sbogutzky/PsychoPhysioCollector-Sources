@@ -94,7 +94,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
-        timerCycleInMin = 10;
+        timerCycleInMin = 15;
 
         textViewTimer = (TextView)findViewById(R.id.text_view_timer);
         textViewTimer.setVisibility(View.INVISIBLE);
