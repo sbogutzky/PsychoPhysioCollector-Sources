@@ -1,5 +1,5 @@
-.gradle
-/local.properties
-/.idea/workspace.xml
+/app/.gradle
+/app/local.properties
+/app/.idea/workspace.xml
 .DS_Store
 .Rhistory
