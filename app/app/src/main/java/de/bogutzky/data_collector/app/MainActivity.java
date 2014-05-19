@@ -735,14 +735,17 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
                         if (msg.obj instanceof ObjectCluster) {
                             ObjectCluster objectCluster = (ObjectCluster) msg.obj;
-                            objectCluster.mPropertyCluster.put("System Timestamp", new FormatCluster("CAL", "mSecs", System.currentTimeMillis()));
 
                             for (int j = 0; j < fields.length; j++) {
 
                                 Collection<FormatCluster> clusterCollection = objectCluster.mPropertyCluster.get(fields[j]);
-                                if (!clusterCollection.isEmpty()) {
-                                    FormatCluster formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
-                                    values[i][j] = Float.toString((float) formatCluster.mData);
+                                if (j < fields.length -1) {
+                                    if (!clusterCollection.isEmpty()) {
+                                        FormatCluster formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
+                                        values[i][j] = Float.toString((float) formatCluster.mData);
+                                    }
+                                } else {
+                                    values[i][j] = Long.toString(System.currentTimeMillis());
                                 }
                             }
 
