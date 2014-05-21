@@ -1,166 +1,111 @@
 setwd("~/Entwicklung/projects/bogutzky/repositories/data-collector-android/r-scripts")
 
-source("/Users/simonbogutzky/Entwicklung/projects/hochschule-bremen/repositories/gait-analysis/gang-ereignis-erkennung/r-code/finale-scripte/filter.R")
-#source("studium/hiwi/repo/gang-ereignis-erkennung/r-code/finale-scripte/searchLows.R")
-#source("studium/hiwi/repo/gang-ereignis-erkennung/r-code/finale-scripte/searchHighs.R")
-#source("studium/hiwi/repo/gang-ereignis-erkennung/r-code/roh-scripte/GaitFrequency.R")
-
-directory.name <- "2014-05-17_17-25-09"
-
-sensor.bc98.subset <- read.csv(paste("../data/", directory.name, "/sensor_BC98_subset_3.csv", sep =""))
+directory.name      <- "2014-05-17_17-25-09"
+sensor.bc98.subset  <- read.csv(paste("../data/", directory.name, "/sensor_BC98_subset_3.csv", sep =""))
 summary(sensor.bc98.subset)
-plot(sensor.bc98.subset$Accelerometer.X[2000:3000], type = "l")
 
+m <- 2000
+n <- 2225
+t <- sensor.bc98.subset$Timestamp[m:n] - sensor.bc98.subset$Timestamp[m]
+gx <- sensor.bc98.subset$Gyroscope.X[m:n]
 
-CalculateJerk <- function(t, x) {
-  total.jerk <- c()
-  for(i in 1:length(t)) {
-    if(i < 2) {
-      total.jerk <- c(total.jerk, 0)
-    } else {
-      jerk <- (x[i] - x[i - 1]) / (t[i] - t[i - 1])
-      total.jerk <- c(total.jerk, jerk)
-    }
+plot(t, gx, type = "l", xlab = "ms", ylab = "m/s^2")
+maxima <- SearchMaxima(gx)
+points(t[maxima$Index], gx[maxima$Index])
+
+# Filter high frequency noise
+gx.1 <- LPF(gx, 1/56, 2)
+plot(t, gx.1, type = "l", xlab = "ms", ylab = "m/s^2")
+maxima.1 <- SearchMaxima(gx.1)
+points(t[maxima.1$Index], gx.1[maxima.1$Index])
+
+require(TSA)
+periodogram(gx)
+periodogram(gx.1)
+
+LPF <- function(y, t, f) {
+  # Simple low pass filter
+  #
+  # Args:
+  #   y: Vector to filter.
+  #   t: Time interval between measurements (s)
+  #   f: Low pass frequency (Hz)
+  # Returns:
+  #   A data frame with indexes and values of local maxima.
+  
+  rc <- 1 / (2 * pi * f)
+  a  <- t / (t + rc)
+  n  <- length(y)
+  yf <- y
+  for(i in 2:length(y)) {
+    yf[i] <- a * y[i] + (1-a) * yf[i-1]
   }
-  return(total.jerk)
+  return(yf)
+} 
+
+SearchMaxima <- function(y) {
+  # Search of local maxima
+  #
+  # Args:
+  #   y: Vector to search.
+  #
+  # Returns:
+  #   A data frame with indexes and values of local maxima.
+  
+  # Find locations of local maxima
+  # p = 1 at maxima, p otherwise, end point maxima excluded
+  n <- length(y) - 2
+  p <- sign(sign(y[2:(n + 1)] - y[3:(n + 2)]) - sign(y[1:n] - y[2:(n + 1)]) -.1) + 1
+  p <- c(0, p, 0)
+  
+  # Indices of maxima and corresponding sample
+  p <- as.logical(p) 
+  i <- 1:length(p)
+  return(data.frame(Index = i[p], Maxima = y[p]))
 }
 
-jerk.x <- CalculateJerk(sensor.bc98.subset$Timestamp[2000:3000], sensor.bc98.subset$Accelerometer.X[2000:3000])
-
-jerk.y <- CalculateJerk(sensor.bc98.subset$Timestamp[2000:3000], sensor.bc98.subset$Accelerometer.Y[2000:3000])
-
-jerk.z <- CalculateJerk(sensor.bc98.subset$Timestamp[2000:3000], sensor.bc98.subset$Accelerometer.Z[2000:3000])
-
-CalculateJerkCost(jerk.x, jerk.y, jerk.z)
-
-
-signal.lowpass <- IIRLowPass1stOrder(sensor.bc98.subset$Gyroscope.X[2000:3000], 0.5)
-
-plot(signal.lowpass, type = "l")
-
-
-
-CalculateCadence <- function(x) {
+CalculateJerk <- function(t, x) {
+  # Computes the jerk an acceleration.
+  #
+  # Args:
+  #   t: Vectors with intervals.
+  #   x: The other vector with acceleration. t and x must have the same length, greater than one,
+  #      with no missing values.
+  #
+  # Returns:
+  #   The jerk of the acceleration.
   
-  signal.lowpass <- IIRLowPass1stOrder(x, 0.01)
-  
-  lows <- searchLows(signal.lowpass)
-  highs <- searchHighs(signal.lowpass)
-  
-  # extract extremes into vectors
-  highPoints <- c()
-  lowPoints <- c()
-  for (i in (1:length(lows))) {
-    if (!is.na(lows[i])) {
-      lowPoints <- c(lowPoints, lows[i])
-    }
-    if (!is.na(highs[i])) {
-      highPoints <- c(highPoints, highs[i])
-    }         
-  }
-  # calculate differences
-  if (length(highPoints) == length(lowPoints)) {
-    difference <- abs(highPoints-lowPoints) 
-  } else if (length(highPoints)+1 == length(lowPoints)) {
-    highPoints <- highPoints[1:length(highPoints)-1]    
-  } else if (length(highPoints) == length(lowPoints)+1){
-    lowPoints <- lowPoints[1:length(lowPoints)-1]
-  } else {
-    print("Mehr als 1 Extremum Unterschied")
-  }
-  
-  # remove hits with less than minimum difference
-  for (i in (1:length(difference))) {
-    if (difference[i] < 30) {
-      highPoints[i] <- NA
-      lowPoints[i] <- NA
-    }
-  }
-  # remove NA from vector lows
-  j <- 1
-  for (i in (1:length(lows))) {
-    if (!is.na(lows[i])) {
-      lows[i] <- lowPoints[j] 
-      j <- j + 1
-    }
-  }
-  
-  # threshhold cleaning
-  threshhold <-   quantile.upper <- quantile(signal.lowpass, 0.4)
-  for (i in seq(along=lows)) {
-    if ((signal.lowpass[i]>threshhold)) {
-      lows[i] <- NA
-    }  
-  }
-  MeanGaitFrequency <- GaitFrequency(leg.data$SensorTime[n:m], lows[n:m])
-  inSeconds <- MeanGaitFrequency / 100 / 60
-  
-  allLows <- c()
-  for (i in (1:(length(lows)))) {
-    if (!is.na(lows[i])) {
-      allLows <- c(allLows, lows[i])    
-    }
-  }
-  
-  # only do the rest if lows are found
-  if(!all(is.na(lows[1:length(lows)])) && length(allLows) > 1) {
-    
-    #calculate intervals
-    intervals <- c()
-    j <- 0
-    for (i in (1:(length(leg.data$SensorTime)))) {
-      if (!is.na(lows[i])) {
-        if (j!=0) {
-          intervals <- c(intervals, abs((leg.data$SensorTime[i] - leg.data$SensorTime[j])))    
-        }
-        j <- i
-      }
-    }
-    
-    # write into vektor conform to others
-    # intervalPoints is a vektor of equal length to the data set but contains values where TRUE in MS (the true invervals)
-    intervalPoints <- c()
-    j <- 1
-    for (i in 1:length(lows)) {
-      if (is.na(lows[i])) {
-        intervalPoints <- c(intervalPoints, NA)    
-      } else {
-        intervalPoints <- c(intervalPoints, intervals[j])
-        j <- j + 1
-      }
-    }
-    
-    
-    # round to whole ms
-    intervals <- round(intervals, digits=0)
-    
-    # intervalAxis contains SensorTimes - used as x-axis
-    intervalAxis <- c()
-    for(i in 1:nrow(leg.data)) {
-      if (!is.na(intervalPoints[i])) {
-        intervalAxis <- c(intervalAxis, leg.data$SensorTime[i])
-      }
-    }
-    
-    if (length(intervalAxis) == length(intervals)){   
-      pdf(paste(data.file.path, file.name.date.prefix, filename.ending, "-gait-interval.pdf", sep = ""))
-      plot(intervalAxis, intervals, type="l", xlab="Sensor time in ms", ylab="Gait interval in ms", main=paste(file.name.date.prefix, filename.ending))
-      dev.off()
-      print(paste("PDF erstellt: ", file.name.date.prefix, filename.ending), sep = "")
+  jerk <- c()
+  for(i in 1:length(t)) {
+    if(i < 2) {
+      jerk <- c(jerk, 0)
     } else {
-      print(paste("Unterschiedliche Laenge: ", file.name.data.prefix, filename.ending), sep = "")
+      j     <- (x[i] - x[i - 1]) / (t[i] - t[i - 1])
+      jerk  <- c(jerk, j)
     }
-    
-    
-    # write to file
-    if (length(intervals)>=2) {
-      write.csv(file=paste(data.file.path, file.name.date.prefix, filename.ending, "-gait-interval.csv", sep = ""), intervals, row.names=FALSE)
-      print(paste("CSV erstellt: ", file.name.date.prefix, filename.ending), sep = "")
-    } else {
-      print(paste("Nicht genug Intervalle berechnet: ", file.name.date.prefix, filename.ending), sep = "")
-    }
-    
-  } else {
-    print(paste("Nur 2 oder weniger Tiefpunkte gefunden: ", file.name.date.prefix, filename.ending), sep = "")
   }
+  return(jerk)
+}
+
+CalculateJerkCost(t, x, y, z) {
+  # Computes the jerk cost of an acceleration in x-, y- and z-direction.
+  #
+  # Args:
+  #   t: Vectors with intervals.
+  #   x: The other vector with acceleration. t and x must have the same length, greater than one,
+  #      with no missing values.
+  #   y: The other vector with acceleration. t and y must have the same length, greater than one,
+  #      with no missing values.
+  #   z: The other vector with acceleration. t and z must have the same length, greater than one,
+  #      with no missing values.
+  #
+  # Returns:
+  #   The jerk cost of the acceleration.
+  
+  require(pracma)
+  jerk.x    <- CalculateJerk(t, x)
+  jerk.y    <- CalculateJerk(t, y)
+  jerk.z    <- CalculateJerk(t, z)
+  jerk.cost <- 1/2 * trapz(t, jerk.x^2 + jerk.y^2 + jerk.z^2)
+  return(jerk.cost)
 }
