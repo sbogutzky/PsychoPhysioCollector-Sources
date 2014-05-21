@@ -4,24 +4,49 @@ directory.name      <- "2014-05-17_17-25-09"
 sensor.bc98.subset  <- read.csv(paste("../data/", directory.name, "/sensor_BC98_subset_3.csv", sep =""))
 summary(sensor.bc98.subset)
 
-m <- 2000
-n <- 2225
+m <- 1
+n <- nrow(sensor.bc98.subset)
 t <- sensor.bc98.subset$Timestamp[m:n] - sensor.bc98.subset$Timestamp[m]
 gx <- sensor.bc98.subset$Gyroscope.X[m:n]
 
-plot(t, gx, type = "l", xlab = "ms", ylab = "m/s^2")
-maxima <- SearchMaxima(gx)
-points(t[maxima$Index], gx[maxima$Index])
+indexes <- DetectMidSwing(t, gx, 1/56, plot = T)
 
-# Filter high frequency noise
-gx.1 <- LPF(gx, 1/56, 2)
-plot(t, gx.1, type = "l", xlab = "ms", ylab = "m/s^2")
-maxima.1 <- SearchMaxima(gx.1)
-points(t[maxima.1$Index], gx.1[maxima.1$Index])
+plot(t[indexes], c(NA, diff(t[indexes])), xlab = "Time (ms)", ylab = "Step-to-Step Interval (ms)", type = "l")
+(length(indexes) * 2) / ((t[indexes[length(indexes)]] - t[indexes[1]]) / 60000)
 
-require(TSA)
-periodogram(gx)
-periodogram(gx.1)
+DetectMidSwing <- function(t, x, f, c = .5, plot = F) {
+  # Detects the gait event midswing from gyroscope data from the leg
+  #
+  # Args:
+  #   x: Vector to search.
+  #   t: Vector with intervals.
+  #   f: Low pass frequency (Hz)
+  #   c: Cutoff difference ()
+  # Returns:
+  #   Indexes of mid swings
+  
+  if (plot) {
+    plot(t, x, type = "l", xlab = "ms", ylab = "m/s^2", xaxs = "i", yaxs = "i")
+    maxima <- SearchMaxima(x)
+    points(t[maxima$Index], x[maxima$Index])
+  }
+
+  # Filter high frequency noise
+  xf <- LPF(x, f, 2)
+  xf <- (xf - mean(xf)) / sd(xf)
+
+  if (plot)
+    plot(t, xf, type = "l", xlab = "ms", ylab = "m/s^2")
+  
+  maxima.1 <- SearchMaxima(xf)
+  p <- c(0, diff(maxima.1$Maxima)) > c
+  maxima.1 <- maxima.1[p,]
+  
+  if (plot)
+    points(t[maxima.1$Index], xf[maxima.1$Index])
+  
+  return(maxima.1$Index)
+}  
 
 LPF <- function(y, t, f) {
   # Simple low pass filter
@@ -68,7 +93,7 @@ CalculateJerk <- function(t, x) {
   # Computes the jerk an acceleration.
   #
   # Args:
-  #   t: Vectors with intervals.
+  #   t: Vector with intervals.
   #   x: The other vector with acceleration. t and x must have the same length, greater than one,
   #      with no missing values.
   #
