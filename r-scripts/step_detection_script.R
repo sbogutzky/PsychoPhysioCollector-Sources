@@ -144,11 +144,16 @@ fs <- 1 / (length(gx) / (t[length(t)] / 1000))
 
 indexes <- DetectMidSwing(t, gx, fs, c = 1.5, plot = T)
 
-par(mfrow = c(1, 1))
+par(mfrow = c(2, 1))
 plot(t[indexes] / 1000, c(NA, diff(t[indexes])), type = "l", xlab = "Time (s)", ylab = "Step-to-Step Interval (ms)", xaxs = "i", yaxs = "i")
 (length(indexes) * 2) / ((t[indexes[length(indexes)]] - t[indexes[1]]) / 60000)
 
-s <- sensor.bc98.subset[indexes[100]:indexes[105],]
-jerk.cost <- CalculateJerkCost(s$Timestamp, s$Accelerometer.X, s$Accelerometer.Y, s$Accelerometer.Z, T)
-jerk.cost
+jerk.costs <- c(0)
+for(i in 1:(length(indexes) - 1)) {
+  s <- sensor.bc98.subset[indexes[i]:indexes[i + 1],]
+  jerk.cost <- CalculateJerkCost(s$Timestamp, s$Accelerometer.X, s$Accelerometer.Y, s$Accelerometer.Z, F)
+  jerk.costs <- c(jerk.costs, jerk.cost)
+}
 
+plot(t[indexes] / 1000, jerk.costs, type = "l", xlab = "Time (s)", ylab = "Jerk cost", xaxs = "i", yaxs = "i")
+summary(jerk.costs)
