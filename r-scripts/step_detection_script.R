@@ -1,4 +1,4 @@
-DetectMidSwing <- function(t, x, f, c = .5, plot = F) {
+DetectMidSwing <- function(t, x, f, c = 1.5, plot = F) {
   # Detects the gait event midswing from gyroscope data from the leg
   #
   # Args:
@@ -10,9 +10,10 @@ DetectMidSwing <- function(t, x, f, c = .5, plot = F) {
   #   Indexes of mid swings
   
   if (plot) {
-    plot(t, x, type = "l", xlab = "ms", ylab = "m/s^2", xaxs = "i", yaxs = "i")
+    par(mfrow = c(2, 1))
+    plot(t / 1000, x, type = "l", xlab = "Time (s)", ylab = "Rotation rate X (deg/s)", xaxs = "i", yaxs = "i")
     maxima <- SearchMaxima(x)
-    points(t[maxima$Index], x[maxima$Index])
+    points(t[maxima$Index] / 1000, x[maxima$Index])
   }
 
   # Filter high frequency noise
@@ -20,14 +21,14 @@ DetectMidSwing <- function(t, x, f, c = .5, plot = F) {
   xf <- (xf - mean(xf)) / sd(xf)
 
   if (plot)
-    plot(t, xf, type = "l", xlab = "ms", ylab = "m/s^2", xaxs = "i", yaxs = "i")
+    plot(t / 1000, xf, type = "l", xlab = "Time (s)", ylab = "Filtered rotation rate (deg/s)", xaxs = "i", yaxs = "i")
   
   maxima.1 <- SearchMaxima(xf)
   p <- c(0, diff(maxima.1$Maxima)) > c
   maxima.1 <- maxima.1[p & maxima.1$Maxima > 0,]
   
   if (plot)
-    points(t[maxima.1$Index], xf[maxima.1$Index])
+    points(t[maxima.1$Index] / 1000, xf[maxima.1$Index])
   
   return(maxima.1$Index)
 }  
@@ -96,7 +97,7 @@ CalculateJerk <- function(t, x) {
   return(jerk)
 }
 
-CalculateJerkCost(t, x, y, z) {
+CalculateJerkCost <- function(t, x, y, z, plot = F) {
   # Computes the jerk cost of an acceleration in x-, y- and z-direction.
   #
   # Args:
@@ -111,10 +112,19 @@ CalculateJerkCost(t, x, y, z) {
   # Returns:
   #   The jerk cost of the acceleration.
   
+  jerk.x <- CalculateJerk(t, x)
+  jerk.y <- CalculateJerk(t, y)
+  jerk.z <- CalculateJerk(t, z)
+  
+  if (plot) {
+    par(mfrow = c(3,1), mgp = c(2, 1, 0)) 
+  
+    plot(t / 1000, y, type = "l", xlab = "Time (s)", ylab = expression(Acceleration ~ (m/s^2)), xaxs = "i", yaxs = "i")
+    plot(t / 1000, jerk.y, type = "l", xlab = "Time (s)", ylab = expression(Jerk ~ (m/s^3)), xaxs = "i", yaxs = "i")
+    plot(t / 1000, 1/2*(jerk.x^2 + jerk.y^2 + jerk.z^2), type = "l", xlab = "Time (s)", ylab = expression(1/2 %*% (Jerk[x]^2 ~ (t)+Jerk[y]^2 ~ (t)+Jerk[z]^2 ~ (t))), xaxs = "i", yaxs = "i")
+  }
+  
   require(pracma)
-  jerk.x    <- CalculateJerk(t, x)
-  jerk.y    <- CalculateJerk(t, y)
-  jerk.z    <- CalculateJerk(t, z)
   jerk.cost <- 1/2 * trapz(t, jerk.x^2 + jerk.y^2 + jerk.z^2)
   return(jerk.cost)
 }
@@ -125,14 +135,20 @@ directory.name      <- "2014-03-04"
 sensor.bc98.subset  <- read.csv(paste("../data/", directory.name, "/sensor_BC98_subset_2.csv", sep =""))
 summary(sensor.bc98.subset)
 
-m <- 4500
+m <- 10000
 n <- nrow(sensor.bc98.subset)
 t <- sensor.bc98.subset$Timestamp[m:n] - sensor.bc98.subset$Timestamp[m]
 gx <- -sensor.bc98.subset$Gyroscope.X[m:n]
 
 fs <- 1 / (length(gx) / (t[length(t)] / 1000))
 
-indexes <- DetectMidSwing(t, gx, fs, plot = T)
+indexes <- DetectMidSwing(t, gx, fs, c = 1.5, plot = T)
 
-plot(t[indexes], c(NA, diff(t[indexes])), type = "l", xlab = "Time (ms)", ylab = "Step-to-Step Interval (ms)", xaxs = "i", yaxs = "i")
+par(mfrow = c(1, 1))
+plot(t[indexes] / 1000, c(NA, diff(t[indexes])), type = "l", xlab = "Time (s)", ylab = "Step-to-Step Interval (ms)", xaxs = "i", yaxs = "i")
 (length(indexes) * 2) / ((t[indexes[length(indexes)]] - t[indexes[1]]) / 60000)
+
+s <- sensor.bc98.subset[indexes[100]:indexes[105],]
+jerk.cost <- CalculateJerkCost(s$Timestamp, s$Accelerometer.X, s$Accelerometer.Y, s$Accelerometer.Z, T)
+jerk.cost
+
