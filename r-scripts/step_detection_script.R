@@ -1,19 +1,3 @@
-setwd("~/Entwicklung/projects/bogutzky/repositories/data-collector-android/r-scripts")
-
-directory.name      <- "2014-05-17_17-25-09"
-sensor.bc98.subset  <- read.csv(paste("../data/", directory.name, "/sensor_BC98_subset_3.csv", sep =""))
-summary(sensor.bc98.subset)
-
-m <- 1
-n <- nrow(sensor.bc98.subset)
-t <- sensor.bc98.subset$Timestamp[m:n] - sensor.bc98.subset$Timestamp[m]
-gx <- sensor.bc98.subset$Gyroscope.X[m:n]
-
-indexes <- DetectMidSwing(t, gx, 1/56, plot = T)
-
-plot(t[indexes], c(NA, diff(t[indexes])), xlab = "Time (ms)", ylab = "Step-to-Step Interval (ms)", type = "l")
-(length(indexes) * 2) / ((t[indexes[length(indexes)]] - t[indexes[1]]) / 60000)
-
 DetectMidSwing <- function(t, x, f, c = .5, plot = F) {
   # Detects the gait event midswing from gyroscope data from the leg
   #
@@ -36,11 +20,11 @@ DetectMidSwing <- function(t, x, f, c = .5, plot = F) {
   xf <- (xf - mean(xf)) / sd(xf)
 
   if (plot)
-    plot(t, xf, type = "l", xlab = "ms", ylab = "m/s^2")
+    plot(t, xf, type = "l", xlab = "ms", ylab = "m/s^2", xaxs = "i", yaxs = "i")
   
   maxima.1 <- SearchMaxima(xf)
   p <- c(0, diff(maxima.1$Maxima)) > c
-  maxima.1 <- maxima.1[p,]
+  maxima.1 <- maxima.1[p & maxima.1$Maxima > 0,]
   
   if (plot)
     points(t[maxima.1$Index], xf[maxima.1$Index])
@@ -134,3 +118,21 @@ CalculateJerkCost(t, x, y, z) {
   jerk.cost <- 1/2 * trapz(t, jerk.x^2 + jerk.y^2 + jerk.z^2)
   return(jerk.cost)
 }
+
+setwd("~/Entwicklung/projects/bogutzky/repositories/data-collector-android/r-scripts")
+
+directory.name      <- "2014-03-04"
+sensor.bc98.subset  <- read.csv(paste("../data/", directory.name, "/sensor_BC98_subset_2.csv", sep =""))
+summary(sensor.bc98.subset)
+
+m <- 4500
+n <- nrow(sensor.bc98.subset)
+t <- sensor.bc98.subset$Timestamp[m:n] - sensor.bc98.subset$Timestamp[m]
+gx <- -sensor.bc98.subset$Gyroscope.X[m:n]
+
+fs <- 1 / (length(gx) / (t[length(t)] / 1000))
+
+indexes <- DetectMidSwing(t, gx, fs, plot = T)
+
+plot(t[indexes], c(NA, diff(t[indexes])), type = "l", xlab = "Time (ms)", ylab = "Step-to-Step Interval (ms)", xaxs = "i", yaxs = "i")
+(length(indexes) * 2) / ((t[indexes[length(indexes)]] - t[indexes[1]]) / 60000)
