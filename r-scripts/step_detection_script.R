@@ -5,7 +5,7 @@ DetectMidSwing <- function(t, x, f, c = 1.5, plot = F) {
   #   x: Vector to search.
   #   t: Vector with intervals.
   #   f: Low pass frequency (Hz)
-  #   c: Cutoff difference ()
+  #   c: Cutoff difference (s)
   # Returns:
   #   Indexes of mid swings
   
@@ -101,7 +101,7 @@ CalculateJerkCost <- function(t, x, y, z, plot = F) {
   # Computes the jerk cost of an acceleration in x-, y- and z-direction.
   #
   # Args:
-  #   t: Vectors with intervals.
+  #   t: Vectors with intervals (ms).
   #   x: The other vector with acceleration. t and x must have the same length, greater than one,
   #      with no missing values.
   #   y: The other vector with acceleration. t and y must have the same length, greater than one,
@@ -130,6 +130,17 @@ CalculateJerkCost <- function(t, x, y, z, plot = F) {
 }
 
 setwd("~/Entwicklung/projects/bogutzky/repositories/data-collector-android/r-scripts")
+
+directory.name      <- "2014-05-22_05-34-21"
+sensor.bc98  <- read.csv(paste("../data/", directory.name, "/sensor_BC98.csv", sep =""))
+summary(sensor.bc98)
+
+sensor.bc98.subset.1 <- sensor.bc98[1:(nrow(sensor.bc98)/2),]
+sensor.bc98.subset.2 <- sensor.bc98[(nrow(sensor.bc98)/2):nrow(sensor.bc98),]
+
+jerk.cost <- CalculateJerkCost(sensor.bc98$Timestamp, sensor.bc98$Accelerometer.X, sensor.bc98$Accelerometer.Y, sensor.bc98$Accelerometer.Z, T)
+jerk.cost.1 <- CalculateJerkCost(sensor.bc98.subset.1$Timestamp, sensor.bc98.subset.1$Accelerometer.X, sensor.bc98.subset.1$Accelerometer.Y, sensor.bc98.subset.1$Accelerometer.Z, T)
+jerk.cost.2 <- CalculateJerkCost(sensor.bc98.subset.2$Timestamp, sensor.bc98.subset.2$Accelerometer.X, sensor.bc98.subset.2$Accelerometer.Y, sensor.bc98.subset.2$Accelerometer.Z, T)
 
 directory.name      <- "2014-03-04"
 sensor.bc98.subset  <- read.csv(paste("../data/", directory.name, "/sensor_BC98_subset_2.csv", sep =""))
