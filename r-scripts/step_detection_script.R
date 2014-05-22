@@ -131,16 +131,15 @@ CalculateJerkCost <- function(t, x, y, z, plot = F) {
 
 setwd("~/Entwicklung/projects/bogutzky/repositories/data-collector-android/r-scripts")
 
-directory.name      <- "2014-03-04"
-sensor.bc98.subset  <- read.csv(paste("../data/", directory.name, "/sensor_BC98_subset_2.csv", sep =""))
-summary(sensor.bc98.subset)
+directory.name              <- "2014-03-06"
+motion.sensor.data.subset   <- read.csv(paste("../data/", directory.name, "/2014-03-06-t13-01-50-leg-data-subset-4.csv", sep =""))
+summary(motion.sensor.data.subset)
 
-m <- 10000
-n <- nrow(sensor.bc98.subset)
-t <- sensor.bc98.subset$Timestamp[m:n] - sensor.bc98.subset$Timestamp[m]
-gx <- -sensor.bc98.subset$Gyroscope.X[m:n]
-
-fs <- 1 / (length(gx) / (t[length(t)] / 1000))
+m   <- 1
+n   <- nrow(motion.sensor.data.subset)
+t   <- motion.sensor.data.subset[m:n, 1] - motion.sensor.data.subset[m, 1]
+gx  <- -motion.sensor.data.subset[m:n, 5]
+fs  <- 1 / (length(gx) / (t[length(t)] / 1000))
 
 indexes <- DetectMidSwing(t, gx, fs, c = 1.5, plot = T)
 
@@ -150,8 +149,8 @@ plot(t[indexes] / 1000, c(NA, diff(t[indexes])), type = "l", xlab = "Time (s)", 
 
 jerk.costs <- c(0)
 for(i in 1:(length(indexes) - 1)) {
-  s <- sensor.bc98.subset[indexes[i]:indexes[i + 1],]
-  jerk.cost <- CalculateJerkCost(s$Timestamp, s$Accelerometer.X, s$Accelerometer.Y, s$Accelerometer.Z, F)
+  s <- motion.sensor.data.subset[indexes[i]:indexes[i + 1],]
+  jerk.cost <- CalculateJerkCost(s[, 1], s[, 2], s[, 3], s[,4], T)
   jerk.costs <- c(jerk.costs, jerk.cost)
 }
 
