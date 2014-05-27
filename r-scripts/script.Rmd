@@ -1,0 +1,99 @@
+```{r user-input}
+  rm(list = ls(all = T))
+  directory.name      <- "2014-05-24_17-20-47"
+  input_filename      <- "sensor_BD38"
+  outfile_filename    <- "sensor_BD38"
+  subset_length_in_m  <- 15
+```
+
+```{r correction}
+sensor.data <- read.csv(paste("../data/", directory.name, "/", input_filename, ".csv", sep =""))
+nCol <- ncol(sensor.data)
+
+for(i in 1:(nCol -1)) {
+  sensor.data[,i] <- as.numeric(levels(sensor.data[,i])[sensor.data[,i]])
+}
+
+sensor.data[,1] <- sensor.data[,1] - sensor.data[1,1]
+sensor.data[,nCol] <- as.numeric(strptime(directory.name, "%Y-%m-%d_%H-%M-%S", tz = "Europe/Berlin")) * 1000 + sensor.data[,1]
+
+if(nCol == 8) {
+  colnames(sensor.data) <- c("Timestamp","Accelerometer X","Accelerometer Y","Accelerometer Z","Gyroscope X","Gyroscope Y","Gyroscope Z","System Timestamp")
+}
+
+if(nCol == 4) {
+  colnames(sensor.data) <- c("Timestamp","ECG RA-LL","ECG LA-LL","System Timestamp")
+}
+
+write.csv(sensor.data, paste("../data/", directory.name, "/", outfile_filename, ".csv", sep =""), row.names = F)
+```
+
+```{r functions}
+
+NumberOfDuplicates <- function(x) {
+  # Return the number of dublicates
+  #   x: Vector to check.
+  # Returns:
+  #   Number of dublicates
+  
+  n <- length(x)
+  x <- x[!duplicated(x)]
+  m <- length(x)
+  
+  return(n - m)
+} 
+
+SamplingRate <- function(t) {
+  # Return the sampling rate
+  #   t: Vector of times in ms.
+  # Returns:
+  #   The sampling rate
+  return(length(t) / ((t[length(t)] - t[1]) / 10^3))
+}
+```
+
+```{r control}
+sensor.data <- read.csv(paste("../data/", directory.name, "/", input_filename, ".csv", sep =""))
+nCol <- ncol(sensor.data)
+
+summary(sensor.data)
+
+print(paste("Number of dublicates:", NumberOfDuplicates(sensor.data[, 1])))
+print(paste("Start:", as.POSIXct(sensor.data[1, nCol] / 1000, tz = "Europe/Berlin", origin = "1970-01-01")))
+print(paste("Stop:", as.POSIXct(sensor.data[nrow(sensor.data), nCol] / 1000, tz = "Europe/Berlin", origin = "1970-01-01")))
+sampling.rate <- round(SamplingRate(sensor.data[, 1]), 0) 
+print(paste("Sampling Rate:", sampling.rate, "Hz"))
+```
+
+```{r subset}
+scale <- read.csv(paste("../data/", directory.name, "/scale.csv", sep =""))
+sensor.data[, 1] <- sensor.data[, 1] - sensor.data[1, 1]
+l <- subset_length_in_m * 60 * sampling.rate
+
+for(i in 1:nrow(scale)) {
+  if(i == 1) {
+    m <- 1 
+  } else {
+    m <- nrow(sensor.data[sensor.data[, nCol] < scale[i - 1, 2],]) - 1
+  }
+  n <- m + l - 1
+  sensor.data.subset <- sensor.data[m:n,]
+  sensor.data.subset <- sensor.data.subset[complete.cases(sensor.data.subset),]
+  o <- NumberOfDuplicates(sensor.data.subset[, 1])
+  print(paste("Number of dublicates:", o))
+  print(paste("Start:", as.POSIXct(sensor.data.subset[1, nCol] / 1000, tz = "Europe/Berlin", origin = "1970-01-01"), "/", as.POSIXct(scale[i - 1, 2]/ 1000, tz = "Europe/Berlin", origin = "1970-01-01")))
+  print(paste("Stop:", as.POSIXct(sensor.data.subset[nrow(sensor.data.subset), nCol] / 1000, tz = "Europe/Berlin", origin = "1970-01-01"), "/", as.POSIXct(scale[i, 1]/ 1000, tz = "Europe/Berlin", origin = "1970-01-01")))
+  print(paste("Sampling Rate:", round(SamplingRate(sensor.data.subset[, 1]), 0), "Hz"))
+  
+  if(nrow(sensor.data.subset) == l) {
+    if(o == 0) {
+      write.csv(sensor.data.subset, file = paste("../data/", directory.name, "/", outfile_filename, "_subset_", i, ".csv", sep =""), row.names = F)
+      print(paste("Wrote: ", "../data/", directory.name, "/", outfile_filename, "_subset_", i, ".csv", sep =""))
+    }
+  } else {
+    print(paste("Subset is to short (", l, "):", nrow(sensor.data.subset)))
+  } 
+}
+```
+
+
