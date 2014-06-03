@@ -241,18 +241,20 @@ fs  <- 1 / (length(gx) / (t[length(t)] / 1000))
 
 indexes <- DetectMidSwing(t, gx, fs, c = 1.5, plot = T)
 
+```
+
 ```{r plot}
 
 par(mfrow = c(2, 1))
 
 rr.data <- sensor.bd38.subset.hrv
 rr.data$Time <- rr.data$Time - rr.data$Time[1]
-plot(rr.data$Time, rr.data$RRInterval, type = "l", xlab = "Time (s)", ylab = "RR Interval (s)", xaxs = "i", yaxs = "i")
+plot(rr.data$Time, rr.data$RRInterval, type = "l", xlab = "Time (s)", ylab = "RR Interval (s)", xaxs = "i", yaxs = "i", ylim = c(0.45, 0.6))
 # (length(rr.data$RRInterval)) / ((rr.data$Time[nrow(rr.data)] - rr.data$Time[1]) / 60)
 
 title(main = paste("Activity: Walking, Sex: Female, Start: ", as.POSIXct(date.start, tz = "Europe/Berlin", origin = "1970-01-01"), ", End: ", as.POSIXct(date.end, tz = "Europe/Berlin", origin = "1970-01-01"), ", Subset 1/4", sep = ""), sub = paste("LF: ", round(hrv.data$lfpowfft, 1), " ms^2, HF: ", round(hrv.data$hfpowfft, 1), " ms^2, LF/HF: ", round(hrv.data$lfhffft, 1), ", Flow (15min): ", fss.factors$flow[1], sep = ""))
 
-plot(t[indexes] / 1000, c(NA, diff(t[indexes])) / 2000, type = "l", xlab = "Time (s)", ylab = "Step-to-Step Interval (s)", xaxs = "i", yaxs = "i")
+plot(t[indexes] / 1000, c(NA, diff(t[indexes])) / 2000, type = "l", xlab = "Time (s)", ylab = "Step-to-Step Interval (s)", xaxs = "i", yaxs = "i", ylim = c(0.45, 0.6))
 title(main = "", sub = paste("Steps per Minute: ", round((length(indexes) * 2) / ((t[indexes[length(indexes)]] - t[indexes[1]]) / 60000), 1),  sep = ""))
 
 ```
