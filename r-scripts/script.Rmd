@@ -1,13 +1,14 @@
 ```{r user-input}
   rm(list = ls(all = T))
-  directory.name      <- "2014-05-24_17-20-47"
+  path.name           <- "/Users/simonbogutzky/Downloads/"
+  directory.name      <- "2014-05-27_12-28-37"
   input_filename      <- "sensor_BD38"
-  outfile_filename    <- "sensor_BD38"
+  output_filename     <- "sensor_BD38"
   subset_length_in_m  <- 15
 ```
 
 ```{r correction}
-sensor.data <- read.csv(paste("../data/", directory.name, "/", input_filename, ".csv", sep =""))
+sensor.data <- read.csv(paste(path.name, directory.name, "/", input_filename, ".csv", sep =""))
 nCol <- ncol(sensor.data)
 
 for(i in 1:(nCol -1)) {
@@ -25,7 +26,7 @@ if(nCol == 4) {
   colnames(sensor.data) <- c("Timestamp","ECG RA-LL","ECG LA-LL","System Timestamp")
 }
 
-write.csv(sensor.data, paste("../data/", directory.name, "/", outfile_filename, ".csv", sep =""), row.names = F)
+write.csv(sensor.data, paste(path.name, directory.name, "/", output_filename, ".csv", sep =""), row.names = F)
 ```
 
 ```{r functions}
@@ -50,10 +51,113 @@ SamplingRate <- function(t) {
   #   The sampling rate
   return(length(t) / ((t[length(t)] - t[1]) / 10^3))
 }
+
+DetectMidSwing <- function(t, x, f, c = 1.5, plot = F) {
+  # Detects the gait event midswing from gyroscope data from the leg
+  #
+  # Args:
+  #   x: Vector to search.
+  #   t: Vector with intervals.
+  #   f: Low pass frequency (Hz)
+  #   c: Cutoff difference (s)
+  # Returns:
+  #   Indexes of mid swings
+  
+  if (plot) {
+    par(mfrow = c(2, 1))
+    plot(t / 1000, x, type = "l", xlab = "Time (s)", ylab = "Rotation rate X (deg/s)", xaxs = "i", yaxs = "i")
+    maxima <- SearchMaxima(x)
+    points(t[maxima$Index] / 1000, x[maxima$Index])
+  }
+
+  # Filter high frequency noise
+  xf <- LPF(x, f, 2)
+  xf <- (xf - mean(xf)) / sd(xf)
+
+  if (plot)
+    plot(t / 1000, xf, type = "l", xlab = "Time (s)", ylab = "Filtered rotation rate (deg/s)", xaxs = "i", yaxs = "i")
+  
+  maxima.1 <- SearchMaxima(xf)
+  p <- c(0, diff(maxima.1$Maxima)) > c
+  maxima.1 <- maxima.1[p & maxima.1$Maxima > 0,]
+  
+  if (plot)
+    points(t[maxima.1$Index] / 1000, xf[maxima.1$Index])
+  
+  return(maxima.1$Index)
+}  
+
+LPF <- function(y, t, f) {
+  # Simple low pass filter
+  #
+  # Args:
+  #   y: Vector to filter.
+  #   t: Time interval between measurements (s)
+  #   f: Low pass frequency (Hz)
+  # Returns:
+  #   A data frame with indexes and values of local maxima.
+  
+  rc <- 1 / (2 * pi * f)
+  a  <- t / (t + rc)
+  n  <- length(y)
+  yf <- y
+  for(i in 2:length(y)) {
+    yf[i] <- a * y[i] + (1-a) * yf[i-1]
+  }
+  return(yf)
+} 
+
+SearchMaxima <- function(y) {
+  # Search of local maxima
+  #
+  # Args:
+  #   y: Vector to search.
+  #
+  # Returns:
+  #   A data frame with indexes and values of local maxima.
+  
+  # Find locations of local maxima
+  # p = 1 at maxima, p otherwise, end point maxima excluded
+  n <- length(y) - 2
+  p <- sign(sign(y[2:(n + 1)] - y[3:(n + 2)]) - sign(y[1:n] - y[2:(n + 1)]) -.1) + 1
+  p <- c(0, p, 0)
+  
+  # Indices of maxima and corresponding sample
+  p <- as.logical(p) 
+  i <- 1:length(p)
+  return(data.frame(Index = i[p], Maxima = y[p]))
+}
+
+CalculateFlowShortScaleFactors <- function(fss.items) {
+  timestamp   <- fss.items[,1]
+  duration    <- fss.items[,2] - fss.items[,1]
+  flow        <- fss.items[,3:12]
+  fluency     <- data.frame(fss.items[,10], fss.items[,9], fss.items[,11], fss.items[,6], fss.items[,7], fss.items[,4])
+  absorption  <- data.frame(fss.items[,8], fss.items[,3], fss.items[,12], fss.items[,5])
+  anxiety     <- fss.items[,13:15]
+  fit         <- fss.items[,16:18]
+  
+  fss.factors <- data.frame(
+    timestamp     = timestamp,
+    flow          = round(rowMeans(flow), 2), 
+    sdflow        = round(apply(flow, 1, sd), 2), 
+    fluency       = round(rowMeans(fluency), 2), 
+    sdfluency     = round(apply(fluency, 1, sd), 2), 
+    absorption    = round(rowMeans(absorption), 2), 
+    sdabsorption  = round(apply(absorption, 1, sd), 2), 
+    anxiety       = round(rowMeans(anxiety), 2), 
+    sdanxiety     = round(apply(anxiety, 1, sd), 2), 
+    fit           = round(rowMeans(fit), 2), 
+    sdfit         = round(apply(fit, 1, sd), 2),
+    duration      = duration
+  )
+  
+  return(fss.factors)
+}
 ```
 
 ```{r control}
-sensor.data <- read.csv(paste("../data/", directory.name, "/", input_filename, ".csv", sep =""))
+sensor.data <- read.csv(paste(path.name, directory.name, "/", input_filename, ".csv", sep =""))
 nCol <- ncol(sensor.data)
 
 summary(sensor.data)
@@ -66,7 +170,7 @@ print(paste("Sampling Rate:", sampling.rate, "Hz"))
 ```
 
 ```{r subset}
-scale <- read.csv(paste("../data/", directory.name, "/scale.csv", sep =""))
+scale <- read.csv(paste(path.name, directory.name, "/scale.csv", sep =""))
 sensor.data[, 1] <- sensor.data[, 1] - sensor.data[1, 1]
 l <- subset_length_in_m * 60 * sampling.rate
 
@@ -87,13 +191,66 @@ for(i in 1:nrow(scale)) {
   
   if(nrow(sensor.data.subset) == l) {
     if(o == 0) {
-      write.csv(sensor.data.subset, file = paste("../data/", directory.name, "/", outfile_filename, "_subset_", i, ".csv", sep =""), row.names = F)
-      print(paste("Wrote: ", "../data/", directory.name, "/", outfile_filename, "_subset_", i, ".csv", sep =""))
+      write.csv(sensor.data.subset, file = paste(path.name, directory.name, "/", output_filename, "_subset_", i, ".csv", sep =""), row.names = F)
+      print(paste("Wrote: ", path.name, directory.name, "/", output_filename, "_subset_", i, ".csv", sep =""))
     }
   } else {
-    print(paste("Subset is to short (", l, "):", nrow(sensor.data.subset)))
+    print(paste("Subset is too short (", l, "):", nrow(sensor.data.subset)))
   } 
 }
 ```
+
+```{r extract-fss-factors}
+
+scale.items <- read.csv(paste(path.name, directory.name, "/scale.csv", sep =""))
+fss.factors <- CalculateFlowShortScaleFactors(scale.items)
+summary(fss.factors)
+
+```
+
+```{r extract-rr-intervals} 
+
+filename.pattern <- "sensor_BD38_subset_1_0_5_hrv.txt"
+file.list <- list.files(path = paste(path.name, directory.name, sep =""), pattern = filename.pattern, recursive = T)
+
+
+sensor.bd38.subset.hrv <- read.csv(paste(path.name, directory.name, "/", file.list[1], sep =""), header = F, na.strings = "", fill = T, skip = 97, col.names = c("NA1", "Time", "RRInterval", "FFTFrequency", "FFTPSD", "ARFrequency", "ARPSD", "NA2", "NA3", "NA4", "NA5"))
+sensor.bd38.subset.hrv <- sensor.bd38.subset.hrv[!is.na(sensor.bd38.subset.hrv$RRInterval),]
+
+plot(sensor.bd38.subset.hrv$RRInterval)
+
+```
+
+```{r extract-step-intervals}
+motion.sensor.data.subset  <- read.csv(paste(path.name, directory.name, "/sensor_BC98_subset_1.csv", sep =""))
+
+m   <- 1
+n   <- nrow(motion.sensor.data.subset[motion.sensor.data.subset$Timestamp < 5 * 60 * 1000, ])
+t   <- motion.sensor.data.subset[m:n, 1] - motion.sensor.data.subset[m, 1]
+gx  <- -motion.sensor.data.subset[m:n, 5]
+fs  <- 1 / (length(gx) / (t[length(t)] / 1000))
+
+indexes <- DetectMidSwing(t, gx, fs, c = 1.5, plot = T)
+
+```{r}
+
+par(mfrow = c(2, 1))
+
+rr.data <- sensor.bd38.subset.hrv
+rr.data$Time <- rr.data$Time - rr.data$Time[1]
+plot(rr.data$Time, rr.data$RRInterval, type = "l", xlab = "Time (s)", ylab = "RR Interval (s)", xaxs = "i", yaxs = "i")
+# (length(rr.data$RRInterval)) / ((rr.data$Time[nrow(rr.data)] - rr.data$Time[1]) / 60)
+
+title(main = paste("Activity: Walking, Sex: Female, Start:", "Datum", ", End, Subset 1/4", sub = "LF: / HF: / LF/HF: / "))
+
+plot(t[indexes] / 1000, c(NA, diff(t[indexes])) / 2000, type = "l", xlab = "Time (s)", ylab = "Step-to-Step Interval (s)", xaxs = "i", yaxs = "i")
+#(length(indexes) * 2) / ((t[indexes[length(indexes)]] - t[indexes[1]]) / 60000)
+
+```
+
+
+
+```
+
 
 
