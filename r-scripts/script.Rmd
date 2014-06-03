@@ -217,22 +217,31 @@ file.list <- list.files(path = paste(path.name, directory.name, sep =""), patter
 sensor.bd38.subset.hrv <- read.csv(paste(path.name, directory.name, "/", file.list[1], sep =""), header = F, na.strings = "", fill = T, skip = 97, col.names = c("NA1", "Time", "RRInterval", "FFTFrequency", "FFTPSD", "ARFrequency", "ARPSD", "NA2", "NA3", "NA4", "NA5"))
 sensor.bd38.subset.hrv <- sensor.bd38.subset.hrv[!is.na(sensor.bd38.subset.hrv$RRInterval),]
 
-plot(sensor.bd38.subset.hrv$RRInterval)
+```
+
+```{r extract-hrv-parameters}
+
+hrv.data <- read.csv(paste(path.name, directory.name, "/", "sensor_BD38_subset_1_0_5_hrv_spss.txt", sep =""))
 
 ```
 
+
 ```{r extract-step-intervals}
-motion.sensor.data.subset  <- read.csv(paste(path.name, directory.name, "/sensor_BC98_subset_1.csv", sep =""))
+motion.sensor.data.subset   <- read.csv(paste(path.name, directory.name, "/sensor_BC98_subset_1.csv", sep =""))
+
+motion.sensor.data.subset.1 <- motion.sensor.data.subset[motion.sensor.data.subset$Timestamp < 5 * 60 * 1000, ]
+date.start                  <- motion.sensor.data.subset.1$System.Timestamp[1] / 1000
+date.end                    <- motion.sensor.data.subset.1$System.Timestamp[nrow(motion.sensor.data.subset.1)] / 1000
 
 m   <- 1
-n   <- nrow(motion.sensor.data.subset[motion.sensor.data.subset$Timestamp < 5 * 60 * 1000, ])
+n   <- nrow(motion.sensor.data.subset.1)
 t   <- motion.sensor.data.subset[m:n, 1] - motion.sensor.data.subset[m, 1]
 gx  <- -motion.sensor.data.subset[m:n, 5]
 fs  <- 1 / (length(gx) / (t[length(t)] / 1000))
 
 indexes <- DetectMidSwing(t, gx, fs, c = 1.5, plot = T)
 
-```{r}
+```{r plot}
 
 par(mfrow = c(2, 1))
 
@@ -241,14 +250,10 @@ rr.data$Time <- rr.data$Time - rr.data$Time[1]
 plot(rr.data$Time, rr.data$RRInterval, type = "l", xlab = "Time (s)", ylab = "RR Interval (s)", xaxs = "i", yaxs = "i")
 # (length(rr.data$RRInterval)) / ((rr.data$Time[nrow(rr.data)] - rr.data$Time[1]) / 60)
 
-title(main = paste("Activity: Walking, Sex: Female, Start:", "Datum", ", End, Subset 1/4", sub = "LF: / HF: / LF/HF: / "))
+title(main = paste("Activity: Walking, Sex: Female, Start: ", as.POSIXct(date.start, tz = "Europe/Berlin", origin = "1970-01-01"), ", End: ", as.POSIXct(date.end, tz = "Europe/Berlin", origin = "1970-01-01"), ", Subset 1/4", sep = ""), sub = "LF: / HF: / LF/HF: / ")
 
 plot(t[indexes] / 1000, c(NA, diff(t[indexes])) / 2000, type = "l", xlab = "Time (s)", ylab = "Step-to-Step Interval (s)", xaxs = "i", yaxs = "i")
 #(length(indexes) * 2) / ((t[indexes[length(indexes)]] - t[indexes[1]]) / 60000)
-
-```
-
-
 
 ```
 
