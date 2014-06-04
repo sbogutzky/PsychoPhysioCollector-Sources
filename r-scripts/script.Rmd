@@ -1,9 +1,9 @@
 ```{r user-input}
   rm(list = ls(all = T))
-  path.name           <- "/Users/simonbogutzky/Downloads/"
+  path.name           <- "/Users/simonbogutzky/Privat/Dropbox/philipp-marsch/walking/"
   directory.name      <- "2014-05-27_12-28-37"
-  input_filename      <- "sensor_BD38"
-  output_filename     <- "sensor_BD38"
+  input_filename      <- "sensor_BC98"
+  output_filename     <- "sensor_BC98"
   subset_length_in_m  <- 15
 ```
 
@@ -201,45 +201,46 @@ for(i in 1:nrow(scale)) {
 ```
 
 ```{r extract-fss-factors}
-
 scale.items <- read.csv(paste(path.name, directory.name, "/scale.csv", sep =""))
 fss.factors <- CalculateFlowShortScaleFactors(scale.items)
-summary(fss.factors)
-
 ```
 
 ```{r extract-rr-intervals} 
-
-filename.pattern <- "sensor_BD38_subset_1_0_5_hrv.txt"
+filename.pattern <- "sensor_BD38_subset_[0-9]{1}_hrv.txt"
 file.list <- list.files(path = paste(path.name, directory.name, sep =""), pattern = filename.pattern, recursive = T)
+i <- 1
 
-
-sensor.bd38.subset.hrv <- read.csv(paste(path.name, directory.name, "/", file.list[1], sep =""), header = F, na.strings = "", fill = T, skip = 97, col.names = c("NA1", "Time", "RRInterval", "FFTFrequency", "FFTPSD", "ARFrequency", "ARPSD", "NA2", "NA3", "NA4", "NA5"))
-sensor.bd38.subset.hrv <- sensor.bd38.subset.hrv[!is.na(sensor.bd38.subset.hrv$RRInterval),]
-
+# for
+kubios.hrv.data <- read.csv(paste(path.name, directory.name, "/", file.list[i], sep =""), header = F, na.strings = "", fill = T, skip = 97, col.names = c("NA1", "Time", "RRInterval", "FFTFrequency", "FFTPSD", "ARFrequency", "ARPSD", "NA2", "NA3", "NA4", "NA5"))
+kubios.hrv.data <- kubios.hrv.data[!is.na(kubios.hrv.data$RRInterval),]
+rr.intervals <- kubios.hrv.data$RRInterval
+# for end
 ```
 
 ```{r extract-hrv-parameters}
+filename.pattern <- "sensor_BD38_subset_[0-9]{1}_hrv_spss.txt"
+file.list <- list.files(path = paste(path.name, directory.name, sep =""), pattern = filename.pattern, recursive = T)
+i <- 1
 
-hrv.data <- read.csv(paste(path.name, directory.name, "/", "sensor_BD38_subset_1_0_5_hrv_spss.txt", sep =""))
+# for
+spss.hrv.data <- read.csv(paste(path.name, directory.name, "/", file.list[i], sep =""))
 
+# for end
 ```
 
 
 ```{r extract-step-intervals}
-motion.sensor.data.subset   <- read.csv(paste(path.name, directory.name, "/sensor_BC98_subset_1.csv", sep =""))
+filename.pattern <- "sensor_BC98_subset_[0-9]{1}.csv"
+file.list <- list.files(path = paste(path.name, directory.name, sep =""), pattern = filename.pattern, recursive = T)
+i <- 1
 
-motion.sensor.data.subset.1 <- motion.sensor.data.subset[motion.sensor.data.subset$Timestamp < 5 * 60 * 1000, ]
-date.start                  <- motion.sensor.data.subset.1$System.Timestamp[1] / 1000
-date.end                    <- motion.sensor.data.subset.1$System.Timestamp[nrow(motion.sensor.data.subset.1)] / 1000
+motion.sensor.data  <- read.csv(paste(path.name, directory.name, "/", file.list[i], sep =""))
 
-m   <- 1
-n   <- nrow(motion.sensor.data.subset.1)
-t   <- motion.sensor.data.subset[m:n, 1] - motion.sensor.data.subset[m, 1]
-gx  <- -motion.sensor.data.subset[m:n, 5]
+t   <- motion.sensor.data[, 1] - motion.sensor.data.subset[, 1]
+gx  <- -motion.sensor.data[, 5]
 fs  <- 1 / (length(gx) / (t[length(t)] / 1000))
 
-indexes <- DetectMidSwing(t, gx, fs, c = 1.5, plot = T)
+ms.indexes <- DetectMidSwing(t, gx, fs, c = 1.5, plot = T)
 
 ```
 
