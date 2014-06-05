@@ -177,14 +177,14 @@ CalculateFlowShortScaleFactors <- function(fss.items) {
 ```
 
 ```{r control}
-sensor.data <- read.csv(paste(path.name, directory.name, "/", input_filename, ".csv", sep =""))
-nCol <- ncol(sensor.data)
-
+file.path   <- paste(dropbox.path, "data-flow/raw-data/", activity.path, person.path, date.path, input.filename, ".csv", sep ="")
+sensor.data <- read.csv(file.path)
+n.col <- ncol(sensor.data)
 summary(sensor.data)
 
 print(paste("Number of dublicates:", NumberOfDuplicates(sensor.data[, 1])))
-print(paste("Start:", as.POSIXct(sensor.data[1, nCol] / 1000, tz = "Europe/Berlin", origin = "1970-01-01")))
-print(paste("Stop:", as.POSIXct(sensor.data[nrow(sensor.data), nCol] / 1000, tz = "Europe/Berlin", origin = "1970-01-01")))
+print(paste("Start:", as.POSIXct(sensor.data[1, n.col] / 1000, tz = "Europe/Berlin", origin = "1970-01-01")))
+print(paste("Stop:", as.POSIXct(sensor.data[nrow(sensor.data), n.col] / 1000, tz = "Europe/Berlin", origin = "1970-01-01")))
 sampling.rate <- round(SamplingRate(sensor.data[, 1]), 0) 
 print(paste("Sampling Rate:", sampling.rate, "Hz"))
 ```
