@@ -75,8 +75,8 @@ DetectMidSwing <- function(t, x, f, c = 1.5, plot = F) {
   # Detects the gait event midswing from gyroscope data from the leg
   #
   # Args:
-  #   x: Vector to search.
   #   t: Vector with intervals.
+  #   x: Vector to search.
   #   f: Low pass frequency (Hz)
   #   c: Cutoff difference (s)
   # Returns:
@@ -106,45 +106,46 @@ DetectMidSwing <- function(t, x, f, c = 1.5, plot = F) {
   return(maxima.1$Index)
 }  
 
-LPF <- function(y, t, f) {
+LPF <- function(t, x, f) {
   # Simple low pass filter
   #
   # Args:
-  #   y: Vector to filter.
   #   t: Time interval between measurements (s)
+  #   y: Vector to filter.
+  #   
   #   f: Low pass frequency (Hz)
   # Returns:
   #   A data frame with indexes and values of local maxima.
   
   rc <- 1 / (2 * pi * f)
   a  <- t / (t + rc)
-  n  <- length(y)
-  yf <- y
-  for(i in 2:length(y)) {
-    yf[i] <- a * y[i] + (1-a) * yf[i-1]
+  n  <- length(x)
+  xf <-x
+  for(i in 2:length(x)) {
+    xf[i] <- a * x[i] + (1-a) * xf[i-1]
   }
-  return(yf)
+  return(xf)
 } 
 
-SearchMaxima <- function(y) {
+SearchMaxima <- function(x) {
   # Search of local maxima
   #
   # Args:
-  #   y: Vector to search.
+  #   x: Vector to search.
   #
   # Returns:
   #   A data frame with indexes and values of local maxima.
   
   # Find locations of local maxima
   # p = 1 at maxima, p otherwise, end point maxima excluded
-  n <- length(y) - 2
-  p <- sign(sign(y[2:(n + 1)] - y[3:(n + 2)]) - sign(y[1:n] - y[2:(n + 1)]) -.1) + 1
+  n <- length(x) - 2
+  p <- sign(sign(x[2:(n + 1)] - x[3:(n + 2)]) - sign(x[1:n] - x[2:(n + 1)]) -.1) + 1
   p <- c(0, p, 0)
   
   # Indices of maxima and corresponding sample
   p <- as.logical(p) 
   i <- 1:length(p)
-  return(data.frame(Index = i[p], Maxima = y[p]))
+  return(data.frame(Index = i[p], Maxima = x[p]))
 }
 
 CalculateFlowShortScaleFactors <- function(fss.items) {
