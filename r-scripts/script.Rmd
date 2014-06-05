@@ -2,10 +2,10 @@
   rm(list = ls(all = T))
   dropbox.path              <- "/Users/simonbogutzky/Privat/Dropbox/"
   activity.path             <- "running/" 
-  person.path               <- "buse-patrik/"
-  date.path                 <- "2014-02-27/"
-  input.filename            <- "2014-02-27-t13-15-52-leg-data" # sensor_BC98 / sensor_BD38
-  output.filename           <- "sensor_BC98" # leg-data / ecg-data
+  person.path               <- "buse-patrick/"
+  date.path                 <- "YYYY-mm-dd/" # YYYY-mm-dd/ for correcting ### YYYY-mm-dd_HH-MM-SS/ for subsetting 
+  input.filename            <- "YYYY-mm-dd_HH-MM-SS-leg-data" # YYYY-mm-dd_HH-MM-SS-ecg-data or YYYY-mm-dd_HH-MM-SS-leg-data for correcting ### sensor_BD38 or sensor_BC98 for subsetting
+  output.filename           <- "sensor_BC98" # sensor_BC98 for sensor_BD38 correcting ### leg-data or ecg-data for subsetting
   subset.length.in.minutes  <- 15
 ```
 
@@ -177,7 +177,7 @@ CalculateFlowShortScaleFactors <- function(fss.items) {
 ```
 
 ```{r control}
-file.path   <- paste(dropbox.path, "data-flow/raw-data/", activity.path, person.path, date.path, input.filename, ".csv", sep ="")
+file.path   <- paste(dropbox.path, "data-flow/processed-data/", activity.path, person.path, date.path, input.filename, ".csv", sep ="")
 sensor.data <- read.csv(file.path)
 n.col <- ncol(sensor.data)
 summary(sensor.data)
@@ -193,13 +193,13 @@ print(paste("Sampling Rate:", sampling.rate, "Hz"))
 dir.path   <- paste(dropbox.path, "data-flow/final-data/", activity.path, person.path, date.path, sep ="")
 dir.create(dir.path, recursive = T, showWarnings = F)
 
-file.source.path <- paste(dropbox.path, "data-flow/raw-data/", activity.path, person.path, date.path, "scale.csv", sep ="")
+file.source.path <- paste(dropbox.path, "data-flow/processed-data/", activity.path, person.path, date.path, "scale.csv", sep ="")
 file.destination.path <- paste(dropbox.path, "data-flow/final-data/", activity.path, person.path, date.path, "scale.csv", sep ="")
 file.copy(file.source.path, file.destination.path, overwrite = F)
 
 scale <- read.csv(file.destination.path)
 
-file.path   <- paste(dropbox.path, "data-flow/raw-data/", activity.path, person.path, date.path, input.filename, ".csv", sep ="")
+file.path   <- paste(dropbox.path, "data-flow/processed-data/", activity.path, person.path, date.path, input.filename, ".csv", sep ="")
 sensor.data <- read.csv(file.path)
 n.col <- ncol(sensor.data)
 sampling.rate <- round(SamplingRate(sensor.data[, 1]), 0) 
