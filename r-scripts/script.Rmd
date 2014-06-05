@@ -190,29 +190,45 @@ print(paste("Sampling Rate:", sampling.rate, "Hz"))
 ```
 
 ```{r subset}
-scale <- read.csv(paste(path.name, directory.name, "/scale.csv", sep =""))
+dir.path   <- paste(dropbox.path, "data-flow/final-data/", activity.path, person.path, date.path, sep ="")
+dir.create(dir.path, recursive = T, showWarnings = F)
+
+file.source.path <- paste(dropbox.path, "data-flow/raw-data/", activity.path, person.path, date.path, "scale.csv", sep ="")
+file.destination.path <- paste(dropbox.path, "data-flow/final-data/", activity.path, person.path, date.path, "scale.csv", sep ="")
+file.copy(file.source.path, file.destination.path, overwrite = F)
+
+scale <- read.csv(file.destination.path)
+
+file.path   <- paste(dropbox.path, "data-flow/raw-data/", activity.path, person.path, date.path, input.filename, ".csv", sep ="")
+sensor.data <- read.csv(file.path)
+n.col <- ncol(sensor.data)
+sampling.rate <- round(SamplingRate(sensor.data[, 1]), 0) 
+
 sensor.data[, 1] <- sensor.data[, 1] - sensor.data[1, 1]
-l <- subset_length_in_m * 60 * sampling.rate
+l <- subset.length.in.minutes * 60 * sampling.rate
 
 for(i in 1:nrow(scale)) {
   if(i == 1) {
     m <- 1 
   } else {
-    m <- nrow(sensor.data[sensor.data[, nCol] < scale[i - 1, 2],]) - 1
+    m <- nrow(sensor.data[sensor.data[, n.col] < scale[i - 1, 2],]) - 1
   }
   n <- m + l - 1
   sensor.data.subset <- sensor.data[m:n,]
   sensor.data.subset <- sensor.data.subset[complete.cases(sensor.data.subset),]
   o <- NumberOfDuplicates(sensor.data.subset[, 1])
   print(paste("Number of dublicates:", o))
-  print(paste("Start:", as.POSIXct(sensor.data.subset[1, nCol] / 1000, tz = "Europe/Berlin", origin = "1970-01-01"), "/", as.POSIXct(scale[i - 1, 2]/ 1000, tz = "Europe/Berlin", origin = "1970-01-01")))
-  print(paste("Stop:", as.POSIXct(sensor.data.subset[nrow(sensor.data.subset), nCol] / 1000, tz = "Europe/Berlin", origin = "1970-01-01"), "/", as.POSIXct(scale[i, 1]/ 1000, tz = "Europe/Berlin", origin = "1970-01-01")))
+  print(paste("Start:", as.POSIXct(sensor.data.subset[1, n.col] / 1000, tz = "Europe/Berlin", origin = "1970-01-01"), "/", as.POSIXct(scale[i - 1, 2]/ 1000, tz = "Europe/Berlin", origin = "1970-01-01")))
+  print(paste("Stop:", as.POSIXct(sensor.data.subset[nrow(sensor.data.subset), n.col] / 1000, tz = "Europe/Berlin", origin = "1970-01-01"), "/", as.POSIXct(scale[i, 1]/ 1000, tz = "Europe/Berlin", origin = "1970-01-01")))
   print(paste("Sampling Rate:", round(SamplingRate(sensor.data.subset[, 1]), 0), "Hz"))
   
   if(nrow(sensor.data.subset) == l) {
     if(o == 0) {
-      write.csv(sensor.data.subset, file = paste(path.name, directory.name, "/", output_filename, "_subset_", i, ".csv", sep =""), row.names = F)
-      print(paste("Wrote: ", path.name, directory.name, "/", output_filename, "_subset_", i, ".csv", sep =""))
+      subset.dir.path   <- paste(dropbox.path, "data-flow/final-data/", activity.path, person.path, date.path, "subset-", i, "/", sep ="")
+      dir.create(subset.dir.path, recursive = T, showWarnings = F)
+      
+      write.csv(sensor.data.subset, file = paste(subset.dir.path, output.filename, ".csv", sep =""), row.names = F)
+      print(paste("Wrote: ", subset.dir.path, output.filename, ".csv", sep =""))
     }
   } else {
     print(paste("Subset is too short (", l, "):", nrow(sensor.data.subset)))
