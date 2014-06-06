@@ -33,7 +33,7 @@
     colnames(sensor.data) <- c("Timestamp","ECG RA-LL","ECG LA-LL","System Timestamp")
   }
   
-  dir.path   <- paste(dropbox.path, "data-flow/transformated-data/", activity.path, person.path, gsub("-t", "_", date.time), "/", sep ="")
+  dir.path   <- paste(dropbox.path, "data-flow/transformed-data/", activity.path, person.path, gsub("-t", "_", date.time), "/", sep ="")
   dir.create(dir.path, recursive = T, showWarnings = F)
   
   write.csv(sensor.data, paste(dir.path, output.filename, ".csv", sep =""), row.names = F)
