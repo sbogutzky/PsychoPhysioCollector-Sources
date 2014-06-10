@@ -1,0 +1,94 @@
+```{r user-input}
+  rm(list = ls(all = T))
+  dropbox.path              <- "/Users/simonbogutzky/Privat/Dropbox/"
+  activity.path             <- "running/" 
+  person.path               <- "bogutzky-simon/"
+  date.path                 <- "2014-05-22_17-12-49/"
+
+  activity        <- "Running"
+  sex             <- "Male"
+  age             <- "30"
+  subset          <- 3
+  total.subsets   <- 4
+
+  band.vlf      <- c(0, 0.04)
+  band.lf       <- c(0.04, 0.15)
+  band.hf       <- c(0.15, 0.4)
+```
+
+```{r functions}
+  source("./functions.R")
+```
+
+```{r extract-fss-factors}
+  file.path   <- paste(dropbox.path, "data-flow/final-data/", activity.path, person.path, date.path, "scale.csv", sep ="")
+  scale.items <- read.csv(file.path)
+  fss.factors <- CalculateFlowShortScaleFactors(scale.items)
+```
+
+```{r extract-rr-intervals-and-psd-values} 
+  file.path       <- paste(dropbox.path, "data-flow/final-data/", activity.path, person.path, date.path, "subset-", subset, "/hrv-data.txt", sep ="")
+  kubios.hrv.data <- read.csv(file.path, header = F, na.strings = "", fill = T, skip = 97, col.names = c("NA1", "Time", "RRInterval", "FFTFrequency", "FFTPSD", "ARFrequency", "ARPSD", "NA2", "NA3", "NA4", "NA5"))
+  t               <- kubios.hrv.data$Time
+  rr.intervals    <- kubios.hrv.data$RRInterval
+  rr.intervals    <- rr.intervals[!is.na(rr.intervals)]
+  fft.spec        <- kubios.hrv.data$FFTPSD
+  fft.spec        <- fft.spec[!is.na(fft.spec)]
+  ar.spec         <- kubios.hrv.data$ARPSD
+  ar.spec         <- ar.spec[!is.na(ar.spec)]
+  freq            <- kubios.hrv.data$FFTFrequency
+  freq            <- freq[!is.na(freq)]
+```
+
+```{r extract-hrv-parameters}
+  file.path     <- paste(dropbox.path, "data-flow/final-data/", activity.path, person.path, date.path, "subset-", subset, "/hrv-data-spss.txt", sep ="")
+  spss.hrv.data <- read.csv(file.path)
+```
+
+```{r plot-rr-intervals-and-psd}
+  date.end <- fss.factors[subset, ]$timestamp / 1000
+  date.start <- (date.end - t[length(t)])
+  spec <- fft.spec
+
+  par(mfrow = c(2, 1))
+
+  plot(t, rr.intervals, type = "l", xlab = "Time (s)", ylab = "RR Interval (s)", xaxs = "i", yaxs = "i")
+  title(main = paste("Activity: ", activity, ", Sex: ", sex, ", Age: ", age, ", Start: ", as.POSIXct(date.start, tz = "Europe/Berlin", origin = "1970-01-01"), ", End: ", as.POSIXct(date.end, tz = "Europe/Berlin", origin = "1970-01-01"), ", Subset ", subset, "/",  total.subsets, sep = ""))
+  
+  index.1 <- which(freq == round(spss.hrv.data$lfpeakfft, 3))
+  index.2 <- which(freq == round(spss.hrv.data$hfpeakfft, 3))
+
+  if (spec[index.1] > spec[index.1]) {
+    ylim.2 <- spec[index.1]
+  } else {
+    ylim.2 <- spec[index.2]
+  }
+  
+  plot(freq, spec, type = "l", xlab = "Frequency (Hz)", ylab = "PSD (s^2/Hz)", xaxs = "i", yaxs = "i", ylim = c(0, ylim.2))
+  title(main = "FFT spectrum (Welch’s periodogram: 256 s window with 50% overlap)", sub = paste("LF: ", round(spss.hrv.data$lfpowfft, 1), " ms^2, HF: ", round(spss.hrv.data$hfpowfft, 1), " ms^2, LF/HF: ", round(spss.hrv.data$lfhffft, 1), ", Flow : ", fss.factors$flow[subset], sep = ""))
+  
+  indexes.hf                <- (freq >= band.vlf[1]) & (freq <= band.hf[2])
+  spec.hf                   <- spec[indexes.hf]
+  spec.hf[1]                <- 0 
+  spec.hf[length(spec.hf)]  <- 0
+  polygon(freq[indexes.hf], spec.hf, col = "blue", border = 1)  
+  
+  indexes.lf                <- (freq >= band.vlf[1]) & (freq <= band.lf[2])
+  spec.lf                   <- spec[indexes.lf]
+  spec.lf[1]                <- 0 
+  spec.lf[length(spec.lf)]  <- 0
+  polygon(freq[indexes.lf], spec.lf, col = "red", border = 1)
+
+  indexes.vlf                 <- (freq >= band.vlf[1]) & (freq <= band.vlf[2])  
+  spec.vlf                    <- spec[indexes.vlf]
+  spec.vlf[1]                 <- 0 
+  spec.vlf[length(spec.vlf)]  <- 0
+  polygon(freq[indexes.vlf], spec.vlf, col = "grey", border = 1)
+
+  axis(side = 1, at = c(band.vlf[2], band.lf[2], band.hf[2]));
+
+  text(band.vlf[1] + (band.vlf[2] - band.vlf[1]) / 2, 0, "VLF", pos = 3)
+  text(band.lf[1] + (band.lf[2] - band.lf[1]) / 2, 0, "LF", pos = 3)
+  text(band.hf[1] + (band.hf[2] - band.hf[1]) / 2, 0, "HF", pos = 3)
+  text(1.0, 0, "VHF", pos = 3)
+```
