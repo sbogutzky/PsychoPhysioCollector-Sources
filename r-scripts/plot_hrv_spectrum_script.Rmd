@@ -49,6 +49,9 @@
   date.end <- fss.factors[subset, ]$timestamp / 1000
   date.start <- (date.end - t[length(t)])
   spec <- fft.spec
+  
+  file.path     <- paste(dropbox.path, "data-flow/final-data/", activity.path, person.path, date.path, "subset-", subset, "/rr-intervals-and-psd.pdf", sep ="")
+  pdf(file.path, width = 11, height = 8, paper = "a4r")
 
   par(mfrow = c(2, 1))
 
@@ -91,4 +94,6 @@
   text(band.lf[1] + (band.lf[2] - band.lf[1]) / 2, 0, "LF", pos = 3)
   text(band.hf[1] + (band.hf[2] - band.hf[1]) / 2, 0, "HF", pos = 3)
   text(1.0, 0, "VHF", pos = 3)
+
+  dev.off()
 ```
