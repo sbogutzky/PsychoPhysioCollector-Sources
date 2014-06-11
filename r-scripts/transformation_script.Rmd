@@ -4,7 +4,7 @@
   activity.path             <- "activity/" 
   person.path               <- "lastname-firstname/"
   date.path                 <- "YYYY-mm-dd/"  
-  input.filename            <- "YYYY-mm-dd_HH-MM-SS-xxx-data"
+  input.filename            <- "YYYY-mm-dd-tHH-MM-SS-xxx-data"
   output.filename           <- "sensor_XXXX"
 ```
 
