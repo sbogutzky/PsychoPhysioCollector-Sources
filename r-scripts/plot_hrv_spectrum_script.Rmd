@@ -8,7 +8,6 @@
   activity        <- "Running"
   sex             <- "Male"
   age             <- "30"
-  subset          <- 3
   total.subsets   <- 4
 
   band.vlf      <- c(0, 0.04)
@@ -20,80 +19,89 @@
   source("./functions.R")
 ```
 
-```{r extract-fss-factors}
-  file.path   <- paste(dropbox.path, "data-flow/final-data/", activity.path, person.path, date.path, "scale.csv", sep ="")
-  scale.items <- read.csv(file.path)
-  fss.factors <- CalculateFlowShortScaleFactors(scale.items)
-```
-
-```{r extract-rr-intervals-and-psd-values} 
-  file.path       <- paste(dropbox.path, "data-flow/final-data/", activity.path, person.path, date.path, "subset-", subset, "/hrv-data.txt", sep ="")
-  kubios.hrv.data <- read.csv(file.path, header = F, na.strings = "", fill = T, skip = 97, col.names = c("NA1", "Time", "RRInterval", "FFTFrequency", "FFTPSD", "ARFrequency", "ARPSD", "NA2", "NA3", "NA4", "NA5"))
-  t               <- kubios.hrv.data$Time
-  rr.intervals    <- kubios.hrv.data$RRInterval
-  rr.intervals    <- rr.intervals[!is.na(rr.intervals)]
-  fft.spec        <- kubios.hrv.data$FFTPSD
-  fft.spec        <- fft.spec[!is.na(fft.spec)]
-  ar.spec         <- kubios.hrv.data$ARPSD
-  ar.spec         <- ar.spec[!is.na(ar.spec)]
-  freq            <- kubios.hrv.data$FFTFrequency
-  freq            <- freq[!is.na(freq)]
-```
-
-```{r extract-hrv-parameters}
-  file.path     <- paste(dropbox.path, "data-flow/final-data/", activity.path, person.path, date.path, "subset-", subset, "/hrv-data-spss.txt", sep ="")
-  spss.hrv.data <- read.csv(file.path)
-```
-
 ```{r plot-rr-intervals-and-psd}
-  date.end <- fss.factors[subset, ]$timestamp / 1000
-  date.start <- (date.end - t[length(t)])
-  spec <- fft.spec
+  for (subset in 1:total.subsets) {
+  print(subset)
+  # extract fss factors
+    file.path   <- paste(dropbox.path, "data-flow/final-data/", activity.path, person.path, date.path, "scale.csv", sep ="")
+    scale.items <- read.csv(file.path)
+    fss.factors <- CalculateFlowShortScaleFactors(scale.items)
   
-  file.path     <- paste(dropbox.path, "data-flow/final-data/", activity.path, person.path, date.path, "subset-", subset, "/rr-intervals-and-psd.pdf", sep ="")
-  pdf(file.path, width = 11, height = 8, paper = "a4r")
-
-  par(mfrow = c(2, 1))
-
-  plot(t, rr.intervals, type = "l", xlab = "Time (s)", ylab = "RR Interval (s)", xaxs = "i", yaxs = "i")
-  title(main = paste("Activity: ", activity, ", Sex: ", sex, ", Age: ", age, ", Start: ", as.POSIXct(date.start, tz = "Europe/Berlin", origin = "1970-01-01"), ", End: ", as.POSIXct(date.end, tz = "Europe/Berlin", origin = "1970-01-01"), ", Subset ", subset, "/",  total.subsets, sep = ""))
+  # extract rr intervals and psd values 
+    file.path       <- paste(dropbox.path, "data-flow/final-data/", activity.path, person.path, date.path, "subset-", subset, "/hrv-data.txt", sep ="")
+    
+    if(file.exists(file.path)) {
   
-  index.1 <- which(freq == round(spss.hrv.data$lfpeakfft, 3))
-  index.2 <- which(freq == round(spss.hrv.data$hfpeakfft, 3))
-
-  if (spec[index.1] > spec[index.1]) {
-    ylim.2 <- spec[index.1]
-  } else {
-    ylim.2 <- spec[index.2]
+      kubios.hrv.data <- read.csv(file.path, header = F, na.strings = "", fill = T, skip = 97, col.names = c("NA1", "Time", "RRInterval", "FFTFrequency", "FFTPSD", "ARFrequency", "ARPSD", "NA2", "NA3", "NA4", "NA5"))
+      t               <- kubios.hrv.data$Time
+      t               <- t[!is.na(t)]
+      rr.intervals    <- kubios.hrv.data$RRInterval
+      rr.intervals    <- rr.intervals[!is.na(rr.intervals)]
+      fft.spec        <- kubios.hrv.data$FFTPSD
+      fft.spec        <- fft.spec[!is.na(fft.spec)]
+      ar.spec         <- kubios.hrv.data$ARPSD
+      ar.spec         <- ar.spec[!is.na(ar.spec)]
+      freq            <- kubios.hrv.data$FFTFrequency
+      freq            <- freq[!is.na(freq)]
+    
+    # extract hrv parameters
+      file.path     <- paste(dropbox.path, "data-flow/final-data/", activity.path, person.path, date.path, "subset-", subset, "/hrv-data-spss.txt", sep ="")
+      spss.hrv.data <- read.csv(file.path)
+    
+    # plot rr intervals and psd
+      date.end <- fss.factors[subset, ]$timestamp / 1000
+      date.start <- (date.end - t[length(t)])
+      spec <- fft.spec
+      
+      file.path     <- paste(dropbox.path, "data-flow/final-data/", activity.path, person.path, date.path, "subset-", subset, "/rr-intervals-and-psd.pdf", sep ="")
+      pdf(file.path, width = 11, height = 8, paper = "a4r")
+    
+      par(mfrow = c(2, 1))
+    
+      plot(t, rr.intervals, type = "l", xlab = "Time (s)", ylab = "RR Interval (s)", xaxs = "i", yaxs = "i", xaxt = "n")
+      title(main = paste("Tachogram - Activity: ", activity, ", Sex: ", sex, ", Age: ", age, ", Subset ", subset, "/",  total.subsets, sep = ""), sub = paste("Start: ", as.POSIXct(date.start, tz = "Europe/Berlin", origin = "1970-01-01"), ", End: ", as.POSIXct(date.end, tz = "Europe/Berlin", origin = "1970-01-01"), sep = ""))
+      axis(side = 1, at = seq(0, 900, by = 60))
+      axis(side = 3, at = max(t), labels = paste("Flow:", fss.factors$flow[subset]))
+      
+      index.1 <- which(freq == round(spss.hrv.data$lfpeakfft, 3))
+      index.2 <- which(freq == round(spss.hrv.data$hfpeakfft, 3))
+    
+      if (spec[index.1] > spec[index.1]) {
+        ylim.2 <- spec[index.1]
+      } else {
+        ylim.2 <- spec[index.2]
+      }
+      
+      plot(freq, spec, type = "l", xlab = "Frequency (Hz)", ylab = "PSD (s^2/Hz)", xaxs = "i", yaxs = "i", ylim = c(0, ylim.2), xaxt = "n")
+      title(main = "FFT spectrum", sub = "Welch's periodogram: 256 s window with 50% overlap")
+      axis(side = 1, at = c(band.vlf[2], band.lf[2], band.hf[2], 0.5, 1.0, 2.0))
+      
+      spec.total                      <- spec
+      spec.total[1]                   <- 0 
+      spec.total[length(spec.total)]  <- 0
+      polygon(freq, spec.total, col = terrain.colors(5)[4], border = 1)   
+    
+      indexes.hf                <- (freq >= band.vlf[1]) & (freq <= band.hf[2])
+      spec.hf                   <- spec[indexes.hf]
+      spec.hf[1]                <- 0 
+      spec.hf[length(spec.hf)]  <- 0
+      polygon(freq[indexes.hf], spec.hf, col = terrain.colors(5)[3], border = 1)  
+      
+      indexes.lf                <- (freq >= band.vlf[1]) & (freq <= band.lf[2])
+      spec.lf                   <- spec[indexes.lf]
+      spec.lf[1]                <- 0 
+      spec.lf[length(spec.lf)]  <- 0
+      polygon(freq[indexes.lf], spec.lf, col = terrain.colors(5)[2], border = 1)
+    
+      indexes.vlf                 <- (freq >= band.vlf[1]) & (freq <= band.vlf[2])  
+      spec.vlf                    <- spec[indexes.vlf]
+      spec.vlf[1]                 <- 0 
+      spec.vlf[length(spec.vlf)]  <- 0
+      polygon(freq[indexes.vlf], spec.vlf, col = terrain.colors(5)[1], border = 1)
+    
+      legend("topright", title = "Frequency bands", c("VLF", paste("LF: ", round(spss.hrv.data$lfpowfft, 1), " ms^2"), paste("HF: ", round(spss.hrv.data$hfpowfft, 1), " ms^2"), "VHF", paste("LF/HF: ", round(spss.hrv.data$lfhffft, 1))), fill = terrain.colors(5), inset = .05, cex = .7)
+    
+      dev.off()
+    }
   }
-  
-  plot(freq, spec, type = "l", xlab = "Frequency (Hz)", ylab = "PSD (s^2/Hz)", xaxs = "i", yaxs = "i", ylim = c(0, ylim.2))
-  title(main = "FFT spectrum (Welch’s periodogram: 256 s window with 50% overlap)", sub = paste("LF: ", round(spss.hrv.data$lfpowfft, 1), " ms^2, HF: ", round(spss.hrv.data$hfpowfft, 1), " ms^2, LF/HF: ", round(spss.hrv.data$lfhffft, 1), ", Flow : ", fss.factors$flow[subset], sep = ""))
-  
-  indexes.hf                <- (freq >= band.vlf[1]) & (freq <= band.hf[2])
-  spec.hf                   <- spec[indexes.hf]
-  spec.hf[1]                <- 0 
-  spec.hf[length(spec.hf)]  <- 0
-  polygon(freq[indexes.hf], spec.hf, col = "blue", border = 1)  
-  
-  indexes.lf                <- (freq >= band.vlf[1]) & (freq <= band.lf[2])
-  spec.lf                   <- spec[indexes.lf]
-  spec.lf[1]                <- 0 
-  spec.lf[length(spec.lf)]  <- 0
-  polygon(freq[indexes.lf], spec.lf, col = "red", border = 1)
-
-  indexes.vlf                 <- (freq >= band.vlf[1]) & (freq <= band.vlf[2])  
-  spec.vlf                    <- spec[indexes.vlf]
-  spec.vlf[1]                 <- 0 
-  spec.vlf[length(spec.vlf)]  <- 0
-  polygon(freq[indexes.vlf], spec.vlf, col = "grey", border = 1)
-
-  axis(side = 1, at = c(band.vlf[2], band.lf[2], band.hf[2]));
-
-  text(band.vlf[1] + (band.vlf[2] - band.vlf[1]) / 2, 0, "VLF", pos = 3)
-  text(band.lf[1] + (band.lf[2] - band.lf[1]) / 2, 0, "LF", pos = 3)
-  text(band.hf[1] + (band.hf[2] - band.hf[1]) / 2, 0, "HF", pos = 3)
-  text(1.0, 0, "VHF", pos = 3)
-
-  dev.off()
 ```
