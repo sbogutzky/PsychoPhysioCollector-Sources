@@ -130,3 +130,51 @@ CalculateFlowShortScaleFactors <- function(fss.items) {
   
   return(fss.factors)
 }
+
+PlotRelation <- function(x, y, ..., summary = F) {
+  
+  if(length(x) > 1) {
+    
+    # Plot x
+    plot(x, y, ...)
+    
+    # Plot lineare Beziehung
+    linear.relation <- lm(y ~ x)
+    abline(linear.relation, ...)
+    if(summary)
+      print(summary(linear.relation))
+    
+    linear.adj.r.squared <- round(summary(linear.relation)$adj.r.squared, 3)
+    linear.p <- summary(linear.relation)$sigma
+    linear.sig <- ""
+    if (linear.p < .1)
+      linear.sig <- "."
+    if (linear.p < .05)
+      linear.sig <- "*"
+    if (linear.p < .01)
+      linear.sig <- "**"
+    if (linear.p < .001)
+      linear.sig <- "***"
+    
+    # Plot quadratische Beziehung
+    quadratic.relation <- lm(y ~ x + I(x^2))
+    xq <- seq(min(x, na.rm = T) - 10, max(x, na.rm = T) + 10, len = 200)
+    yq <- quadratic.relation$coefficients %*% rbind(1, xq, xq^2)
+    lines(xq, yq, lty = 2, ...)
+    if(summary)
+      print(summary(quadratic.relation))
+    
+    quadratic.adj.r.squared <- round(summary(quadratic.relation)$adj.r.squared, 3)
+    quadratic.p <- summary(quadratic.relation)$sigma
+    quadratic.sig <- ""
+    if (quadratic.p < .1)
+      quadratic.sig <- "."
+    if (quadratic.p < .05)
+      quadratic.sig <- "*"
+    if (quadratic.p < .01)
+      quadratic.sig <- "**"
+    if (quadratic.p < .001)
+      quadratic.sig <- "***"
+    title(sub = bquote({R[linear]}^2 ~ "=" ~ .(linear.adj.r.squared) ~ .(linear.sig) ~ "   " ~ {R[quadratisch]}^2 ~ "=" ~ .(quadratic.adj.r.squared) ~ .(quadratic.sig)), line = 4)
+  }
+}

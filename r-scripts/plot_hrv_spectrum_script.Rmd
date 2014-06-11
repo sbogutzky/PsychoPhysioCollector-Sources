@@ -1,14 +1,14 @@
 ```{r user-input}
   rm(list = ls(all = T))
-  dropbox.path              <- "/Users/simonbogutzky/Privat/Dropbox/"
-  activity.path             <- "running/" 
-  person.path               <- "bogutzky-simon/"
-  date.path                 <- "2014-05-22_17-12-49/"
+  dropbox.path              <- "dropbox-path/"
+  activity.path             <- "activity/" 
+  person.path               <- "lastname-firstname/"
+  date.path                 <- "YYYY-mm-dd_HH-MM-SS/"
 
-  activity        <- "Running"
-  sex             <- "Male"
-  age             <- "30"
-  total.subsets   <- 4
+  activity        <- "activity"
+  sex             <- "sex"
+  age             <- "0"
+  total.subsets   <- 0
 
   band.vlf      <- c(0, 0.04)
   band.lf       <- c(0.04, 0.15)
@@ -53,7 +53,7 @@
       date.start <- (date.end - t[length(t)])
       spec <- fft.spec
       
-      file.path     <- paste(dropbox.path, "data-flow/final-data/", activity.path, person.path, date.path, "subset-", subset, "/rr-intervals-and-psd.pdf", sep ="")
+      file.path     <- paste(dropbox.path, "data-flow/final-data/", activity.path, person.path, substr(date.path, 1, 19), "-", "subset-", subset, "-rr-intervals-and-psd.pdf", sep ="")
       pdf(file.path, width = 11, height = 8, paper = "a4r")
     
       par(mfrow = c(2, 1))
@@ -64,9 +64,15 @@
       axis(side = 3, at = max(t), labels = paste("Flow:", fss.factors$flow[subset]))
       
       index.1 <- which(freq == round(spss.hrv.data$lfpeakfft, 3))
+      if(length(index.1) == 0) {
+        index.1 <- which(freq == (round(spss.hrv.data$lfpeakfft, 3) + 0.001))
+      }
       index.2 <- which(freq == round(spss.hrv.data$hfpeakfft, 3))
+      if(length(index.2) == 0) {
+        index.2 <- which(freq == (round(spss.hrv.data$hfpeakfft, 3) + 0.001))
+      }
     
-      if (spec[index.1] > spec[index.1]) {
+      if (spec[index.1] > spec[index.2]) {
         ylim.2 <- spec[index.1]
       } else {
         ylim.2 <- spec[index.2]
