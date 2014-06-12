@@ -1,18 +1,22 @@
 ```{r user-input}
   rm(list = ls(all = T))
-  dropbox.path              <- "/Users/simonbogutzky/Privat/Dropbox/"
-  activity.path             <- "running/" 
-  person.path               <- "bogutzky-simon/"
-  date.path                 <- "2014-05-22_17-12-49/"
+  dropbox.path              <- "dropbox-path/"
+  activity.path             <- "activity/" 
+  person.path               <- "lastname-firstname/"
+  date.path                 <- "YYYY-mm-dd_HH-MM-SS/"
 
-  activity        <- "Running"
-  sex             <- "Male"
-  age             <- "30"
-  total.subsets   <- 4
+  activity        <- "activity"
+  sex             <- "sex"
+  age             <- "0"
+  total.subsets   <- 0
 
   band.vlf      <- c(0, 0.04)
   band.lf       <- c(0.04, 0.15)
   band.hf       <- c(0.15, 0.4)
+
+  amplitude.range       <- c(.0, .0)
+  frequency.range       <- c(.0, .0)
+  rr.interval.range     <- c(.0, .0)
 ```
 
 ```{r functions}
@@ -53,26 +57,32 @@
       date.start <- (date.end - t[length(t)])
       spec <- fft.spec
       
-      file.path     <- paste(dropbox.path, "data-flow/final-data/", activity.path, person.path, date.path, "subset-", subset, "/rr-intervals-and-psd.pdf", sep ="")
+      file.path     <- paste(dropbox.path, "data-flow/final-data/", activity.path, person.path, substr(date.path, 1, 19), "-", "subset-", subset, "-rr-intervals-and-psd.pdf", sep ="")
       pdf(file.path, width = 11, height = 8, paper = "a4r")
     
       par(mfrow = c(2, 1))
     
-      plot(t, rr.intervals, type = "l", xlab = "Time (s)", ylab = "RR Interval (s)", xaxs = "i", yaxs = "i", xaxt = "n")
+      plot(t, rr.intervals, type = "l", xlab = "Time (s)", ylab = "RR Interval (s)", xaxs = "i", yaxs = "i", xaxt = "n", ylim = rr.interval.range)
       title(main = paste("Tachogram - Activity: ", activity, ", Sex: ", sex, ", Age: ", age, ", Subset ", subset, "/",  total.subsets, sep = ""), sub = paste("Start: ", as.POSIXct(date.start, tz = "Europe/Berlin", origin = "1970-01-01"), ", End: ", as.POSIXct(date.end, tz = "Europe/Berlin", origin = "1970-01-01"), sep = ""))
       axis(side = 1, at = seq(0, 900, by = 60))
       axis(side = 3, at = max(t), labels = paste("Flow:", fss.factors$flow[subset]))
       
-      index.1 <- which(freq == round(spss.hrv.data$lfpeakfft, 3))
-      index.2 <- which(freq == round(spss.hrv.data$hfpeakfft, 3))
+#       index.1 <- which(freq == round(spss.hrv.data$lfpeakfft, 3))
+#       if(length(index.1) == 0) {
+#         index.1 <- which(freq == (round(spss.hrv.data$lfpeakfft, 3) + 0.001))
+#       }
+#       index.2 <- which(freq == round(spss.hrv.data$hfpeakfft, 3))
+#       if(length(index.2) == 0) {
+#         index.2 <- which(freq == (round(spss.hrv.data$hfpeakfft, 3) + 0.001))
+#       }
     
-      if (spec[index.1] > spec[index.1]) {
-        ylim.2 <- spec[index.1]
-      } else {
-        ylim.2 <- spec[index.2]
-      }
+#       if (spec[index.1] > spec[index.2]) {
+#         ylim.2 <- spec[index.1]
+#       } else {
+#         ylim.2 <- spec[index.2]
+#       }
       
-      plot(freq, spec, type = "l", xlab = "Frequency (Hz)", ylab = "PSD (s^2/Hz)", xaxs = "i", yaxs = "i", ylim = c(0, ylim.2), xaxt = "n")
+      plot(freq, spec, type = "l", xlab = "Frequency (Hz)", ylab = "PSD (s^2/Hz)", xaxs = "i", yaxs = "i", ylim = amplitude.range, xlim = frequency.range, xaxt = "n")
       title(main = "FFT spectrum", sub = "Welch's periodogram: 256 s window with 50% overlap")
       axis(side = 1, at = c(band.vlf[2], band.lf[2], band.hf[2], 0.5, 1.0, 2.0))
       
