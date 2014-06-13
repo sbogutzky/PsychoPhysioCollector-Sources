@@ -1,22 +1,22 @@
 ```{r user-input}
   rm(list = ls(all = T))
-  dropbox.path              <- "dropbox-path/"
-  activity.path             <- "activity/" 
-  person.path               <- "lastname-firstname/"
-  date.path                 <- "YYYY-mm-dd_HH-MM-SS/"
+  dropbox.path              <- "/Users/simonbogutzky/Privat/Dropbox/"
+  activity.path             <- "running/" 
+  person.path               <- "bogutzky-simon/"
+  date.path                 <- "2014-05-22_17-12-49/"
 
-  activity        <- "activity"
-  sex             <- "sex"
-  age             <- "0"
-  total.subsets   <- 0
+  activity        <- "Running"
+  sex             <- "Male"
+  age             <- "30"
+  total.subsets   <- 1
 
   band.vlf      <- c(0, 0.04)
   band.lf       <- c(0.04, 0.15)
   band.hf       <- c(0.15, 0.4)
 
-  amplitude.range       <- c(.0, .0)
-  frequency.range       <- c(.0, .0)
-  rr.interval.range     <- c(.0, .0)
+  amplitude.range       <- c(0, 500)
+  frequency.range       <- c(.033, .5)
+  rr.interval.range     <- c(.4, .7)
 ```
 
 ```{r functions}
@@ -47,25 +47,39 @@
       ar.spec         <- ar.spec[!is.na(ar.spec)]
       freq            <- kubios.hrv.data$FFTFrequency
       freq            <- freq[!is.na(freq)]
-    
+      
     # extract hrv parameters
       file.path     <- paste(dropbox.path, "data-flow/final-data/", activity.path, person.path, date.path, "subset-", subset, "/hrv-data-spss.txt", sep ="")
       spss.hrv.data <- read.csv(file.path)
+    
+    # calculate hrv parameters
+      spss.hrv.data$meanrr
+      CalculateMeanRR(rr.intervals, 4)
+    
+      spss.hrv.data$sdnn
+      CalculateSDNN(rr.intervals, 4)
+    
+      spss.hrv.data$rmssd
+      CalculateRMSSD(rr.intervals, 4)
+    source("./functions.R")
+      p <- CalculateHRVFrequencyDomainParameters(t, rr.intervals, band.vlf, band.lf, band.hf, 4, 256, .5)
+    
+      
     
     # plot rr intervals and psd
       date.end <- fss.factors[subset, ]$timestamp / 1000
       date.start <- (date.end - t[length(t)])
       spec <- fft.spec
       
-      file.path     <- paste(dropbox.path, "data-flow/final-data/", activity.path, person.path, substr(date.path, 1, 19), "-", "subset-", subset, "-rr-intervals-and-psd.pdf", sep ="")
-      pdf(file.path, width = 11, height = 8, paper = "a4r")
+#       file.path     <- paste(dropbox.path, "data-flow/final-data/", activity.path, person.path, substr(date.path, 1, 19), "-", "subset-", subset, "-rr-intervals-and-psd.pdf", sep ="")
+#       pdf(file.path, width = 11, height = 8, paper = "a4r")
     
       par(mfrow = c(2, 1))
     
-      plot(t, rr.intervals, type = "l", xlab = "Time (s)", ylab = "RR Interval (s)", xaxs = "i", yaxs = "i", xaxt = "n", ylim = rr.interval.range)
-      title(main = paste("Tachogram - Activity: ", activity, ", Sex: ", sex, ", Age: ", age, ", Subset ", subset, "/",  total.subsets, sep = ""), sub = paste("Start: ", as.POSIXct(date.start, tz = "Europe/Berlin", origin = "1970-01-01"), ", End: ", as.POSIXct(date.end, tz = "Europe/Berlin", origin = "1970-01-01"), sep = ""))
-      axis(side = 1, at = seq(0, 900, by = 60))
-      axis(side = 3, at = max(t), labels = paste("Flow:", fss.factors$flow[subset]))
+#       plot(t, rr.intervals, type = "l", xlab = "Time (s)", ylab = "RR Interval (s)", xaxs = "i", yaxs = "i", xaxt = "n", ylim = rr.interval.range)
+#       title(main = paste("Tachogram - Activity: ", activity, ", Sex: ", sex, ", Age: ", age, ", Subset ", subset, "/",  total.subsets, sep = ""), sub = paste("Start: ", as.POSIXct(date.start, tz = "Europe/Berlin", origin = "1970-01-01"), ", End: ", as.POSIXct(date.end, tz = "Europe/Berlin", origin = "1970-01-01"), sep = ""))
+#       axis(side = 1, at = seq(0, 900, by = 60))
+#       axis(side = 3, at = max(t), labels = paste("Flow:", fss.factors$flow[subset]))
       
 #       index.1 <- which(freq == round(spss.hrv.data$lfpeakfft, 3))
 #       if(length(index.1) == 0) {
@@ -81,6 +95,10 @@
 #       } else {
 #         ylim.2 <- spec[index.2]
 #       }
+
+      plot(p$Freq, p$Spec, type = "l", xlab = "Frequency (Hz)", ylab = "PSD (s^2/Hz)", xaxs = "i", yaxs = "i", xaxt = "n", ylim = c(0, 0.00025), xlim = frequency.range)
+      title(main = "FFT spectrum", sub = "Welch's periodogram: 256 s window with 50% overlap")
+      axis(side = 1, at = c(band.vlf[2], band.lf[2], band.hf[2], 0.5, 1.0, 2.0))
       
       plot(freq, spec, type = "l", xlab = "Frequency (Hz)", ylab = "PSD (s^2/Hz)", xaxs = "i", yaxs = "i", ylim = amplitude.range, xlim = frequency.range, xaxt = "n")
       title(main = "FFT spectrum", sub = "Welch's periodogram: 256 s window with 50% overlap")
@@ -111,7 +129,7 @@
     
       legend("topright", title = "Frequency bands", c("VLF", paste("LF: ", round(spss.hrv.data$lfpowfft, 1), " ms^2"), paste("HF: ", round(spss.hrv.data$hfpowfft, 1), " ms^2"), "VHF", paste("LF/HF: ", round(spss.hrv.data$lfhffft, 1))), fill = terrain.colors(5), inset = .05, cex = .7)
     
-      dev.off()
+      #dev.off()
     }
   }
 ```
