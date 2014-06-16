@@ -1,20 +1,3 @@
-CalculateMeanRR <- function(rr.intervals, round.digits = 4) { 
-  return(round(mean(rr.intervals) * 1000, round.digits))
-}
-
-CalculateSDNN <- function(rr.intervals, round.digits = 4) {
-  return(round(sd(rr.intervals) * 1000, round.digits))
-}
-
-CalculateRMSSD <- function(rr.intervals, round.digits = 4) {
-  rr.differences <- abs(diff(rr.intervals))
-  return(round(sqrt(sum(rr.differences^2) / length(rr.differences)) * 1000, round.digits))
-}
-
-CalculateHRVTimeDomainParameters <- function(rr.intervals) {
-  hrv.time.domain.parameters <- data.frame(MeanRR = CalculateMeanRR(rr.intervals, 1), SDNN = CalculateSDNN(rr.intervals, 1), RMSSD = CalculateRMSSD(rr.intervals, 1))
-  return(hrv.time.domain.parameters)
-}
 
 # CalculateHRVFrequencyDomainParameters <- function(rr.times, rr.intervals, band.vlf, band.lf, band.hf, interpolation.rate, method = c("welch", "fft"), window.width, window.overlap) {
 #   
@@ -209,17 +192,6 @@ CalculateHeartRhythmCoherenceRatio <- function(time, rr.interval, sbs, sbe, p1, 
   return(ep)
 }
 
-Interpolate <- function(x, y, interpolation.rate, method = c("linear", "nearest", "pchip", "cubic", "spline")) {
-  
-  # Caluculate xi
-  xi <- seq(x[1], x[length(x)], by = 1/interpolation.rate)
-  
-  # Interpolate
-  require(signal)
-  yi <- interp1(x, y, xi, method = method)
-  return(data.frame(x = xi, y = yi))
-}
-
 # PadZeroToPowerOfTwo <- function(x) {
 #   n <- length(x)
 #   power <- ceiling(log2(n))
@@ -244,35 +216,3 @@ Interpolate <- function(x, y, interpolation.rate, method = c("linear", "nearest"
 #   periodogram <- periodogram[1:(nrow(periodogram)/2), ]
 #   return(periodogram)
 # }
-
-# ComputeWelchPeriodogram <- function(x, interpolation.rate, window.width, window.overlap) {
-#   
-#   # Calculate samples in DFT
-#   nfft <- window.width * interpolation.rate
-#     
-#   # Calculte overlap
-#   noverlap <- nfft * window.overlap
-#   
-#   # Truncate length (like Matlab)
-#   trunc.x.length <- length(x) %% nfft
-#   x <- x[1:(length(x) - trunc.x.length)]
-#   
-#   # Compute periodogram using the Welch (1967) method
-#   require(oce)
-#   w <- pwelch(x, noverlap = noverlap, nfft = nfft, fs = interpolation.rate, plot = F, debug = F)
-#   return(periodogram <- data.frame(Freq = w$freq, Spec = w$spec))
-# }
-
-FindPeaks <- function(x) {
-  
-  # Find locations of local maxima
-  # p = 1 at maxima, p otherwise, end point maxima excluded
-  n <- length(x) - 2
-  p <- sign(sign(x[2:(n + 1)] - x[3:(n + 2)]) - sign(x[1:n] - x[2:(n + 1)]) -.1) + 1
-  p <- c(0, p, 0)
-  
-  # Indices of maxima and corresponding sample
-  p <- as.logical(p) 
-  i <- 1:length(p)
-  return(data.frame(Index = i[p], Maxima = x[p]))
-}

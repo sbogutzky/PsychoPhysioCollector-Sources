@@ -144,10 +144,10 @@ CalculateRMSSD <- function(rr.intervals, round.digits = 4) {
   return(round(sqrt(sum(rr.differences^2) / length(rr.differences)) * 1000, round.digits))
 }
 
-CalculateHRVFrequencyDomainParameters <- function(rr.times, rr.intervals, band.vlf, band.lf, band.hf, interpolation.rate, window.width, window.overlap, plot = F) {
+CalculateHRVFrequencyDomainParameters <- function(rr.times, rr.intervals, band.range.ulf, band.range.vlf, band.range.lf, band.range.hf, band.range.vhf, interpolation.rate, window.width, window.overlap, plot = F, xlim, ylim) {
   
   # Calculation of the fourier transformation required equidistant values of RR intervals
-  times.series.resampled  <- Interpolate(times, rr.intervals, interpolation.rate, "spline")
+  times.series.resampled  <- Interpolate(rr.times, rr.intervals, interpolation.rate, "spline")
   rr.intervals.resampled  <- times.series.resampled$y
   
   # Periodograms
@@ -187,21 +187,24 @@ CalculateHRVFrequencyDomainParameters <- function(rr.times, rr.intervals, band.v
     return(periodogram <- data.frame(freq, spec))
   }
   
-  periodogram.vlf <- CalculateBandPeriodogram(periodogram, band.vlf)
-  periodogram.lf  <- CalculateBandPeriodogram(periodogram, band.lf)
-  periodogram.hf  <- CalculateBandPeriodogram(periodogram, band.hf)
+  periodogram.ulf   <- CalculateBandPeriodogram(periodogram, band.range.ulf)
+  periodogram.vlf   <- CalculateBandPeriodogram(periodogram, band.range.vlf)
+  periodogram.lf    <- CalculateBandPeriodogram(periodogram, band.range.lf)
+  periodogram.hf    <- CalculateBandPeriodogram(periodogram, band.range.hf)
+  periodogram.vhf   <- CalculateBandPeriodogram(periodogram, band.range.vhf)
   
   # Plot
   if (plot) {
     par(mar = c(5.1, 5.1, 4.1, 2.1))
-    plot(periodogram$freq, periodogram$spec, type = "l", xlab = "Frequency (Hz)", ylab = expression(PSD~(s^2/Hz)), xaxs = "i", yaxs = "i", xlim = frequency.range, ylim = amplitude.range, xaxt = "n")
-    axis(side = 1, at = c(band.vlf[2], band.lf[2], band.hf[2], 0.5, 1.0, 2.0))
+    plot(periodogram$freq, periodogram$spec, type = "l", xlab = "Frequency (Hz)", ylab = expression(PSD~(s^2/Hz)), xaxs = "i", yaxs = "i", xlim = xlim, ylim = ylim, xaxt = "n")
+    axis(side = 1, at = c(band.range.vlf[1], band.range.vlf[2], band.range.lf[2], band.range.hf[2], 0.5, 1.0, 2.0))
     title(main = "FFT spectrum", sub = "Welch's periodogram: 256 s window with 50% overlap")
     
-    polygon(c(0, periodogram$freq, 0), c(0, periodogram$spec, 0), col = terrain.colors(5)[4])
-    polygon(c(periodogram.vlf$freq[1], periodogram.vlf$freq, periodogram.vlf$freq[length(periodogram.vlf$freq)]), c(0, periodogram.vlf$spec, 0), col = terrain.colors(5)[3]) 
-    polygon(c(periodogram.lf$freq[1], periodogram.lf$freq, periodogram.lf$freq[length(periodogram.lf$freq)]), c(0, periodogram.lf$spec, 0), col = terrain.colors(5)[2]) 
-    polygon(c(periodogram.hf$freq[1], periodogram.hf$freq, periodogram.hf$freq[length(periodogram.hf$freq)]), c(0, periodogram.hf$spec, 0), col = terrain.colors(5)[1]) 
+    polygon(c(periodogram.ulf$freq[1], periodogram.ulf$freq, periodogram.ulf$freq[length(periodogram.ulf$freq)]), c(0, periodogram.ulf$spec, 0), col = terrain.colors(6)[6])
+    polygon(c(periodogram.vlf$freq[1], periodogram.vlf$freq, periodogram.vlf$freq[length(periodogram.vlf$freq)]), c(0, periodogram.vlf$spec, 0), col = terrain.colors(6)[5]) 
+    polygon(c(periodogram.lf$freq[1], periodogram.lf$freq, periodogram.lf$freq[length(periodogram.lf$freq)]), c(0, periodogram.lf$spec, 0), col = terrain.colors(6)[4]) 
+    polygon(c(periodogram.hf$freq[1], periodogram.hf$freq, periodogram.hf$freq[length(periodogram.hf$freq)]), c(0, periodogram.hf$spec, 0), col = terrain.colors(6)[3])
+    polygon(c(periodogram.vhf$freq[1], periodogram.vhf$freq, periodogram.vhf$freq[length(periodogram.vhf$freq)]), c(0, periodogram.vhf$spec, 0), col = terrain.colors(6)[2])
   }
   
   CalculatePeak <- function(freq, spec) {
@@ -255,6 +258,10 @@ CalculateHRVFrequencyDomainParameters <- function(rr.times, rr.intervals, band.v
   result.peak.vlf   <- round(peak.vlf * 1000) / 1000
   result.peak.lf    <- round(peak.lf * 1000) / 1000
   result.peak.hf    <- round(peak.hf * 1000) / 1000
+  
+  if(plot) {
+    legend("topright", title = "Frequency bands", c("ULF", paste("VLF: ", result.area.vlf, " ms^2"), paste("LF: ", result.area.lf, " ms^2"), paste("HF: ", result.area.hf, " ms^2"), "VHF", paste("LF/HF: ", result.lfhf)), fill = rev(terrain.colors(6)), inset = .05, cex = .7)
+  }
   
   # Create result data frame
   result.hrv.frequency.domain.parameters <- data.frame(vlfpeakfft = result.peak.vlf, lfpeakfft = result.peak.lf, hfpeakfft = result.peak.hf, vlfpowfft = result.area.vlf, lfpowfft = result.area.lf, hfpowfft = result.area.hf, vlfprfft = result.p.vfl, lfprfft = result.p.lf, hfprfft = result.p.hf, lfnufft = result.n.lf, lfnufft = result.n.hf, totpowfft = result.area.total, lfhffft = result.lfhf)
