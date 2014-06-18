@@ -1,12 +1,12 @@
 ```{r user-input}
   rm(list = ls(all = T))
-  path.dropbox              <- "/Dropbox/"
-  path.activity             <- "walking/" 
-  path.person               <- "lastname-firstname/"
+  path.dropbox              <- "/Users/simonbogutzky/Privat/Dropbox/"
+  path.activity             <- "running/" 
+  path.person               <- "buse-patrick/"
 
-  activity                  <- "Activity"
-  sex                       <- "Sex"
-  age                       <- "xx"
+  activity                  <- "Running"
+  sex                       <- "Male"
+  age                       <- "29"
   subsets.total             <- 4
 
   band.range.ulf            <- c(0, .0033)
@@ -49,7 +49,7 @@
       rr.intervals    <- data.kubios.hrv$RRInterval
       rr.intervals    <- rr.intervals[!is.na(rr.intervals)]
         
-        hrv.frequency.domain.parameters <- CalculateHRVFrequencyDomainParameters(times, rr.intervals, band.range.ulf, band.range.vlf, band.range.lf, band.range.hf, band.range.vhf, 4, 256, .5) 
+        hrv.frequency.domain.parameters <- CalculateHRVFrequencyDomainParameters(times, rr.intervals, band.range.ulf, band.range.vlf, band.range.lf, band.range.hf, band.range.vhf, "peifer", 5) 
         
       # add data to data matrix
         data.matrix <- rbind(data.matrix, cbind(fss.factors[subset,], hrv.frequency.domain.parameters, subset = subset))
@@ -64,19 +64,19 @@
   # data.table
 
 # plot relation
-  file.path     <- paste(path.dropbox, "data-flow/final-data/", path.activity, path.person, "flow-hrv-relation-sb.pdf", sep = "")
+  file.path     <- paste(path.dropbox, "data-flow/final-data/", path.activity, path.person, "flow-hrv-relation-cp.pdf", sep = "")
   pdf(file.path, width = 11, height = 8, paper = "a4")
       
   par(mfrow = c(2, 1))
-  PlotRelation(data.matrix$lfpowfft, data.matrix$flow, main = "", xlab =  expression("Power LF-Band " (ms^2)), ylab = "Flow", ylim = c(2, 7), pch = 20)
+  PlotRelation(data.matrix$lfpowfft, data.matrix$absorption, main = "", xlab =  expression("Power LF-Band " (ms^2)), ylab = "Absorption", ylim = c(2, 7), pch = 20)
 
-  text(data.matrix$lfpowfft, data.matrix$flow, as.POSIXct(data.matrix$timestamp / 1000, origin = "1970-01-01"), cex = 0.5, pos = 1, col = terrain.colors(6)[2])
+  text(data.matrix$lfpowfft, data.matrix$absorption, as.POSIXct(data.matrix$timestamp / 1000, origin = "1970-01-01"), cex = 0.5, pos = 1, col = terrain.colors(6)[2])
   
   title(main = paste("Relation - Activity: ", activity, ", Sex: ", sex, ", Age: ", age, sep = ""))
   
-  PlotRelation(data.matrix$hfpowfft, data.matrix$flow, main = "", xlab = expression("Power HF-Band " (ms^2)), ylab = "Flow", ylim = c(2, 7), pch = 20)
+  PlotRelation(data.matrix$hfpowfft, data.matrix$absorption, main = "", xlab = expression("Power HF-Band " (ms^2)), ylab = "Absorption", ylim = c(2, 7), pch = 20)
 
-  text(data.matrix$hfpowfft, data.matrix$flow, as.POSIXct(data.matrix$timestamp / 1000, origin = "1970-01-01"), cex = 0.5, pos = 1, col = terrain.colors(6)[2])
+  text(data.matrix$hfpowfft, data.matrix$absorption, as.POSIXct(data.matrix$timestamp / 1000, origin = "1970-01-01"), cex = 0.5, pos = 1, col = terrain.colors(6)[2])
 
-  dev.off()
+dev.off()
 ```
