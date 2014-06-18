@@ -144,14 +144,67 @@ CalculateRMSSD <- function(rr.intervals, round.digits = 4) {
   return(round(sqrt(sum(rr.differences^2) / length(rr.differences)) * 1000, round.digits))
 }
 
-CalculateHRVFrequencyDomainParameters <- function(rr.times, rr.intervals, band.range.ulf, band.range.vlf, band.range.lf, band.range.hf, band.range.vhf, interpolation.rate, window.width, window.overlap, plot = F, xlim = c(0, 0), ylim = c(0, 0)) {
+CalculateHRVFrequencyDomainParameters <- function(rr.times, rr.intervals, band.range.ulf, band.range.vlf, band.range.lf, band.range.hf, band.range.vhf, method = c("welch", "peifer"), interpolation.rate = 4, window.width = 256, window.overlap = .5, plot = F, xlim = c(0, 0), ylim = c(0, 0)) {
   
   # Calculation of the fourier transformation required equidistant values of RR intervals
   times.series.resampled  <- Interpolate(rr.times, rr.intervals, interpolation.rate, "spline")
   rr.intervals.resampled  <- times.series.resampled$y
   
-  # Periodograms
-  periodogram <- ComputeWelchPeriodogram(rr.intervals.resampled, interpolation.rate, window.width, window.overlap)
+  if (method == "welch") {
+    # Periodograms
+    periodogram <- ComputeWelchPeriodogram(rr.intervals.resampled, interpolation.rate, window.width, window.overlap)
+  }
+  
+  if(method == "peifer") {
+    
+    PadZeroToPowerOfTwo <- function(x) {
+      n <- length(x)
+      power <- ceiling(log2(n))
+      n.zeros <- 2^power
+      zeros <- matrix(0, 1, n.zeros - n)
+      return(c(x, zeros))
+    }
+    
+    SmoothWithSlidingTriangularWeighting <- function(x) { 
+      i = 3
+      while(i < length(x) -1) {
+        x[i] = (x[i - 2] + 2 * x[i - 1] + 3 * x[i] + 2 * x[i + 1] + x[i + 2]) / 9
+        i = i + 1
+      }
+      return(x)
+    }
+    
+    ComputeRawPeriodogram <- function(x) { 
+      spec <- abs(fft(x - mean(x)))^2 / length(x) 
+      freq <- (1:length(x) - 1) / length(x)
+      periodogram <- data.frame(freq, spec)
+      periodogram <- periodogram[1:(nrow(periodogram)/2), ]
+      return(periodogram)
+    }
+    
+    # Tapered using a Hanning window
+    rr.intervals.hanned <- rr.intervals.resampled * hanning(length(rr.intervals.resampled))
+    
+    # Zero padded to the next power of 2
+    rr.intervals.zero.padded <- PadZeroToPowerOfTwo(rr.intervals.hanned)
+    
+#     par(mfrow = c(3, 1))
+#     
+#     plot(rr.intervals, type = "l")
+#     plot(rr.intervals.hanned, type = "l")
+#     plot(rr.intervals.zero.padded, type = "l")
+    
+    # Periodogram
+    periodogram <- ComputeRawPeriodogram(rr.intervals.zero.padded)
+    
+#     par(mfrow = c(2, 1))
+#     plot(periodogram$freq, periodogram$spec, type = "l", ylim = c(0, 500 / 10^6))
+
+    # Smooth periodogram
+    periodogram$spec <- SmoothWithSlidingTriangularWeighting(periodogram$spec)
+
+#     plot(periodogram$freq, periodogram$spec, type = "l", ylim = c(0, 500 / 10^6))
+  }
   
   CalculateBandPeriodogram <- function(periodogram, band.range) {
     

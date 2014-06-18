@@ -77,7 +77,7 @@ pdf(file.path, width = 11, height = 8, paper = "a4r")
         axis(side = 1, at = seq(0, 900, by = 60))
         axis(side = 3, at = max(times), labels = paste("Flow:", fss.factors$flow[subset]))
   
-        hrv.frequency.domain.parameters <- CalculateHRVFrequencyDomainParameters(times.subset, rr.intervals.subset, band.range.ulf, band.range.vlf, band.range.lf, band.range.hf, band.range.vhf, 4, 256, .5, T, range.frequencies, range.amplitudes)      
+        hrv.frequency.domain.parameters <- CalculateHRVFrequencyDomainParameters(times.subset, rr.intervals.subset, band.range.ulf, band.range.vlf, band.range.lf, band.range.hf, band.range.vhf, "welch", 4, 256, .5, T, range.frequencies, range.amplitudes)      
 dev.off()
 
         time.start <- time.end
