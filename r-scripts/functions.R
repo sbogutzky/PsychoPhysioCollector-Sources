@@ -144,7 +144,7 @@ CalculateRMSSD <- function(rr.intervals, round.digits = 4) {
   return(round(sqrt(sum(rr.differences^2) / length(rr.differences)) * 1000, round.digits))
 }
 
-CalculateHRVFrequencyDomainParameters <- function(rr.times, rr.intervals, band.range.ulf, band.range.vlf, band.range.lf, band.range.hf, band.range.vhf, interpolation.rate, window.width, window.overlap, plot = F, xlim, ylim) {
+CalculateHRVFrequencyDomainParameters <- function(rr.times, rr.intervals, band.range.ulf, band.range.vlf, band.range.lf, band.range.hf, band.range.vhf, interpolation.rate, window.width, window.overlap, plot = F, xlim = c(0, 0), ylim = c(0, 0)) {
   
   # Calculation of the fourier transformation required equidistant values of RR intervals
   times.series.resampled  <- Interpolate(rr.times, rr.intervals, interpolation.rate, "spline")
