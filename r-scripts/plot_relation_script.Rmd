@@ -1,7 +1,7 @@
 ```{r user-input}
   rm(list = ls(all = T))
   path.dropbox              <- "/Dropbox/"
-  path.activity             <- "walking/" 
+  path.activity             <- "activity/" 
   path.person               <- "lastname-firstname/"
 
   activity                  <- "Activity"

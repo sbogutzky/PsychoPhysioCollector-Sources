@@ -394,6 +394,6 @@ PlotRelation <- function(x, y, ..., summary = F) {
       quadratic.sig <- "**"
     if (quadratic.p < .001)
       quadratic.sig <- "***"
-    title(sub = bquote({R[linear]}^2 ~ "=" ~ .(linear.adj.r.squared) ~ .(linear.sig) ~ "   " ~ {R[quadratisch]}^2 ~ "=" ~ .(quadratic.adj.r.squared) ~ .(quadratic.sig)), line = 4)
+    title(sub = bquote({R[linear]}^2 ~ "=" ~ .(linear.adj.r.squared) ~ .(linear.sig) ~ "   " ~ {R[quadratic]}^2 ~ "=" ~ .(quadratic.adj.r.squared) ~ .(quadratic.sig)), line = 4)
   }
 }
