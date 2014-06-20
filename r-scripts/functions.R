@@ -282,6 +282,7 @@ CalculateHRVFrequencyDomainParameters <- function(rr.times, rr.intervals, band.r
   area.vlf    <- trapz(periodogram.vlf$freq, periodogram.vlf$spec)
   area.lf     <- trapz(periodogram.lf$freq, periodogram.lf$spec)
   area.hf     <- trapz(periodogram.hf$freq, periodogram.hf$spec)
+  area.vhf    <- trapz(periodogram.vhf$freq, periodogram.vhf$spec)
   area.total  <- area.vlf + area.lf + area.hf
   
   # Calculate areas relative to the total area (%)
@@ -300,6 +301,7 @@ CalculateHRVFrequencyDomainParameters <- function(rr.times, rr.intervals, band.r
   result.area.vlf   <- round(area.vlf * 10^6 * 100) / 100
   result.area.lf    <- round(area.lf * 10^6 * 100) / 100
   result.area.hf    <- round(area.hf * 10^6 * 100) / 100
+  result.area.vhf    <- round(area.vhf * 10^6 * 100) / 100
   result.area.total <- round(area.total * 10^6 * 100) / 100
   
   result.p.vfl      <- round(p.vlf * 1000) / 1000
@@ -313,11 +315,11 @@ CalculateHRVFrequencyDomainParameters <- function(rr.times, rr.intervals, band.r
   result.peak.hf    <- round(peak.hf * 1000) / 1000
   
   if(plot) {
-    legend("topright", title = "Frequency bands", c("ULF", paste("VLF: ", result.area.vlf, " ms^2"), paste("LF: ", result.area.lf, " ms^2"), paste("HF: ", result.area.hf, " ms^2"), "VHF", paste("LF/HF: ", result.lfhf)), fill = rev(terrain.colors(6)), inset = .05, cex = .7)
+    legend("topright", title = "Frequency bands", c("ULF", paste("VLF: ", result.area.vlf, " ms^2"), paste("LF: ", result.area.lf, " ms^2"), paste("HF: ", result.area.hf, " ms^2"), paste("VHF: ", result.area.vhf, " ms^2"), paste("LF/HF: ", result.lfhf)), fill = rev(terrain.colors(6)), inset = .05, cex = .7)
   }
   
   # Create result data frame
-  result.hrv.frequency.domain.parameters <- data.frame(vlfpeakfft = result.peak.vlf, lfpeakfft = result.peak.lf, hfpeakfft = result.peak.hf, vlfpowfft = result.area.vlf, lfpowfft = result.area.lf, hfpowfft = result.area.hf, vlfprfft = result.p.vfl, lfprfft = result.p.lf, hfprfft = result.p.hf, lfnufft = result.n.lf, lfnufft = result.n.hf, totpowfft = result.area.total, lfhffft = result.lfhf)
+  result.hrv.frequency.domain.parameters <- data.frame(vlfpeakfft = result.peak.vlf, lfpeakfft = result.peak.lf, hfpeakfft = result.peak.hf, vlfpowfft = result.area.vlf, lfpowfft = result.area.lf, hfpowfft = result.area.hf, vhfpowfft = result.area.vhf, vlfprfft = result.p.vfl, lfprfft = result.p.lf, hfprfft = result.p.hf, lfnufft = result.n.lf, hfnufft = result.n.hf, totpowfft = result.area.total, lfhffft = result.lfhf)
   return(result.hrv.frequency.domain.parameters)
 }
 
