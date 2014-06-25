@@ -78,12 +78,12 @@
   
   PlotRelation(data.matrix$lfpowfft, data.matrix$absorption, main = "", xlab =  expression("Power of LF band " (ms^2)), ylab = "Absorption", ylim = c(2, 7), pch = 21, bg = "#3FADCB", cex = 2, cex.lab = 2, cex.axis = 1.5)
 
-  text(data.matrix$lfpowfft, data.matrix$absorption, as.POSIXct(data.matrix$timestamp / 1000, origin = "1970-01-01"), cex = 0.5, pos = 1, col = "black")
+  #text(data.matrix$lfpowfft, data.matrix$absorption, as.POSIXct(data.matrix$timestamp / 1000, origin = "1970-01-01"), cex = 0.5, pos = 1, col = "black")
   
   title(main = paste("Activity: ", activity, ", Sex: ", sex, ", Age: ", age, sep = ""), cex.main = 3)
 
   PlotRelation(data.matrix$hfpowfft, data.matrix$absorption, main = "", xlab = expression("Power of HF band " (ms^2)), ylab = "Absorption", ylim = c(2, 7), pch = 21, bg = "#3FADCB", cex = 2, cex.lab = 2, cex.axis = 1.5)
-  text(data.matrix$hfpowfft, data.matrix$absorption, as.POSIXct(data.matrix$timestamp / 1000, origin = "1970-01-01"), cex = 0.5, pos = 1, col = "black")
+  #text(data.matrix$hfpowfft, data.matrix$absorption, as.POSIXct(data.matrix$timestamp / 1000, origin = "1970-01-01"), cex = 0.5, pos = 1, col = "black")
 
 dev.off()
 ```
