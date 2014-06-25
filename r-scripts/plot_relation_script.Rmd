@@ -70,6 +70,8 @@
   # data.table
 
 # plot relation
+  library(extrafont)
+  font_import()
   loadfonts()
   file.path     <- paste(path.dropbox, "data-flow/final-data/", path.activity, path.person, "absorption-hrv-relation.pdf", sep = "")
   
