@@ -1,20 +1,20 @@
 ```{r user-input}
   rm(list = ls(all = T))
   path.dropbox              <- "/Users/simonbogutzky/Dropbox/"
-  path.activity             <- "running/" 
-  path.person               <- "buse-patrick/"
+  path.activity             <- "walking/" 
+  path.person               <- "grueter-barbara-02/"
 
-  activity                  <- "Running"
-  sex                       <- "Male"
-  age                       <- "29"
+  activity                  <- "Walking"
+  sex                       <- "Female"
+  age                       <- "64"
   subsets.total             <- 4
   subset.to.last.minutes    <- 10
 
   band.range.ulf            <- c(0, .0033)
-  band.range.vlf            <- c(.0033, .06)
-  band.range.lf             <- c(.06, .14)
-  band.range.hf             <- c(.15, .499)
-  band.range.vhf            <- c(.499, .5)
+  band.range.vlf            <- c(.0033, .04)
+  band.range.lf             <- c(.04, .15)
+  band.range.hf             <- c(.15, .4)
+  band.range.vhf            <- c(.4, .5)
 ```
 
 ```{r functions}
@@ -55,7 +55,7 @@
       times           <- times[in.time]
       rr.intervals    <- rr.intervals[in.time]
         
-        hrv.frequency.domain.parameters <- CalculateHRVFrequencyDomainParameters(times, rr.intervals, band.range.ulf, band.range.vlf, band.range.lf, band.range.hf, band.range.vhf, "peifer", 5) 
+        hrv.frequency.domain.parameters <- CalculateHRVFrequencyDomainParameters(times, rr.intervals, band.range.ulf, band.range.vlf, band.range.lf, band.range.hf, band.range.vhf, "welch", 4) 
         
       # add data to data matrix
         data.matrix <- rbind(data.matrix, cbind(fss.factors[subset,], hrv.frequency.domain.parameters, subset = subset))
@@ -63,29 +63,34 @@
     }
   }
 
-  # data.table <- subset(data.matrix, select = c("subset", "flow", "fluency", "absorption", "anxiety", "fit", "meanhr", "lfpowfft", "hfpowfft", "totpowfft", "lfhffft", "lfpownufft", "hfpownufft"))
-  # colnames(data.table) <- c("Subset", "Flow", "Fluency", "Absorption", "Anxiety", "Fit", "Mean HR", "LF Power (FFT)", "HF Power (FFT)", "Total Power (FFT)", "LF/HF (FFT)", "LF Power (FFT) n. u", "HF Power (FFT) n. u")
-  # rownames(data.table) <- c(as.character(as.POSIXct(data.matrix[, 1] / 1000, tz = "Europe/Berlin", origin = "1970-01-01")))
-  # data.table <- as.table(data.table)
-  # data.table
+  ranges.lf <- c(mean(data.matrix$lfpowfft) - sd(data.matrix$lfpowfft) * 2, mean(data.matrix$lfpowfft) + sd(data.matrix$lfpowfft) * 2)
+  ranges.hf <- c(mean(data.matrix$hfpowfft) - sd(data.matrix$hfpowfft) * 2, mean(data.matrix$hfpowfft) + sd(data.matrix$hfpowfft) * 2)
+  
+  in.matrix <- data.matrix$hfpowfft > ranges.hf[1] & data.matrix$hfpowfft < ranges.hf[2] & data.matrix$lfpowfft > ranges.lf[1] & data.matrix$lfpowfft < ranges.lf[2] & data.matrix$sdflow != 0 & data.matrix$sdabsorption != 0
+  
+  data.matrix.skipped <- data.matrix[!in.matrix, ]
+  data.matrix <- data.matrix[in.matrix, ]
 
 # plot relation
   library(extrafont)
-  font_import()
+  #font_import()
   loadfonts()
-  file.path     <- paste(path.dropbox, "data-flow/final-data/", path.activity, path.person, "absorption-hrv-relation.pdf", sep = "")
+  file.path     <- paste(path.dropbox, "data-flow/final-data/", path.activity, path.person, "flow-hrv-relation-welch-in-matrix.pdf", sep = "")
   
   pdf(file.path, width = 14.2191, height = 10.6643, family = "Gill Sans MT")
   par(mfrow = c(2, 1), mar = c(7.1, 5.1, 4.1, 1.1), oma = c(0, 0, 0, 0), mgp = c(3, 1, 0))    
   
-  PlotRelation(data.matrix$lfpowfft, data.matrix$absorption, main = "", xlab =  expression("Power of LF band " (ms^2)), ylab = "Absorption", ylim = c(2, 7), pch = 21, bg = "#3FADCB", cex = 2, cex.lab = 2, cex.axis = 1.5)
+  PlotRelation(data.matrix$lfpowfft, data.matrix$flow, main = "", xlab =  expression("Power of LF band " (ms^2)), ylab = "Flow", ylim = c(2, 7), pch = 21, bg = "#3FADCB", cex = 2, cex.lab = 2, cex.axis = 1.5)
 
-  #text(data.matrix$lfpowfft, data.matrix$absorption, as.POSIXct(data.matrix$timestamp / 1000, origin = "1970-01-01"), cex = 0.5, pos = 1, col = "black")
+  #text(data.matrix$lfpowfft, data.matrix$flow, as.POSIXct(data.matrix$timestamp / 1000, origin = "1970-01-01"), cex = 0.5, pos = 1, col = "black")
   
   title(main = paste("Activity: ", activity, ", Sex: ", sex, ", Age: ", age, sep = ""), cex.main = 3)
 
-  PlotRelation(data.matrix$hfpowfft, data.matrix$absorption, main = "", xlab = expression("Power of HF band " (ms^2)), ylab = "Absorption", ylim = c(2, 7), pch = 21, bg = "#3FADCB", cex = 2, cex.lab = 2, cex.axis = 1.5)
-  #text(data.matrix$hfpowfft, data.matrix$absorption, as.POSIXct(data.matrix$timestamp / 1000, origin = "1970-01-01"), cex = 0.5, pos = 1, col = "black")
+  PlotRelation(data.matrix$hfpowfft, data.matrix$flow, main = "", xlab = expression("Power of HF band " (ms^2)), ylab = "Flow", ylim = c(2, 7), pch = 21, bg = "#3FADCB", cex = 2, cex.lab = 2, cex.axis = 1.5)
+  #text(data.matrix$hfpowfft, data.matrix$flow, as.POSIXct(data.matrix$timestamp / 1000, origin = "1970-01-01"), cex = 0.5, pos = 1, col = "black")
 
 dev.off()
+
+print(paste(nrow(data.matrix) + nrow(data.matrix.skipped), "/", nrow(data.matrix)))
+print(as.POSIXct(data.matrix.skipped[, 1] / 1000, tz = "Europe/Berlin", origin = "1970-01-01"))
 ```

@@ -195,7 +195,8 @@ CalculateHRVFrequencyDomainParameters <- function(rr.times, rr.intervals, band.r
 #     plot(rr.intervals.zero.padded, type = "l")
     
     # Periodogram
-    periodogram <- ComputeRawPeriodogram(rr.intervals.zero.padded)
+    library(TSA)
+    periodogram <- periodogram(rr.intervals.zero.padded, plot = F)
     
 #     par(mfrow = c(2, 1))
 #     plot(periodogram$freq, periodogram$spec, type = "l", ylim = c(0, 500 / 10^6))
