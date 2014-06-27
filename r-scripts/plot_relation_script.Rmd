@@ -1,12 +1,12 @@
 ```{r user-input}
   rm(list = ls(all = T))
-  path.dropbox              <- "/Users/simonbogutzky/Dropbox/"
-  path.activity             <- "walking/" 
-  path.person               <- "grueter-barbara-02/"
+  dropbox.path              <- "dropbox-path/"
+  activity.path             <- "activity/"
+  path.person               <- "lastname-firstname/"
 
-  activity                  <- "Walking"
-  sex                       <- "Female"
-  age                       <- "64"
+  activity                  <- "Activity"
+  sex                       <- "Sex"
+  age                       <- "xx"
   subsets.total             <- 4
   subset.to.last.minutes    <- 10
 
