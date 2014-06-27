@@ -195,7 +195,8 @@ CalculateHRVFrequencyDomainParameters <- function(rr.times, rr.intervals, band.r
 #     plot(rr.intervals.zero.padded, type = "l")
     
     # Periodogram
-    periodogram <- ComputeRawPeriodogram(rr.intervals.zero.padded)
+    library(TSA)
+    periodogram <- periodogram(rr.intervals.zero.padded, plot = F)
     
 #     par(mfrow = c(2, 1))
 #     plot(periodogram$freq, periodogram$spec, type = "l", ylim = c(0, 500 / 10^6))
@@ -361,7 +362,7 @@ PlotRelation <- function(x, y, ..., summary = F) {
     
     # Plot lineare Beziehung
     linear.relation <- lm(y ~ x)
-    abline(linear.relation, ...)
+    abline(linear.relation, lwd = 2, ...)
     if(summary)
       print(summary(linear.relation))
     
@@ -381,7 +382,7 @@ PlotRelation <- function(x, y, ..., summary = F) {
     quadratic.relation <- lm(y ~ x + I(x^2))
     xq <- seq(min(x, na.rm = T) - 10, max(x, na.rm = T) + 10, len = 200)
     yq <- quadratic.relation$coefficients %*% rbind(1, xq, xq^2)
-    lines(xq, yq, lty = 2, ...)
+    lines(xq, yq, lty = 2, lwd = 2, ...)
     if(summary)
       print(summary(quadratic.relation))
     
@@ -396,6 +397,7 @@ PlotRelation <- function(x, y, ..., summary = F) {
       quadratic.sig <- "**"
     if (quadratic.p < .001)
       quadratic.sig <- "***"
-    title(sub = bquote({R[linear]}^2 ~ "=" ~ .(linear.adj.r.squared) ~ .(linear.sig) ~ "   " ~ {R[quadratic]}^2 ~ "=" ~ .(quadratic.adj.r.squared) ~ .(quadratic.sig)), line = 4)
+    title(sub = bquote({R[linear]}^2 ~ "=" ~ .(linear.adj.r.squared) ~ .(linear.sig) ~ "(solid)     " ~ {R[quadratic]}^2 ~ "=" ~ .(quadratic.adj.r.squared) ~ .(quadratic.sig) ~ "(dashed)"), line = 6, cex.sub = 2)
+    grid(col = "gray", lwd = 2)
   }
 }
