@@ -91,32 +91,47 @@ dev.off()
       }
     }
   }
+  
+#   file.path     <- paste(path.dropbox, "data-flow/final-data/", path.activity, path.person, substr(path.date, 1, 19), "-data.csv", sep ="")
+#   write.csv(data.hrv.flow, file.path, row.names = F)
 ```
 
 ```{r hrv-parameter-history-against-flow}
 
+  library(extrafont)
+  #font_import()
+  loadfonts()
   file.path     <- paste(path.dropbox, "data-flow/final-data/", path.activity, path.person, substr(path.date, 1, 19), "-bands-and-flow.pdf", sep ="")
-  pdf(file.path, width = 11, height = 8, paper = "a4r")
+  
+  pdf(file.path, width = 14.2191, height = 10.6643, family = "Gill Sans MT")
+  par(mfrow = c(3, 1), mar = c(6.1, 6.1, 4.1, 6.1), oma = c(0, 0, 0, 0), mgp = c(3, 1, 0))
+
+  selected.values <- c(2, 3, 5, 6, 8, 9, 11, 12)
 
   PlotFlow <- function() {
     par(new = T)
-    plot(data.hrv.flow$flow, col = terrain.colors(6)[2], axes = F, xlab = NA, ylab = NA, type = "o", pch = 19)
-    axis(side = 4, col = terrain.colors(6)[2])
-    mtext(side = 4, line = 3, "flow", col = terrain.colors(6)[2])
+    plot(seq(from = 15, to = 60, by = 15), data.hrv.flow$flow[!is.na(data.hrv.flow$flow)], xlim = c(0, 60), ylim = c(2.5, 4.5), axes = F, xlab = NA, ylab = NA, type = "o", pch = 21, bg = terrain.colors(6)[2], cex = 2)
+    axis(side = 4, col = terrain.colors(6)[2], cex = 1.5, cex.axis = 1.5)
+    mtext(side = 4, line = 3, "Flow", col = terrain.colors(6)[2], cex = 1.5)
+    grid()
   }
   
-  par(mfrow = c(4, 1), mar = c(5.1, 5.1, 4.1, 5.1))
+#   plot(seq(from = 5, to = 60, by = 5)[selected.values], data.hrv.flow$vlfpowfft[selected.values], type = "o", xlab = "Minute", ylab = expression("Power of VLF band " (ms^2)), xlim = c(0, 60), ylim = c(0, max(data.hrv.flow$vlfpowfft[selected.values])), pch = 21, bg = "#3FADCB", cex = 2, cex.lab = 2, cex.axis = 1.5)
+#   grid()
+#   PlotFlow()
   
-  plot(data.hrv.flow$vlfpowfft, type = "o", xlab = "Measurement (n)", ylab = expression(VLF~(ms^2)), ylim = c(0, 1200), pch = 19)
-  PlotFlow()
-  
-  plot(data.hrv.flow$lfpowfft, type = "o", xlab = "Measurement (n)", ylab = expression(LF~(ms^2)), ylim = c(0, 10), pch = 19)
+  plot(seq(from = 5, to = 60, by = 5)[selected.values], data.hrv.flow$lfpowfft[selected.values], type = "o", xlab = "Minute", ylab = expression("Power of LF band " (ms^2)), xlim = c(0, 60), ylim = c(0, max(data.hrv.flow$lfpowfft[selected.values])), pch = 21, bg = "#3FADCB", cex = 2, cex.lab = 2, cex.axis = 1.5)
+  grid()
   PlotFlow()
 
-  plot(data.hrv.flow$hfpowfft, type = "o", xlab = "Measurement (n)", ylab = expression(HF~(ms^2)), ylim = c(0, 10), pch = 19)
+title(main = paste("Activity: ", activity, ", Sex: ", sex, ", Age: ", age, ", Date: ", substr(path.date, 1, 10), sep = ""), cex.main = 3)
+
+  plot(seq(from = 5, to = 60, by = 5)[selected.values], data.hrv.flow$hfpowfft[selected.values], type = "o", xlab = "Minute", ylab = expression("Power of HF band " (ms^2)), xlim = c(0, 60), ylim = c(0, max(data.hrv.flow$hfpowfft[selected.values])), pch = 21, bg = "#3FADCB", cex = 2, cex.lab = 2, cex.axis = 1.5)
+  grid()
   PlotFlow()
 
-  plot(data.hrv.flow$lfhffft, type = "o", xlab = "Measurement (n)", ylab = "LF/HF", ylim = c(0, 5), pch = 19)
+  plot(seq(from = 5, to = 60, by = 5)[selected.values], data.hrv.flow$lfhffft[selected.values], type = "o", xlab = "Minute", ylab = "LF/HF", xlim = c(0, 60), ylim = c(0, max(data.hrv.flow$lfhffft[selected.values])), pch = 21, bg = "#3FADCB", cex = 2, cex.lab = 2, cex.axis = 1.5)
+  grid()
   PlotFlow()
 
   dev.off()
