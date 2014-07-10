@@ -19,13 +19,14 @@ SamplingRate <- function(t) {
   return(length(t) / ((t[length(t)] - t[1]) / 10^3))
 }
 
-DetectMidSwing <- function(t, x, f, c = 1.5, plot = F) {
+DetectMidSwing <- function(t, x, fs, c = 1.5, plot = F) {
   # Detects the gait event midswing from gyroscope data from the leg
   #
   # Args:
   #   t: Vector with intervals.
   #   x: Vector to search.
-  #   f: Low pass frequency (Hz)
+  #   
+  #   fs: Sample rate
   #   c: Cutoff difference (s)
   # Returns:
   #   Indexes of mid swings
@@ -38,7 +39,7 @@ DetectMidSwing <- function(t, x, f, c = 1.5, plot = F) {
   }
   
   # Filter high frequency noise
-  xf <- LPF(x, f, 2)
+  xf <- LPF(x, fs, 2)
   xf <- (xf - mean(xf)) / sd(xf)
   
   if (plot)
@@ -54,46 +55,45 @@ DetectMidSwing <- function(t, x, f, c = 1.5, plot = F) {
   return(maxima.1$Index)
 }  
 
-LPF <- function(t, x, f) {
+LPF <- function(y, fs, cf) {
   # Simple low pass filter
   #
   # Args:
-  #   t: Time interval between measurements (s)
   #   y: Vector to filter.
-  #   
-  #   f: Low pass frequency (Hz)
+  #   fs: Time interval between measurements (s)
+  #   cf: Cutoff frequency (Hz)
   # Returns:
   #   A data frame with indexes and values of local maxima.
   
-  rc <- 1 / (2 * pi * f)
-  a  <- t / (t + rc)
-  n  <- length(x)
-  xf <-x
-  for(i in 2:length(x)) {
-    xf[i] <- a * x[i] + (1-a) * xf[i-1]
+  rc <- 1 / (2 * pi * cf)
+  a  <- fs / (fs + rc)
+  n  <- length(y)
+  yf <- y
+  for(i in 2:length(y)) {
+    yf[i] <- a * y[i] + (1-a) * yf[i-1]
   }
-  return(xf)
+  return(yf)
 } 
 
-SearchMaxima <- function(x) {
+SearchMaxima <- function(y) {
   # Search of local maxima
   #
   # Args:
-  #   x: Vector to search.
+  #   y: Vector to search.
   #
   # Returns:
   #   A data frame with indexes and values of local maxima.
   
   # Find locations of local maxima
   # p = 1 at maxima, p otherwise, end point maxima excluded
-  n <- length(x) - 2
-  p <- sign(sign(x[2:(n + 1)] - x[3:(n + 2)]) - sign(x[1:n] - x[2:(n + 1)]) -.1) + 1
+  n <- length(y) - 2
+  p <- sign(sign(y[2:(n + 1)] - y[3:(n + 2)]) - sign(y[1:n] - y[2:(n + 1)]) -.1) + 1
   p <- c(0, p, 0)
   
   # Indices of maxima and corresponding sample
   p <- as.logical(p) 
   i <- 1:length(p)
-  return(data.frame(Index = i[p], Maxima = x[p]))
+  return(data.frame(Index = i[p], Maxima = y[p]))
 }
 
 CalculateFlowShortScaleFactors <- function(fss.items) {
