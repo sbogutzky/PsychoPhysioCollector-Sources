@@ -19,54 +19,54 @@ SamplingRate <- function(t) {
   return(length(t) / ((t[length(t)] - t[1]) / 10^3))
 }
 
-DetectMidSwing <- function(t, x, fs, c = 1.5, plot = F) {
+DetectMidSwing <- function(t, y, time.interval, cd = 1.5, plot = F) {
   # Detects the gait event midswing from gyroscope data from the leg
   #
   # Args:
   #   t: Vector with intervals.
-  #   x: Vector to search.
+  #   y: Vector to search.
   #   
-  #   fs: Sample rate
-  #   c: Cutoff difference (s)
+  #   time.interval: Time interval between measurements (s)
+  #   cd: Cutoff difference (s)
   # Returns:
   #   Indexes of mid swings
   
   if (plot) {
     par(mfrow = c(2, 1))
-    plot(t / 1000, x, type = "l", xlab = "Time (s)", ylab = "Rotation rate X (deg/s)", xaxs = "i", yaxs = "i")
-    maxima <- SearchMaxima(x)
-    points(t[maxima$Index] / 1000, x[maxima$Index])
+    plot(t / 1000, y, type = "l", xlab = "Time (s)", ylab = "Rotation rate X (deg/s)", xaxs = "i", yaxs = "i")
+    maxima <- SearchMaxima(y)
+    points(t[maxima$Index] / 1000, y[maxima$Index])
   }
   
   # Filter high frequency noise
-  xf <- LPF(x, fs, 2)
-  xf <- (xf - mean(xf)) / sd(xf)
+  yf <- LPF(y, time.interval, 2)
+  yf <- (yf - mean(yf)) / sd(yf)
   
   if (plot)
-    plot(t / 1000, xf, type = "l", xlab = "Time (s)", ylab = "Filtered rotation rate (deg/s)", xaxs = "i", yaxs = "i")
+    plot(t / 1000, yf, type = "l", xlab = "Time (s)", ylab = "Filtered rotation rate (deg/s)", xaxs = "i", yaxs = "i")
   
-  maxima.1 <- SearchMaxima(xf)
-  p <- c(0, diff(maxima.1$Maxima)) > c
+  maxima.1 <- SearchMaxima(yf)
+  p <- c(0, diff(maxima.1$Maxima)) > cd
   maxima.1 <- maxima.1[p & maxima.1$Maxima > 0,]
   
   if (plot)
-    points(t[maxima.1$Index] / 1000, xf[maxima.1$Index])
+    points(t[maxima.1$Index] / 1000, yf[maxima.1$Index])
   
   return(maxima.1$Index)
 }  
 
-LPF <- function(y, fs, cf) {
+LPF <- function(y, time.interval, cutoff) {
   # Simple low pass filter
   #
   # Args:
   #   y: Vector to filter.
-  #   fs: Time interval between measurements (s)
-  #   cf: Cutoff frequency (Hz)
+  #   time.interval: Time interval between measurements (s)
+  #   cutoff: Cutoff frequency (Hz)
   # Returns:
   #   A data frame with indexes and values of local maxima.
   
-  rc <- 1 / (2 * pi * cf)
-  a  <- fs / (fs + rc)
+  rc <- 1 / (2 * pi * cutoff)
+  a  <- time.interval / (time.interval + rc)
   n  <- length(y)
   yf <- y
   for(i in 2:length(y)) {
