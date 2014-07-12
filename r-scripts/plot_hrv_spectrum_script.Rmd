@@ -1,13 +1,13 @@
 ```{r user-input}
   rm(list = ls(all = T))
-  path.person               <- "lastname-firstname/"
-  path.date                 <- "YYYY-MM-dd_HH-mm-ss/"
-  path.dropbox              <- "dropbox-path/"
-  path.activity             <- "activity/"
+  path.person               <- "grueter-barbara-02/"
+  path.date                 <- "2014-05-28_13-05-48/"
+  path.dropbox              <- "~/Dropbox/"
+  path.activity             <- "walking/"
 
-  activity                  <- "Activity"
-  sex                       <- "Sex"
-  age                       <- "xx"
+  activity                  <- "Walking"
+  sex                       <- "Female"
+  age                       <- "65"
   subsets.total             <- 4
   subsets.internal          <- 3
   length.subsets.internal   <- 5
@@ -103,14 +103,14 @@ dev.off()
   loadfonts()
   file.path     <- paste(path.dropbox, "data-flow/final-data/", path.activity, path.person, substr(path.date, 1, 19), "-bands-and-flow.pdf", sep ="")
   
-  pdf(file.path, width = 14.2191, height = 10.6643, family = "Gill Sans MT")
+  pdf(file.path, width = 14.2191, height = 10.6643)
   par(mfrow = c(3, 1), mar = c(6.1, 6.1, 4.1, 6.1), oma = c(0, 0, 0, 0), mgp = c(3, 1, 0))
 
   selected.values <- c(2, 3, 5, 6, 8, 9, 11, 12)
 
   PlotFlow <- function() {
     par(new = T)
-    plot(seq(from = 15, to = 60, by = 15), data.hrv.flow$flow[!is.na(data.hrv.flow$flow)], xlim = c(0, 60), ylim = c(2.5, 4.5), axes = F, xlab = NA, ylab = NA, type = "o", pch = 21, bg = terrain.colors(6)[2], cex = 2)
+    plot(seq(from = 15, to = 60, by = 15), data.hrv.flow$flow[!is.na(data.hrv.flow$flow)], xlim = c(0, 60), ylim = c(2.5, 7), axes = F, xlab = NA, ylab = NA, type = "o", pch = 21, bg = terrain.colors(6)[2], cex = 2)
     axis(side = 4, col = terrain.colors(6)[2], cex = 1.5, cex.axis = 1.5)
     mtext(side = 4, line = 3, "Flow", col = terrain.colors(6)[2], cex = 1.5)
     grid()
