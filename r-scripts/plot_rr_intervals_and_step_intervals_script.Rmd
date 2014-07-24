@@ -49,6 +49,7 @@
       
       # Step intervals in seconds
       step.times            <- leg.data$Timestamp / 1000
+      step.times            <- step.times - step.times[1]
       step.time.interval    <- 1 / (length(leg.data$Gyroscope.X) / (step.times[length(step.times)]))
       indexes               <- DetectMidSwing(step.times, leg.data$Gyroscope.X, step.time.interval, c = 1.5, plot = F)
       step.intervals        <- diff(step.times[indexes])
