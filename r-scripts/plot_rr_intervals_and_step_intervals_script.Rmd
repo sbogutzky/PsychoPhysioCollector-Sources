@@ -1,0 +1,101 @@
+```{r user-input}
+  rm(list = ls(all = T))
+  path.person               <- "lastname-firstname/"
+  path.date                 <- "YYYY-MM-dd_HH-mm-ss/"
+  path.dropbox              <- "dropbox-path/"
+  path.activity             <- "activity/"
+
+  activity                  <- "Activity"
+  sex                       <- "Sex"
+  age                       <- "xx"
+  subsets.total             <- 4
+  subsets.internal          <- 3
+  length.subsets.internal   <- 5
+```
+
+```{r functions}
+  source("./functions.R")
+```
+
+```{r plot-rr-intervals-and-step-intervals}
+
+  for (subset in 1:subsets.total) {
+  #subset <- 1
+    print(paste("Subset:" , subset))
+  
+    # Extract fss factors
+    file.path   <- paste(path.dropbox, "data-flow/final-data/", path.activity, path.person, path.date, "scale.csv", sep ="")
+    fss.items   <- read.csv(file.path)
+    fss.factors <- CalculateFlowShortScaleFactors(fss.items)
+  
+    # Extract rr intervals and psd values 
+    file.path   <- paste(path.dropbox, "data-flow/final-data/", path.activity, path.person, path.date, "subset-", subset, "/hrv-data.txt", sep ="")
+    
+    if(file.exists(file.path)) {
+      data.kubios.hrv <- read.csv(file.path, header = F, na.strings = "", fill = T, skip = 97, col.names = c("NA1", "rr.time", "RRInterval", "FFTFrequency", "FFTPSD", "ARFrequency", "ARPSD", "NA2", "NA3", "NA4", "NA5"))
+      
+      # RR times in seconds
+      rr.times           <- data.kubios.hrv$rr.time
+      rr.times           <- rr.times[!is.na(rr.times)]
+      
+      # RR intervals in seconds
+      rr.intervals    <- data.kubios.hrv$RRInterval
+      rr.intervals    <- rr.intervals[!is.na(rr.intervals)]
+      rr.time.start   <- rr.times[1]
+      
+      # Extract step intervals 
+      file.path <- paste(path.dropbox, "data-flow/final-data/", path.activity, path.person, path.date, "subset-", subset, "/leg-data.csv", sep ="")
+      leg.data  <- read.csv(file.path)
+      
+      # Step intervals in seconds
+      step.times            <- leg.data$Timestamp / 1000
+      step.time.interval    <- 1 / (length(leg.data$Gyroscope.X) / (step.times[length(step.times)]))
+      indexes               <- DetectMidSwing(step.times, leg.data$Gyroscope.X, step.time.interval, c = 1.5, plot = F)
+      step.intervals        <- diff(step.times[indexes])
+  
+      # Step times in seconds
+      step.time.start <- step.times[1]
+      step.times      <- step.times[indexes]
+      step.times      <- step.times[2:length(indexes)]
+      
+      # Extract start and end date
+      date.end    <- fss.factors[subset, ]$timestamp / 1000
+      date.start  <- (date.end - rr.times[length(rr.times)])
+      
+      #internal.subset <- 1
+      for (internal.subset in 1:subsets.internal) {
+        print(paste("Internal subset:" , internal.subset))
+        
+        # Subset RR data
+        rr.time.end         <- rr.time.start + length.subsets.internal * 60 
+        rr.indexes.subset   <- rr.times >= rr.time.start & rr.times <= rr.time.end
+        rr.times.subset     <- rr.times[rr.indexes.subset]
+        rr.intervals.subset <- rr.intervals[rr.indexes.subset]
+        
+        # Subset Step data
+        step.time.end         <- step.time.start + length.subsets.internal * 60 
+        step.indexes.subset   <- step.times >= step.time.start & step.times <= step.time.end
+        step.times.subset     <- step.times[step.indexes.subset]
+        step.intervals.subset <- step.intervals[step.indexes.subset]
+      
+        file.path     <- paste(path.dropbox, "data-flow/final-data/", path.activity, path.person, substr(path.date, 1, 19), "-", "subset-", subset, "-", internal.subset, "-rr-intervals-and-step-intervals.pdf", sep ="")
+        pdf(file.path, width = 11, height = 8, paper = "a4r")
+    
+        par(mfrow = c(2, 1), mar = c(5.1, 5.1, 4.1, 2.1))
+      
+        plot(rr.times.subset, rr.intervals.subset, type = "l", xlab = "Time (s)", ylab = "RR Interval (s)", xaxs = "i", yaxs = "i", xaxt = "n", xlim = c(rr.time.start, rr.time.end))
+        title(main = paste("Tachogram - Activity: ", activity, ", Sex: ", sex, ", Age: ", age, ", Subset ", subset, "/",  subsets.total, " - ", internal.subset, sep = ""))
+        axis(side = 3, at = max(step.times), labels = paste("Flow:", fss.factors$flow[subset]))
+
+        plot(step.times.subset, step.intervals.subset, type = "l", xlab = "Time (s)", ylab = "Step Interval (s)", xaxs = "i", yaxs = "i", xaxt = "n", xlim = c(step.time.start, step.time.end))
+        title(sub = paste("Start: ", as.POSIXct(date.start, tz = "Europe/Berlin", origin = "1970-01-01"), ", End: ", as.POSIXct(date.end, tz = "Europe/Berlin", origin = "1970-01-01"), sep = ""))
+        axis(side = 1, at = seq(0, 900, by = 60))
+        
+        dev.off()
+        
+        step.time.start <- step.time.end
+        rr.time.start   <- rr.time.end
+      }
+    }
+  }
+```
