@@ -1,0 +1,133 @@
+
+```{r user-input}
+setwd("/Users/macbookpro/data-collector-android/r-scripts/")
+path.dropbox <-   "/Users/macbookpro/Dropbox/"
+path.activity <- "walking/"
+path.person <- "grueter-barbara-02/" 
+path.date <- "2014-06-06_10-49-56/"
+seconds.to.observe <- 10
+activity <- "walking"
+sex <- "female"
+age <- "65"
+######
+intervals <- 1
+source("./functions.R")
+#####
+#subsets.internal          <- 3
+subset <- 2
+
+```
+```{r plot steps per minute}
+# count steps
+file.path.2       <- paste(path.dropbox, "data-flow/final-data/", path.activity, path.person, path.date, "subset-", subset, "/leg-data.csv", sep ="")
+motion.sensor.data.subset <- read.csv(file.path.2)
+      
+# define range
+m   <- 1
+n   <- nrow(motion.sensor.data.subset)
+
+# t in seconds
+t   <- motion.sensor.data.subset[m:n, 1] - motion.sensor.data.subset[m, 1]
+t           <- t[!is.na(t)]
+# divide in specified intervals
+t.interval <- round(length(t) / intervals)
+time.start <- t[1]
+time.end        <- t[t.interval]
+# calculate relevant indexes
+indexes.subset  <- t >= time.start & t <= time.end
+gx  <- -motion.sensor.data.subset[m:n, 5]
+fs  <- 1 / (length(gx) / (t[length(t)] / 1000))
+# relevant time and x
+t.subset        <- t[indexes.subset]
+gx.subset <- gx[indexes.subset]
+# find steps
+indexes <- DetectMidSwing(t.subset, gx.subset, fs, c = 0.5, plot = T)
+
+# conversion from ms to s needed, so redefinition of t
+t           <- t/1000
+t.interval <- round(length(t) / intervals)
+time.start <- t[1]
+time.end        <- t[t.interval]
+t.subset <- t.subset/1000
+
+# plot per minute
+stepCounts <- c()
+for (i in seq(round(time.start), round(time.end), by = seconds.to.observe)) {
+  # filtered gx and t
+  indexes.interval <-  which(t.subset[indexes] >= i - seconds.to.observe & t.subset[indexes] <= i)
+  count <- length(t.subset[indexes.interval])
+  stepCounts <- c(stepCounts, count)          
+}
+#seconds <- c(round(time.start):round(time.end))
+
+seconds <- c(1:length(stepCounts)*seconds.to.observe)
+par(mfrow = c(1,1))
+
+
+plot(seconds, stepCounts, xlab = "Time (s)", ylab = "N", ylim=c(0,20), type="o")
+ title(main = paste("Heartbeats and Steps per: ", seconds.to.observe, " Seconds - Activity: ", activity, " , Sex: ", sex, ", Age: ", age, sep = ""), sub = paste("Start: ", as.POSIXct(date.start, tz = "Europe/Berlin", origin = "1970-01-01"), ", End: ", as.POSIXct(date.end, tz = "Europe/Berlin", origin = "1970-01-01"), sep = ""))
+legend( x="bottomright", legend=c("Heartbeats","Stepcount"), col=c("red","black"), lty=c(1,1), pch=c(21,21), merge=FALSE)
+```
+
+```{r plot heartbeats per minute}
+
+data.hrv.flow <- data.frame()
+  print(subset)
+  # extract fss factors
+  file.path   <- paste(path.dropbox, "data-flow/final-data/", path.activity, path.person, path.date, "scale.csv", sep ="")
+  fss.items <- read.csv(file.path)
+  fss.factors <- CalculateFlowShortScaleFactors(fss.items)
+  
+  data.hrv.flow <- data.frame()
+  
+    print(subset)
+    # extract rr intervals and psd values 
+    file.path       <- paste(path.dropbox, "data-flow/final-data/", path.activity, path.person, path.date, "subset-", subset, "/hrv-data.txt", sep ="")
+    file.path.2       <- paste(path.dropbox, "data-flow/final-data/", path.activity, path.person, path.date, "subset-", subset, "/leg-data.csv", sep ="")
+    
+    #if(file.exists(file.path)) {
+      
+      data.kubios.hrv <- read.csv(file.path, header = F, na.strings = "", fill = T, skip = 97, col.names = c("NA1", "Time", "RRInterval", "FFTFrequency", "FFTPSD", "ARFrequency", "ARPSD", "NA2", "NA3", "NA4", "NA5"))
+      
+      motion.sensor.data.subset <- read.csv(file.path.2, header = F, na.strings = "", fill = T, skip = 97)
+      
+      # Times in seconds
+      times           <- data.kubios.hrv$Time
+      times           <- times[!is.na(times)]
+      times.interval <- round(length(times) / intervals)
+
+      
+      # RR intervals in seconds
+      rr.intervals    <- data.kubios.hrv$RRInterval
+      rr.intervals    <- rr.intervals[!is.na(rr.intervals)]
+      
+      # plot rr intervals and psd
+      date.end <- fss.factors[subset, ]$timestamp / 1000
+      date.start <- (date.end - times[length(times)])
+      
+      time.start <- times[1]
+      
+      #for (internal.subset in 1:subsets.internal) {
+        
+        # Times in seconds
+        time.end        <- times[times.interval]
+        indexes.subset  <- times >= time.start & times <= time.end      
+        
+        times.subset        <- times[indexes.subset]
+        rr.intervals.subset <- rr.intervals[indexes.subset]
+        
+        heartBeatCounts <- c()
+        for (i in seq(round(time.start), round(time.end), by = seconds.to.observe)) {
+          indexes.interval <-  which(times.subset >= i - seconds.to.observe & times.subset <= i)
+          count <- length(times.subset[indexes.interval])
+          heartBeatCounts <- c(heartBeatCounts, count)          
+        }
+        seconds <- c(1:length(heartBeatCounts)*seconds.to.observe)
+
+
+        #plot(seconds, heartBeatCounts, xlab = "Time (s)", ylab = "Heartbeats/s (n)")
+        lines(seconds, heartBeatCounts, col="red", type="o")
+
+
+```
+
