@@ -41,6 +41,7 @@
       
   # Step intervals in seconds
     times           <- leg.data$Timestamp / 1000
+    times           <- times - times[1]
     time.interval   <- 1 / (length(leg.data$Gyroscope.X) / (times[length(times)]))
     indexes         <- DetectMidSwing(times, leg.data$Gyroscope.X, time.interval, c = 1.5, plot = F)
     step.intervals  <- diff(times[indexes])
@@ -84,7 +85,8 @@
       if(internal.subset == subsets.internal) {
         flow <- fss.factors$flow[subset]
       }
-      data.srv.flow <- rbind(data.srv.flow, cbind(step.frequency.domain.parameters, flow))
+      mean.step.interval  <- mean(step.intervals.subset)
+      data.srv.flow       <- rbind(data.srv.flow, cbind(step.frequency.domain.parameters, flow, mean.step.interval))
     }
   }
   
