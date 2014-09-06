@@ -107,7 +107,7 @@
         
              print(paste("Internal Subset ", internal.subset, " done"))
           } else {
-            print("gps.data.subset contains no data")
+            print("gps.data.subset", internal.subset  ," contains no data")
           } 
       }
       row.names(subset.result) <- new.row.names
