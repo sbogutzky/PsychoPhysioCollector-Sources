@@ -1,6 +1,15 @@
 distance <- function(lat1, lon1, lat2, lon2) {
   return(6378.388 * acos(sin(lat1) * sin(lat2) + cos(lat1) * cos(lat2) * cos(lon2 - lon1)))
 }
+
+distance.p <- function(lat1, lon1, lat2, lon2) {
+  
+  #mit distance: Entfernung in km 
+  dx = 71.5 * (lon1 - lon2)
+  dy = 111.3 * (lat1 - lat2)
+  
+  return(sqrt(dx * dx + dy * dy))
+}
 # 
 # gps.data <- gps.data.bak
 # gps.data.bak <- gps.data

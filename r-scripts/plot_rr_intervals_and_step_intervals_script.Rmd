@@ -79,20 +79,27 @@
         step.times.subset     <- step.times[step.indexes.subset]
         step.intervals.subset <- step.intervals[step.indexes.subset]
       
-        file.path     <- paste(path.dropbox, "data-flow/final-data/", path.activity, path.person, substr(path.date, 1, 19), "-", "subset-", subset, "-", internal.subset, "-rr-intervals-and-step-intervals.pdf", sep ="")
-        pdf(file.path, width = 11, height = 8, paper = "a4r")
+        #file.path     <- paste(path.dropbox, "data-flow/final-data/", path.activity, path.person, substr(path.date, 1, 19), "-", "subset-", subset, "-", internal.subset, "-rr-intervals-and-step-intervals.pdf", sep ="")
+       # pdf(file.path, width = 11, height = 8, paper = "a4r")
     
-        par(mfrow = c(2, 1), mar = c(5.1, 5.1, 4.1, 2.1))
-      
-        plot(rr.times.subset, rr.intervals.subset, type = "l", xlab = "Time (s)", ylab = "RR Interval (s)", xaxs = "i", yaxs = "i", xaxt = "n", xlim = c(rr.time.start, rr.time.end))
-        title(main = paste("Tachogram - Activity: ", activity, ", Sex: ", sex, ", Age: ", age, ", Subset ", subset, "/",  subsets.total, " - ", internal.subset, sep = ""))
-        axis(side = 3, at = max(step.times), labels = paste("Flow:", fss.factors$flow[subset]))
-
-        plot(step.times.subset, step.intervals.subset, type = "l", xlab = "Time (s)", ylab = "Step Interval (s)", xaxs = "i", yaxs = "i", xaxt = "n", xlim = c(step.time.start, step.time.end))
-        title(sub = paste("Start: ", as.POSIXct(date.start, tz = "Europe/Berlin", origin = "1970-01-01"), ", End: ", as.POSIXct(date.end, tz = "Europe/Berlin", origin = "1970-01-01"), sep = ""))
-        axis(side = 1, at = seq(0, 900, by = 60))
+       # par(mfrow = c(2, 1), mar = c(5.1, 5.1, 4.1, 2.1))
         
-        dev.off()
+        file.path     <- paste(path.dropbox, "data-flow/final-data/", path.activity, path.person, substr(path.date, 1, 19), "-", "subset-", subset, "-", internal.subset, "-rr-intervals.csv", sep ="")
+        write.csv(rr.intervals.subset, file.path, row.names = FALSE)
+      
+        #plot(rr.times.subset, rr.intervals.subset, type = "l", xlab = "Time (s)", ylab = "RR Interval (s)", xaxs = "i", yaxs = "i", xaxt = "n", xlim = c(rr.time.start, rr.time.end))
+       # title(main = paste("Tachogram - Activity: ", activity, ", Sex: ", sex, ", Age: ", age, ", Subset ", subset, "/",  subsets.total, " - ", internal.subset, sep = ""))
+        #axis(side = 3, at = max(step.times), labels = paste("Flow:", fss.factors$flow[subset]))
+
+        #plot(step.times.subset, step.intervals.subset, type = "l", xlab = "Time (s)", ylab = "Step Interval (s)", xaxs = "i", yaxs = "i", xaxt = "n", xlim = c(step.time.start, step.time.end))
+        
+        file.path     <- paste(path.dropbox, "data-flow/final-data/", path.activity, path.person, substr(path.date, 1, 19), "-", "subset-", subset, "-", internal.subset, "-step-intervals.csv", sep ="")
+        write.csv(step.intervals.subset, file.path, row.names = FALSE)
+        
+       # title(sub = paste("Start: ", as.POSIXct(date.start, tz = "Europe/Berlin", origin = "1970-01-01"), ", End: ", as.POSIXct(date.end, tz = "Europe/Berlin", origin = "1970-01-01"), sep = ""))
+       # axis(side = 1, at = seq(0, 900, by = 60))
+        
+       # dev.off()
         
         step.time.start <- step.time.end
         rr.time.start   <- rr.time.end
