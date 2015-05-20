@@ -129,12 +129,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 String timeString = simpleTimeFormat.format(new Date());
                 this.directoryName = "DataCollector/" + dateString + "_" + timeString;
 
-                this.root = new File(Environment.getExternalStorageDirectory() + "/" + this.directoryName);
-                if (this.root.exists()) {
-                    if (this.root.mkdir()) {
-                        Log.d(TAG, "Directory " + this.directoryName + " created");
-                    }
-                }
+                this.root = getStorageDir(this.directoryName);
             }
 
             connectedAllShimmers();
@@ -615,12 +610,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             this.filename = filename;
             this.directoryName = directoryName;
 
-            this.root = new File(Environment.getExternalStorageDirectory() + "/" + this.directoryName);
-            if (!this.root.exists()) {
-                if (this.root.mkdir()) {
-                    Log.d(TAG, "Directory " + this.directoryName + " created");
-                }
-            }
+            this.root = getStorageDir(this.directoryName);
 
             this.maxValueCount = maxValueCount;
             this.values = new String[maxValueCount][4];
@@ -700,12 +690,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             this.filename = filename;
             this.directoryName = directoryName;
 
-            this.root = new File(Environment.getExternalStorageDirectory() + "/" + this.directoryName);
-            if (!this.root.exists()) {
-                if (this.root.mkdir()) {
-                    Log.d(TAG, "Directory " + this.directoryName + " created");
-                }
-            }
+            this.root = getStorageDir(this.directoryName);
 
             this.maxValueCount = maxValueCount;
             this.fields = fields;
@@ -833,5 +818,24 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                     break;
             }
         }
+    }
+
+    public File getStorageDir(String folderName) {
+        Log.d(TAG, "create: " + folderName);
+        try {
+            File root = Environment.getExternalStorageDirectory();
+            if (root.canWrite()) {
+                File file = new File(root, folderName);
+                if(!file.exists()) {
+                    if(!file.mkdirs()) {
+                        Log.d(TAG, "could not create file");
+                    }
+                }
+                return file;
+            }
+        } catch (Exception e) {
+            Log.e("DEBUG", "Could not write file " + e.getMessage());
+        }
+        return null;
     }
 }
