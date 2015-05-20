@@ -80,6 +80,9 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private String[][] gyroscopeValues;
     private int gyroscopeValueCount;
 
+
+    //TODO: letzten 3 punkte in skala 9 statt 7 optionen
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
