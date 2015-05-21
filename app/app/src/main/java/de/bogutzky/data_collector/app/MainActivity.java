@@ -79,6 +79,11 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private int accelerometerValueCount;
     private String[][] gyroscopeValues;
     private int gyroscopeValueCount;
+    private String[][] linearAccelerationValues;
+    private int linearAccelerationValueCount;
+
+    /* min api 20*/
+    private Sensor linearAccelerationSensor;
 
 
     //TODO: letzten 3 punkte in skala 9 statt 7 optionen
@@ -94,6 +99,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         gyroscope = sensorManager.getDefaultSensor(android.hardware.Sensor.TYPE_GYROSCOPE);
+        this.linearAccelerationSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
@@ -123,13 +129,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
         if (id == R.id.action_connect) {
             if (this.directoryName == null) {
-                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-                SimpleDateFormat simpleTimeFormat = new SimpleDateFormat("HH-mm-ss");
-                String dateString = simpleDateFormat.format(new Date());
-                String timeString = simpleTimeFormat.format(new Date());
-                this.directoryName = "DataCollector/" + dateString + "_" + timeString;
-
-                this.root = getStorageDir(this.directoryName);
+                createRootDirectory();
             }
 
             connectedAllShimmers();
@@ -142,6 +142,9 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
         if (id == R.id.action_start_streaming) {
             loggingEnabled = true;
+            if (this.directoryName == null) {
+                createRootDirectory();
+            }
             startAllStreaming();
 
             try {
@@ -164,7 +167,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 Log.e(TAG, "Error while writing in file", e);
             }
 
-            startTimerTread();
+            startTimerThread();
             startStreamingInternalSensorData();
         }
 
@@ -179,6 +182,16 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             toggleLEDs();
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void createRootDirectory() {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat simpleTimeFormat = new SimpleDateFormat("HH-mm-ss");
+        String dateString = simpleDateFormat.format(new Date());
+        String timeString = simpleTimeFormat.format(new Date());
+        this.directoryName = "DataCollector/" + dateString + "_" + timeString;
+
+        this.root = getStorageDir(this.directoryName);
     }
 
     @Override
@@ -357,7 +370,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         return !getStreamingShimmers().isEmpty();
     }
 
-    private void startTimerTread() {
+    private void startTimerThread() {
         timerThreadShouldContinue = true;
 
         timerHandler = new Handler() {
@@ -437,7 +450,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 saveScaleItems(dialog, SCALE_ITEM_COUNT, timestamp);
                 dialog.dismiss();
                 if (loggingEnabled) {
-                    startTimerTread();
+                    startTimerThread();
                 }
             }
         });
@@ -476,6 +489,8 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         accelerometerValueCount = 0;
         gyroscopeValues = new String[1000][5];
         gyroscopeValueCount = 0;
+        linearAccelerationValues = new String[1000][5];
+        linearAccelerationValueCount = 0;
 
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, "accelerometer.csv"), true));
@@ -499,8 +514,20 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             Log.e(TAG, "Error while writing in file", e);
         }
 
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, "linearAcceleration.csv"), true));
+            String outputString = "\"Timestamp\",\"Accelerometer X\",\"Accelerometer Y\",\"Accelerometer Z\",\"System Timestamp\"";
+            writer.write(outputString);
+            writer.newLine();
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            Log.e(TAG, "Error while writing in file", e);
+        }
+
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_FASTEST);
         sensorManager.registerListener(this, gyroscope, SensorManager.SENSOR_DELAY_FASTEST);
+        sensorManager.registerListener(this, linearAccelerationSensor, SensorManager.SENSOR_DELAY_FASTEST);
 
         locationListener = new GPSListener("gps.csv", this.directoryName, 100);
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
@@ -562,6 +589,36 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, "gyroscope.csv"), true));
 
                         for (String[] copy : gyroscopeValueCopies) {
+                            if (copy[0] != null) {
+                                writer.write(copy[0] + "," + copy[1] + "," + copy[2] + "," + copy[3] + "," + copy[4]);
+                                writer.newLine();
+                            }
+                        }
+                        writer.flush();
+                        writer.close();
+                    } catch (IOException e) {
+                        Log.e(TAG, "Error while writing in file", e);
+                    }
+                }
+            }
+            if (event.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
+                linearAccelerationValues[linearAccelerationValueCount][0] = Long.toString(event.timestamp);
+                linearAccelerationValues[linearAccelerationValueCount][1] = Float.toString(event.values[0]);
+                linearAccelerationValues[linearAccelerationValueCount][2] = Float.toString(event.values[1]);
+                linearAccelerationValues[linearAccelerationValueCount][3] = Float.toString(event.values[2]);
+                linearAccelerationValues[linearAccelerationValueCount][4] = Long.toString(System.currentTimeMillis());
+
+                linearAccelerationValueCount++;
+                if (linearAccelerationValueCount > 999) {
+                    Log.d(TAG, "Write linear accelerometer data");
+                    linearAccelerationValueCount = 0;
+                    String[][] linearAccelerationValuesCopies = new String[1000][5];
+                    System.arraycopy(linearAccelerationValues, 0, linearAccelerationValuesCopies, 0, 999);
+                    linearAccelerationValues = new String[1000][5];
+                    try {
+                        BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, "linearAcceleration.csv"), true));
+
+                        for (String[] copy : linearAccelerationValuesCopies) {
                             if (copy[0] != null) {
                                 writer.write(copy[0] + "," + copy[1] + "," + copy[2] + "," + copy[3] + "," + copy[4]);
                                 writer.newLine();
