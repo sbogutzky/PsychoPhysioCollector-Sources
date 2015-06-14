@@ -36,6 +36,8 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -82,8 +84,14 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private String[][] linearAccelerationValues;
     private int linearAccelerationValueCount;
 
-    /* min api 20*/
+    /* min api 9*/
     private Sensor linearAccelerationSensor;
+
+    private Long firstGyroSensorTimestamp;
+    private Long firstAccelerometerSensorTimestamp;
+    private Long firstLinearAccelerationSensorTimestamp;
+
+    private DecimalFormat decimalFormat;
 
 
     //TODO: letzten 3 punkte in skala 9 statt 7 optionen
@@ -104,6 +112,15 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
         timerCycleInMin = 15;
+
+        this.firstGyroSensorTimestamp = 0L;
+        this.firstAccelerometerSensorTimestamp = 0L;
+        this.firstLinearAccelerationSensorTimestamp = 0L;
+
+        DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols();
+        otherSymbols.setDecimalSeparator('.');
+        decimalFormat = new DecimalFormat("#.###", otherSymbols);
+        decimalFormat.setMinimumFractionDigits(5);
 
         textViewTimer = (TextView)findViewById(R.id.text_view_timer);
         textViewTimer.setVisibility(View.INVISIBLE);
@@ -491,6 +508,9 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         gyroscopeValueCount = 0;
         linearAccelerationValues = new String[1000][5];
         linearAccelerationValueCount = 0;
+        this.firstGyroSensorTimestamp = 0L;
+        this.firstAccelerometerSensorTimestamp = 0L;
+        this.firstLinearAccelerationSensorTimestamp = 0L;
 
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, "accelerometer.csv"), true));
@@ -542,7 +562,12 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     public void onSensorChanged(SensorEvent event) {
         if (loggingEnabled) {
             if (event.sensor.getType() == android.hardware.Sensor.TYPE_ACCELEROMETER) {
-                accelerometerValues[accelerometerValueCount][0] = Long.toString(event.timestamp);
+                if (this.firstAccelerometerSensorTimestamp == 0L) {
+                    this.firstAccelerometerSensorTimestamp = event.timestamp;
+                }
+                double time = (event.timestamp - this.firstAccelerometerSensorTimestamp) / 1000000000.0;
+
+                accelerometerValues[accelerometerValueCount][0] = decimalFormat.format(time);
                 accelerometerValues[accelerometerValueCount][1] = Float.toString(event.values[0]);
                 accelerometerValues[accelerometerValueCount][2] = Float.toString(event.values[1]);
                 accelerometerValues[accelerometerValueCount][3] = Float.toString(event.values[2]);
@@ -572,7 +597,11 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 }
             }
             if (event.sensor.getType() == android.hardware.Sensor.TYPE_GYROSCOPE) {
-                gyroscopeValues[gyroscopeValueCount][0] = Long.toString(event.timestamp);
+                if (this.firstGyroSensorTimestamp == 0L) {
+                    this.firstGyroSensorTimestamp = event.timestamp;
+                }
+                double time = (event.timestamp - this.firstGyroSensorTimestamp) / 1000000000.0;
+                gyroscopeValues[gyroscopeValueCount][0] = decimalFormat.format(time);
                 gyroscopeValues[gyroscopeValueCount][1] = Float.toString((float) (event.values[0] * 180.0 / Math.PI));
                 gyroscopeValues[gyroscopeValueCount][2] = Float.toString((float) (event.values[1] * 180.0 / Math.PI));
                 gyroscopeValues[gyroscopeValueCount][3] = Float.toString((float) (event.values[2] * 180.0 / Math.PI));
@@ -602,7 +631,11 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 }
             }
             if (event.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
-                linearAccelerationValues[linearAccelerationValueCount][0] = Long.toString(event.timestamp);
+                if (this.firstLinearAccelerationSensorTimestamp == 0L) {
+                    this.firstLinearAccelerationSensorTimestamp = event.timestamp;
+                }
+                double time = (event.timestamp - this.firstLinearAccelerationSensorTimestamp) / 1000000000.0;
+                linearAccelerationValues[linearAccelerationValueCount][0] = decimalFormat.format(time);
                 linearAccelerationValues[linearAccelerationValueCount][1] = Float.toString(event.values[0]);
                 linearAccelerationValues[linearAccelerationValueCount][2] = Float.toString(event.values[1]);
                 linearAccelerationValues[linearAccelerationValueCount][3] = Float.toString(event.values[2]);
@@ -652,6 +685,25 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             }
         });
         mediaPlayer.start();
+    }
+
+    public File getStorageDir(String folderName) {
+        Log.d(TAG, "create: " + folderName);
+        try {
+            File root = Environment.getExternalStorageDirectory();
+            if (root.canWrite()) {
+                File file = new File(root, folderName);
+                if (!file.exists()) {
+                    if (!file.mkdirs()) {
+                        Log.d(TAG, "could not create file");
+                    }
+                }
+                return file;
+            }
+        } catch (Exception e) {
+            Log.e("DEBUG", "Could not write file " + e.getMessage());
+        }
+        return null;
     }
 
     public class GPSListener implements LocationListener {
@@ -778,53 +830,53 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             switch (msg.what) {
                 case Shimmer.MESSAGE_READ:
 
-                        if (msg.obj instanceof ObjectCluster) {
-                            ObjectCluster objectCluster = (ObjectCluster) msg.obj;
+                    if (msg.obj instanceof ObjectCluster) {
+                        ObjectCluster objectCluster = (ObjectCluster) msg.obj;
 
-                            for (int j = 0; j < fields.length; j++) {
+                        for (int j = 0; j < fields.length; j++) {
 
-                                Collection<FormatCluster> clusterCollection = objectCluster.mPropertyCluster.get(fields[j]);
-                                if (j < fields.length -1) {
-                                    if (!clusterCollection.isEmpty()) {
-                                        FormatCluster formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
-                                        values[i][j] = Float.toString((float) formatCluster.mData);
-                                    }
-                                } else {
-                                    values[i][j] = Long.toString(System.currentTimeMillis());
+                            Collection<FormatCluster> clusterCollection = objectCluster.mPropertyCluster.get(fields[j]);
+                            if (j < fields.length - 1) {
+                                if (!clusterCollection.isEmpty()) {
+                                    FormatCluster formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
+                                    values[i][j] = Float.toString((float) formatCluster.mData);
                                 }
-                            }
-
-                            i++;
-                            if (i > maxValueCount -1) {
-                                Log.d(TAG, "Write data in " + this.filename);
-                                i = 0;
-                                String[][] copies = new String[maxValueCount][fields.length];
-                                System.arraycopy(values, 0, copies, 0, maxValueCount -1);
-                                values = new String[maxValueCount][fields.length];
-                                try {
-                                    BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, this.filename), true));
-
-                                    for (String[] copy : copies) {
-                                        if (copy[0] != null) {
-                                            String outputString = "";
-                                            for (int k = 0; k < fields.length; k++) {
-                                                if (fields.length - 1 != k) {
-                                                    outputString += copy[k] + ",";
-                                                } else {
-                                                    outputString += copy[k];
-                                                }
-                                            }
-                                            writer.write(outputString);
-                                            writer.newLine();
-                                        }
-                                    }
-                                    writer.flush();
-                                    writer.close();
-                                } catch (IOException e) {
-                                    Log.e(TAG, "Error while writing in file", e);
-                                }
+                            } else {
+                                values[i][j] = Long.toString(System.currentTimeMillis());
                             }
                         }
+
+                        i++;
+                        if (i > maxValueCount - 1) {
+                            Log.d(TAG, "Write data in " + this.filename);
+                            i = 0;
+                            String[][] copies = new String[maxValueCount][fields.length];
+                            System.arraycopy(values, 0, copies, 0, maxValueCount - 1);
+                            values = new String[maxValueCount][fields.length];
+                            try {
+                                BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, this.filename), true));
+
+                                for (String[] copy : copies) {
+                                    if (copy[0] != null) {
+                                        String outputString = "";
+                                        for (int k = 0; k < fields.length; k++) {
+                                            if (fields.length - 1 != k) {
+                                                outputString += copy[k] + ",";
+                                            } else {
+                                                outputString += copy[k];
+                                            }
+                                        }
+                                        writer.write(outputString);
+                                        writer.newLine();
+                                    }
+                                }
+                                writer.flush();
+                                writer.close();
+                            } catch (IOException e) {
+                                Log.e(TAG, "Error while writing in file", e);
+                            }
+                        }
+                    }
 
                     break;
                 case Shimmer.MESSAGE_TOAST:
@@ -875,24 +927,5 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                     break;
             }
         }
-    }
-
-    public File getStorageDir(String folderName) {
-        Log.d(TAG, "create: " + folderName);
-        try {
-            File root = Environment.getExternalStorageDirectory();
-            if (root.canWrite()) {
-                File file = new File(root, folderName);
-                if(!file.exists()) {
-                    if(!file.mkdirs()) {
-                        Log.d(TAG, "could not create file");
-                    }
-                }
-                return file;
-            }
-        } catch (Exception e) {
-            Log.e("DEBUG", "Could not write file " + e.getMessage());
-        }
-        return null;
     }
 }
