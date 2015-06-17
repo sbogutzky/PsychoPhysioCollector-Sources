@@ -3,6 +3,8 @@ package de.bogutzky.data_collector.app;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.ListActivity;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.Intent;
 import android.hardware.Sensor;
@@ -43,6 +45,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Set;
+
+import zephyr.android.BioHarnessBT.BTClient;
+import zephyr.android.BioHarnessBT.ZephyrProtocol;
 
 public class MainActivity extends ListActivity implements SensorEventListener {
 
@@ -93,6 +99,16 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
     private DecimalFormat decimalFormat;
 
+    //bth adapter
+    private BluetoothAdapter btAdapter = null;
+    private BTClient _bt;
+    private NewConnectedListener _NConnListener;
+    private final int HEART_RATE = 0x100;
+    private final int RESPIRATION_RATE = 0x101;
+    private final int SKIN_TEMPERATURE = 0x102;
+    private final int POSTURE = 0x103;
+    private final int PEAK_ACCLERATION = 0x104;
+
 
     //TODO: letzten 3 punkte in skala 9 statt 7 optionen
 
@@ -122,7 +138,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         decimalFormat = new DecimalFormat("#.###", otherSymbols);
         decimalFormat.setMinimumFractionDigits(5);
 
-        textViewTimer = (TextView)findViewById(R.id.text_view_timer);
+        textViewTimer = (TextView) findViewById(R.id.text_view_timer);
         textViewTimer.setVisibility(View.INVISIBLE);
     }
 
@@ -150,6 +166,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             }
 
             connectedAllShimmers();
+            connectBioHarness();
         }
 
         if (id == R.id.action_disconnect) {
@@ -173,7 +190,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                     if (i != SCALE_ITEM_COUNT) {
                         outputString += "\"Item " + String.format("%02d", i) + "\",";
                     } else {
-                        outputString += "\"Item " + String.format("%02d", i)+ "\"";
+                        outputString += "\"Item " + String.format("%02d", i) + "\"";
                     }
                 }
                 writer.write(outputString);
@@ -199,6 +216,37 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             toggleLEDs();
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void connectBioHarness() {
+        String BhMacID = "00:07:80:9D:8A:E8";
+        //String BhMacID = "00:07:80:88:F6:BF";
+        btAdapter = BluetoothAdapter.getDefaultAdapter();
+
+        Set<BluetoothDevice> pairedDevices = btAdapter.getBondedDevices();
+
+        if (pairedDevices.size() > 0) {
+            for (BluetoothDevice device : pairedDevices) {
+                if (device.getName().startsWith("BH")) {
+                    BluetoothDevice btDevice = device;
+                    BhMacID = btDevice.getAddress();
+                    break;
+
+                }
+            }
+
+
+        }
+
+        //BhMacID = btDevice.getAddress();
+        if(BhMacID != null) {
+            BluetoothDevice Device = btAdapter.getRemoteDevice(BhMacID);
+            String DeviceName = Device.getName();
+            Log.v(TAG, "connected to: " + DeviceName);
+            _bt = new BTClient(btAdapter, BhMacID);
+            _NConnListener = new NewConnectedListener(harnessHandler, harnessHandler);
+            _bt.addConnectedEventListener(_NConnListener);
+        }
     }
 
     private void createRootDirectory() {
@@ -481,7 +529,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             int identifier = getResources().getIdentifier("item" + i, "id", getPackageName());
             if (identifier != 0) {
                 RatingBar ratingBar = (RatingBar) dialog.findViewById(identifier);
-                if(i != items) {
+                if (i != items) {
                     outputString += Float.toString(ratingBar.getRating()) + ",";
                 } else {
                     outputString += Float.toString(ratingBar.getRating());
@@ -745,11 +793,11 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 values[i][3] = Float.toString((float) location.getAltitude());
 
                 i++;
-                if (i > maxValueCount -1) {
+                if (i > maxValueCount - 1) {
                     Log.d(TAG, "Write data in " + this.filename);
                     i = 0;
                     String[][] copies = new String[maxValueCount][5];
-                    System.arraycopy(values, 0, copies, 0, maxValueCount -1);
+                    System.arraycopy(values, 0, copies, 0, maxValueCount - 1);
                     values = new String[maxValueCount][5];
                     try {
                         BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, this.filename), true));
@@ -928,4 +976,43 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             }
         }
     }
+
+    final Handler harnessHandler = new Handler() {
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case HEART_RATE:
+                    String HeartRatetext = msg.getData().getString("HeartRate");
+                    System.out.println("Heart Rate Info is " + HeartRatetext);
+                    break;
+
+                case RESPIRATION_RATE:
+                    String RespirationRatetext = msg.getData().getString("RespirationRate");
+                    System.out.println("RespirationRate Info is " + RespirationRatetext);
+
+                    break;
+
+                case SKIN_TEMPERATURE:
+                    String SkinTemperaturetext = msg.getData().getString("SkinTemperature");
+                    System.out.println("SkinTemperature Info is " + SkinTemperaturetext);
+
+                    break;
+
+                case POSTURE:
+                    String PostureText = msg.getData().getString("Posture");
+                    System.out.println("Posture Info is " + PostureText);
+
+
+                    break;
+
+                case PEAK_ACCLERATION:
+                    String PeakAccText = msg.getData().getString("PeakAcceleration");
+                    System.out.println("PeakAcceleration Info is " + PeakAccText);
+
+                    break;
+
+
+            }
+        }
+
+    };
 }
