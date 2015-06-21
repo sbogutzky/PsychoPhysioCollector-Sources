@@ -24,6 +24,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.RatingBar;
@@ -583,6 +584,11 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         dialog.setContentView(R.layout.flow_short_scale);
         dialog.setTitle(getString(R.string.feedback));
         dialog.setCancelable(false);
+        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+        lp.copyFrom(dialog.getWindow().getAttributes());
+        lp.width = WindowManager.LayoutParams.MATCH_PARENT;
+        lp.height = WindowManager.LayoutParams.MATCH_PARENT;
+        dialog.getWindow().setAttributes(lp);
 
         Button saveButton = (Button) dialog.findViewById(R.id.button_save);
         saveButton.setOnClickListener(new View.OnClickListener() {
