@@ -48,7 +48,6 @@ import java.util.HashMap;
 import java.util.Set;
 
 import zephyr.android.BioHarnessBT.BTClient;
-import zephyr.android.BioHarnessBT.ZephyrProtocol;
 
 public class MainActivity extends ListActivity implements SensorEventListener {
 
@@ -62,6 +61,11 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private static final int ECG_SAMPLE_RATE = 512;
     private static final String[] MOTION_FIELDS = {"Timestamp", "Accelerometer X", "Accelerometer Y", "Accelerometer Z", "Gyroscope X", "Gyroscope Y", "Gyroscope Z", "System Timestamp"};
     private static final String[] ECG_FIELDS = {"Timestamp", "ECG RA-LL", "ECG LA-LL", "System Timestamp"};
+    private final String bhHeartRateFilename = "bhHeartRate.csv";
+    private final String bhRespirationRateFilename = "bhRespirationRate.csv";
+    private final String bhPostureFilename = "bhPosture.csv";
+    private final String bhSkinTemperatureFilename = "bhSkinTemperature.csv";
+    private final String bhPeakAccelerationFilename = "bhPeakAcceleration.csv.csv";
     private HashMap<String, Shimmer> shimmers;
     private HashMap<String, Shimmer> connectedShimmers;
     private HashMap<String, Shimmer> streamingShimmers;
@@ -89,6 +93,16 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private int gyroscopeValueCount;
     private String[][] linearAccelerationValues;
     private int linearAccelerationValueCount;
+    private String[][] bhHeartRateValues;
+    private int bhHeartRateValueCount;
+    private String[][] bhRespirationtRateValues;
+    private int bhRespirationRateValueCount;
+    private String[][] bhSkinTemperatureValues;
+    private int bhSkinTemperatureValueCount;
+    private String[][] bhPostureValues;
+    private int bhPostureValueCount;
+    private String[][] bhPeakAccelerationValues;
+    private int bhPeakAccelerationValueCount;
 
     /* min api 9*/
     private Sensor linearAccelerationSensor;
@@ -219,8 +233,21 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     }
 
     private void connectBioHarness() {
+
+        bhPeakAccelerationValueCount = 0;
+        bhRespirationRateValueCount = 0;
+        bhHeartRateValueCount = 0;
+        bhPostureValueCount = 0;
+        bhSkinTemperatureValueCount = 0;
+        bhHeartRateValues = new String[1000][2];
+        bhPostureValues = new String[1000][2];
+        bhPeakAccelerationValues = new String[1000][2];
+        bhSkinTemperatureValues = new String[1000][2];
+        bhRespirationtRateValues = new String[1000][2];
+
+        createBioHarnessFiles();
+
         String BhMacID = "00:07:80:9D:8A:E8";
-        //String BhMacID = "00:07:80:88:F6:BF";
         btAdapter = BluetoothAdapter.getDefaultAdapter();
 
         Set<BluetoothDevice> pairedDevices = btAdapter.getBondedDevices();
@@ -234,18 +261,68 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
                 }
             }
-
-
         }
-
-        //BhMacID = btDevice.getAddress();
         if(BhMacID != null) {
             BluetoothDevice Device = btAdapter.getRemoteDevice(BhMacID);
             String DeviceName = Device.getName();
             Log.v(TAG, "connected to: " + DeviceName);
             _bt = new BTClient(btAdapter, BhMacID);
+            HarnessHandler harnessHandler = new HarnessHandler();
             _NConnListener = new NewConnectedListener(harnessHandler, harnessHandler);
             _bt.addConnectedEventListener(_NConnListener);
+        }
+    }
+
+    private void createBioHarnessFiles() {
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, bhHeartRateFilename), true));
+            String outputString = "\"Timestamp\",\"HeartRate\"";
+            writer.write(outputString);
+            writer.newLine();
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            Log.e(TAG, "Error while writing in file", e);
+        }
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, bhRespirationRateFilename), true));
+            String outputString = "\"Timestamp\",\"RespirationRate\"";
+            writer.write(outputString);
+            writer.newLine();
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            Log.e(TAG, "Error while writing in file", e);
+        }
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, bhPostureFilename), true));
+            String outputString = "\"Timestamp\",\"Posture\"";
+            writer.write(outputString);
+            writer.newLine();
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            Log.e(TAG, "Error while writing in file", e);
+        }
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, bhSkinTemperatureFilename), true));
+            String outputString = "\"Timestamp\",\"SkinTemperature\"";
+            writer.write(outputString);
+            writer.newLine();
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            Log.e(TAG, "Error while writing in file", e);
+        }
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, bhPeakAccelerationFilename), true));
+            String outputString = "\"Timestamp\",\"PeakAcceleration\"";
+            writer.write(outputString);
+            writer.newLine();
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            Log.e(TAG, "Error while writing in file", e);
         }
     }
 
@@ -977,42 +1054,97 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         }
     }
 
-    final Handler harnessHandler = new Handler() {
+    class HarnessHandler extends Handler {
+        int maxVals = 250;
+        HarnessHandler() {}
         public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case HEART_RATE:
-                    String HeartRatetext = msg.getData().getString("HeartRate");
-                    System.out.println("Heart Rate Info is " + HeartRatetext);
-                    break;
+            if(loggingEnabled) {
+                switch (msg.what) {
+                    case HEART_RATE:
+                        String HeartRatetext = msg.getData().getString("HeartRate");
+                        bhHeartRateValues[bhHeartRateValueCount][0] = String.valueOf(msg.getData().getLong("Timestamp"));
+                        bhHeartRateValues[bhHeartRateValueCount][1] = HeartRatetext;
+                        bhHeartRateValueCount++;
+                        System.out.println("Heart Rate Info is " + HeartRatetext);
+                        if(bhHeartRateValueCount > maxVals) {
+                            bhHeartRateValueCount = 0;
+                            writeData(bhHeartRateValues, bhHeartRateFilename);
+                            bhHeartRateValues = new String[1000][2];
+                        }
+                        break;
 
-                case RESPIRATION_RATE:
-                    String RespirationRatetext = msg.getData().getString("RespirationRate");
-                    System.out.println("RespirationRate Info is " + RespirationRatetext);
+                    case RESPIRATION_RATE:
+                        String RespirationRatetext = msg.getData().getString("RespirationRate");
+                        bhRespirationtRateValues[bhRespirationRateValueCount][0] = String.valueOf(msg.getData().getLong("Timestamp"));
+                        bhRespirationtRateValues[bhRespirationRateValueCount][1] = RespirationRatetext;
+                        bhRespirationRateValueCount++;
+                        System.out.println("RespirationRate Info is " + RespirationRatetext);
+                        if(bhRespirationRateValueCount > maxVals) {
+                            bhRespirationRateValueCount = 0;
+                            writeData(bhRespirationtRateValues, bhRespirationRateFilename);
+                            bhRespirationtRateValues = new String[1000][2];
+                        }
+                        break;
 
-                    break;
+                    case SKIN_TEMPERATURE:
+                        String SkinTemperaturetext = msg.getData().getString("SkinTemperature");
+                        bhSkinTemperatureValues[bhSkinTemperatureValueCount][0] = String.valueOf(msg.getData().getLong("Timestamp"));
+                        bhSkinTemperatureValues[bhSkinTemperatureValueCount][1] = SkinTemperaturetext;
+                        bhSkinTemperatureValueCount++;
+                        System.out.println("SkinTemperature Info is " + SkinTemperaturetext);
+                        if(bhSkinTemperatureValueCount > maxVals) {
+                            bhSkinTemperatureValueCount = 0;
+                            writeData(bhSkinTemperatureValues, bhSkinTemperatureFilename);
+                            bhSkinTemperatureValues = new String[1000][2];
+                        }
+                        break;
 
-                case SKIN_TEMPERATURE:
-                    String SkinTemperaturetext = msg.getData().getString("SkinTemperature");
-                    System.out.println("SkinTemperature Info is " + SkinTemperaturetext);
+                    case POSTURE:
+                        String PostureText = msg.getData().getString("Posture");
+                        bhPostureValues[bhPostureValueCount][0] = String.valueOf(msg.getData().getLong("Timestamp"));
+                        bhPostureValues[bhPostureValueCount][1] = PostureText;
+                        bhPostureValueCount++;
+                        System.out.println("Posture Info is " + PostureText);
+                        if(bhPostureValueCount > maxVals) {
+                            bhPostureValueCount = 0;
+                            writeData(bhPostureValues, bhPostureFilename);
+                            bhPostureValues = new String[1000][2];
+                        }
+                        break;
 
-                    break;
-
-                case POSTURE:
-                    String PostureText = msg.getData().getString("Posture");
-                    System.out.println("Posture Info is " + PostureText);
-
-
-                    break;
-
-                case PEAK_ACCLERATION:
-                    String PeakAccText = msg.getData().getString("PeakAcceleration");
-                    System.out.println("PeakAcceleration Info is " + PeakAccText);
-
-                    break;
-
-
+                    case PEAK_ACCLERATION:
+                        String PeakAccText = msg.getData().getString("PeakAcceleration");
+                        bhPeakAccelerationValues[bhPeakAccelerationValueCount][0] = String.valueOf(msg.getData().getLong("Timestamp"));
+                        bhPeakAccelerationValues[bhPeakAccelerationValueCount][1] = PeakAccText;
+                        bhPeakAccelerationValueCount++;
+                        System.out.println("PeakAcceleration Info is " + PeakAccText);
+                        if(bhPeakAccelerationValueCount > maxVals) {
+                            bhPeakAccelerationValueCount = 0;
+                            writeData(bhPeakAccelerationValues, bhPeakAccelerationFilename);
+                            bhPeakAccelerationValues = new String[1000][2];
+                        }
+                        break;
+                }
             }
         }
+    }
+    void writeData (String[][] data, String filename) {
+        Log.d(TAG, "Write data in " + filename);
+        String[][] copies = new String[data.length][5];
+        System.arraycopy(data, 0, copies, 0, data.length - 1);
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, filename), true));
 
-    };
+            for (String[] copy : copies) {
+                if (copy[0] != null) {
+                    writer.write(copy[0] + "," + copy[1] + "," + copy[2] + "," + copy[3]);
+                    writer.newLine();
+                }
+            }
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            Log.e(TAG, "Error while writing in file", e);
+        }
+    }
 }
