@@ -80,6 +80,7 @@ public class NewConnectedListener extends ConnectListenerImpl
 					Message text1 = _aNewHandler.obtainMessage(HEART_RATE);
 					Bundle b1 = new Bundle();
 					b1.putString("HeartRate", String.valueOf(HRate));
+					b1.putLong("Timestamp", System.currentTimeMillis());
 					text1.setData(b1);
 					_aNewHandler.sendMessage(text1);
 					System.out.println("Heart Rate is "+ HRate);
@@ -89,6 +90,7 @@ public class NewConnectedListener extends ConnectListenerImpl
 					
 					text1 = _aNewHandler.obtainMessage(RESPIRATION_RATE);
 					b1.putString("RespirationRate", String.valueOf(RespRate));
+					b1.putLong("Timestamp", System.currentTimeMillis());
 					text1.setData(b1);
 					_aNewHandler.sendMessage(text1);
 					System.out.println("Respiration Rate is "+ RespRate);
@@ -99,6 +101,7 @@ public class NewConnectedListener extends ConnectListenerImpl
 					double SkinTempDbl = GPInfo.GetSkinTemperature(DataArray);
 					 text1 = _aNewHandler.obtainMessage(SKIN_TEMPERATURE);
 					//Bundle b1 = new Bundle();
+					b1.putLong("Timestamp", System.currentTimeMillis());
 					b1.putString("SkinTemperature", String.valueOf(SkinTempDbl));
 					text1.setData(b1);
 					_aNewHandler.sendMessage(text1);
@@ -109,6 +112,7 @@ public class NewConnectedListener extends ConnectListenerImpl
 				int PostureInt = GPInfo.GetPosture(DataArray);
 				text1 = _aNewHandler.obtainMessage(POSTURE);
 				b1.putString("Posture", String.valueOf(PostureInt));
+				b1.putLong("Timestamp", System.currentTimeMillis());
 				text1.setData(b1);
 				_aNewHandler.sendMessage(text1);
 				System.out.println("Posture is "+ PostureInt);	
@@ -117,6 +121,7 @@ public class NewConnectedListener extends ConnectListenerImpl
 				double PeakAccDbl = GPInfo.GetPeakAcceleration(DataArray);
 				text1 = _aNewHandler.obtainMessage(PEAK_ACCLERATION);
 				b1.putString("PeakAcceleration", String.valueOf(PeakAccDbl));
+				b1.putLong("Timestamp", System.currentTimeMillis());
 				text1.setData(b1);
 				_aNewHandler.sendMessage(text1);
 				System.out.println("Peak Acceleration is "+ PeakAccDbl);	
