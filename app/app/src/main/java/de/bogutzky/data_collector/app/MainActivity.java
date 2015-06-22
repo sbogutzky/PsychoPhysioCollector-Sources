@@ -124,9 +124,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private final int POSTURE = 0x103;
     private final int PEAK_ACCLERATION = 0x104;
 
-
-    //TODO: letzten 3 punkte in skala 9 statt 7 optionen
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -598,11 +595,13 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 saveScaleItems(dialog, SCALE_ITEM_COUNT, timestamp);
                 dialog.dismiss();
                 if (loggingEnabled) {
+                    resumeAllSensors();
                     startTimerThread();
                 }
             }
         });
         dialog.show();
+        pauseAllSensors();
     }
 
     private void saveScaleItems(final Dialog dialog, int items, long timestamp) {
@@ -1152,5 +1151,28 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         } catch (IOException e) {
             Log.e(TAG, "Error while writing in file", e);
         }
+    }
+
+    void pauseAllSensors() {
+        //internal sensors
+        sensorManager.unregisterListener(this);
+        locationManager.removeUpdates(locationListener);
+        //shimmer sensors
+        stopAllStreaming();
+        //bio harness
+        if(_bt != null && _NConnListener != null)
+            _bt.removeConnectedEventListener(_NConnListener);
+    }
+    void resumeAllSensors() {
+        //internal
+        sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_FASTEST);
+        sensorManager.registerListener(this, gyroscope, SensorManager.SENSOR_DELAY_FASTEST);
+        sensorManager.registerListener(this, linearAccelerationSensor, SensorManager.SENSOR_DELAY_FASTEST);
+        //shimmer
+        startAllStreaming();
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+        //bioharness
+        if(_bt != null && _NConnListener != null)
+            _bt.addConnectedEventListener(_NConnListener);
     }
 }
