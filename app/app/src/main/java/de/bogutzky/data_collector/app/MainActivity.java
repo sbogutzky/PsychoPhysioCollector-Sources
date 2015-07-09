@@ -5,6 +5,7 @@ import android.app.Dialog;
 import android.app.ListActivity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
 import android.hardware.Sensor;
@@ -47,6 +48,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Set;
+import java.util.UUID;
 
 import zephyr.android.BioHarnessBT.BTClient;
 
@@ -123,6 +125,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private final int SKIN_TEMPERATURE = 0x102;
     private final int POSTURE = 0x103;
     private final int PEAK_ACCLERATION = 0x104;
+    private String BhMacID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -177,7 +180,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 createRootDirectory();
             }
 
-            connectedAllShimmers();
+            //connectedAllShimmers();
             connectBioHarness();
         }
 
@@ -245,7 +248,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
         createBioHarnessFiles();
 
-        String BhMacID = "00:07:80:9D:8A:E8";
         btAdapter = BluetoothAdapter.getDefaultAdapter();
 
         Set<BluetoothDevice> pairedDevices = btAdapter.getBondedDevices();
@@ -264,10 +266,15 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             BluetoothDevice Device = btAdapter.getRemoteDevice(BhMacID);
             String DeviceName = Device.getName();
             Log.v(TAG, "connected to: " + DeviceName);
+
             _bt = new BTClient(btAdapter, BhMacID);
             HarnessHandler harnessHandler = new HarnessHandler();
             _NConnListener = new NewConnectedListener(harnessHandler, harnessHandler);
             _bt.addConnectedEventListener(_NConnListener);
+
+            if(_bt.IsConnected()) {
+                _bt.start();
+            }
         }
     }
 
@@ -356,12 +363,14 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 if (resultCode == Activity.RESULT_OK) {
                     String bluetoothAddress = data.getExtras().getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
                     Log.d(TAG, "Bluetooth Address: " + bluetoothAddress);
+                    BhMacID = bluetoothAddress;
 
                     // Check if the bluetooth address has been previously selected
                     boolean isNewAddress = !getBluetoothAddresses().contains(bluetoothAddress);
 
                     if (isNewAddress) {
                         addBluetoothAddress(bluetoothAddress);
+                        Log.v("Main", "bond: " + bluetoothAddress);
                     } else {
                         Toast.makeText(this, getString(R.string.device_is_already_in_list), Toast.LENGTH_LONG).show();
                     }
