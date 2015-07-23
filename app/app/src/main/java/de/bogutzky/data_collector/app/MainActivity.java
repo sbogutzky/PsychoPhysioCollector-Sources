@@ -428,7 +428,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
         if (pairedDevices.size() > 0) {
             for (BluetoothDevice device : pairedDevices) {
-                if (!device.getName().startsWith("BH")) {
+                if (device.getName().contains("RN42")) {
                     BluetoothDevice btDevice = device;
 
                     String bluetoothAddress = btDevice.getAddress();
