@@ -74,7 +74,7 @@ public class BioHarnessConnectedListener extends ConnectListenerImpl
 					b1.putLong("Timestamp", System.currentTimeMillis());
 					text1.setData(b1);
 					_aNewHandler.sendMessage(text1);
-					System.out.println("Heart Rate is "+ HRate);
+					//System.out.println("Heart Rate is "+ HRate);
 
 					//***************Displaying the Respiration Rate********************************
 					double RespRate = GPInfo.GetRespirationRate(DataArray);
@@ -84,7 +84,7 @@ public class BioHarnessConnectedListener extends ConnectListenerImpl
 					b1.putLong("Timestamp", System.currentTimeMillis());
 					text1.setData(b1);
 					_aNewHandler.sendMessage(text1);
-					System.out.println("Respiration Rate is "+ RespRate);
+					//System.out.println("Respiration Rate is "+ RespRate);
 					
 					//***************Displaying the Skin Temperature*******************************
 		
@@ -96,7 +96,7 @@ public class BioHarnessConnectedListener extends ConnectListenerImpl
 					b1.putString("SkinTemperature", String.valueOf(SkinTempDbl));
 					text1.setData(b1);
 					_aNewHandler.sendMessage(text1);
-					System.out.println("Skin Temperature is "+ SkinTempDbl);
+					//System.out.println("Skin Temperature is "+ SkinTempDbl);
 					
 					//***************Displaying the Posture******************************************					
 
@@ -106,7 +106,7 @@ public class BioHarnessConnectedListener extends ConnectListenerImpl
 				b1.putLong("Timestamp", System.currentTimeMillis());
 				text1.setData(b1);
 				_aNewHandler.sendMessage(text1);
-				System.out.println("Posture is "+ PostureInt);	
+				//System.out.println("Posture is "+ PostureInt);
 				//***************Displaying the Peak Acceleration******************************************
 
 				double PeakAccDbl = GPInfo.GetPeakAcceleration(DataArray);
@@ -115,31 +115,31 @@ public class BioHarnessConnectedListener extends ConnectListenerImpl
 				b1.putLong("Timestamp", System.currentTimeMillis());
 				text1.setData(b1);
 				_aNewHandler.sendMessage(text1);
-				System.out.println("Peak Acceleration is "+ PeakAccDbl);	
+				//System.out.println("Peak Acceleration is "+ PeakAccDbl);
 				
 				byte ROGStatus = GPInfo.GetROGStatus(DataArray);
-				System.out.println("ROG Status is "+ ROGStatus);
+				//System.out.println("ROG Status is "+ ROGStatus);
 				
 					break;
 				case BREATHING_MSG_ID:
 					/*Do what you want. Printing Sequence Number for now*/
-					System.out.println("Breathing Packet Sequence Number is "+BreathingInfoPacket.GetSeqNum(DataArray));
+					//System.out.println("Breathing Packet Sequence Number is "+BreathingInfoPacket.GetSeqNum(DataArray));
 					break;
 				case ECG_MSG_ID:
 					/*Do what you want. Printing Sequence Number for now*/
-					System.out.println("ECG Packet Sequence Number is "+ECGInfoPacket.GetSeqNum(DataArray));
+					//System.out.println("ECG Packet Sequence Number is "+ECGInfoPacket.GetSeqNum(DataArray));
 					break;
 				case RtoR_MSG_ID:
 					/*Do what you want. Printing Sequence Number for now*/
-					System.out.println("R to R Packet Sequence Number is "+RtoRInfoPacket.GetSeqNum(DataArray));
+					//System.out.println("R to R Packet Sequence Number is "+RtoRInfoPacket.GetSeqNum(DataArray));
 					break;
 				case ACCEL_100mg_MSG_ID:
 					/*Do what you want. Printing Sequence Number for now*/
-					System.out.println("Accelerometry Packet Sequence Number is "+AccInfoPacket.GetSeqNum(DataArray));
+					//System.out.println("Accelerometry Packet Sequence Number is "+AccInfoPacket.GetSeqNum(DataArray));
 					break;
 				case SUMMARY_MSG_ID:
 					/*Do what you want. Printing Sequence Number for now*/
-					System.out.println("Summary Packet Sequence Number is "+SummaryInfoPacket.GetSeqNum(DataArray));
+					//System.out.println("Summary Packet Sequence Number is "+SummaryInfoPacket.GetSeqNum(DataArray));
 					break;
 					
 				}
