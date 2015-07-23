@@ -66,7 +66,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private final String bhRespirationRateFilename = "bhRespirationRate.csv";
     private final String bhPostureFilename = "bhPosture.csv";
     private final String bhSkinTemperatureFilename = "bhSkinTemperature.csv";
-    private final String bhPeakAccelerationFilename = "bhPeakAcceleration.csv.csv";
+    private final String bhPeakAccelerationFilename = "bhPeakAcceleration.csv";
     private HashMap<String, Shimmer> shimmers;
     private HashMap<String, Shimmer> connectedShimmers;
     private HashMap<String, Shimmer> streamingShimmers;
@@ -185,7 +185,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         if (id == R.id.action_disconnect) {
             disconnectedAllShimmers();
             if(_bt != null && _NConnListener != null)
-                _bt.addConnectedEventListener(_NConnListener);
+                _bt.removeConnectedEventListener(_NConnListener);
             this.directoryName = null;
         }
 
@@ -1069,7 +1069,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     }
 
     class HarnessHandler extends Handler {
-        int maxVals = 50;
+        int maxVals = 5;
         HarnessHandler() {}
         public void handleMessage(Message msg) {
             if(loggingEnabled) {
