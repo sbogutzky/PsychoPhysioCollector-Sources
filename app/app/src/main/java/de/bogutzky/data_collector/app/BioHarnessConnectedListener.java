@@ -7,9 +7,8 @@ import android.os.Message;
 
 import zephyr.android.BioHarnessBT.*;
 
-public class NewConnectedListener extends ConnectListenerImpl
+public class BioHarnessConnectedListener extends ConnectListenerImpl
 {
-	private Handler _OldHandler;
 	private Handler _aNewHandler; 
 	final int GP_MSG_ID = 0x20;
 	final int BREATHING_MSG_ID = 0x21;
@@ -35,13 +34,9 @@ public class NewConnectedListener extends ConnectListenerImpl
 	private SummaryPacketInfo SummaryInfoPacket = new SummaryPacketInfo();
 	
 	private PacketTypeRequest RqPacketType = new PacketTypeRequest();
-	public NewConnectedListener(Handler handler, Handler _NewHandler) {
+	public BioHarnessConnectedListener(Handler handler, Handler _NewHandler) {
 		super(handler, null);
-		_OldHandler= handler;
 		_aNewHandler = _NewHandler;
-
-		// TODO Auto-generated constructor stub
-
 	}
 	public void Connected(ConnectedEvent<BTClient> eventArgs) {
 		System.out.println(String.format("Connected to BioHarness %s.", eventArgs.getSource().getDevice().getName()));
@@ -71,10 +66,6 @@ public class NewConnectedListener extends ConnectListenerImpl
 
 				case GP_MSG_ID:
 
-					
-					
-					
-					
 					//***************Displaying the Heart Rate********************************
 					int HRate =  GPInfo.GetHeartRate(DataArray);
 					Message text1 = _aNewHandler.obtainMessage(HEART_RATE);

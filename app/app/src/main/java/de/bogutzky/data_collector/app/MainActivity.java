@@ -5,7 +5,6 @@ import android.app.Dialog;
 import android.app.ListActivity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
 import android.hardware.Sensor;
@@ -48,7 +47,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Set;
-import java.util.UUID;
 
 import zephyr.android.BioHarnessBT.BTClient;
 
@@ -119,7 +117,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     //bth adapter
     private BluetoothAdapter btAdapter = null;
     private BTClient _bt;
-    private NewConnectedListener _NConnListener;
+    private BioHarnessConnectedListener _NConnListener;
     private final int HEART_RATE = 0x100;
     private final int RESPIRATION_RATE = 0x101;
     private final int SKIN_TEMPERATURE = 0x102;
@@ -186,6 +184,8 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
         if (id == R.id.action_disconnect) {
             disconnectedAllShimmers();
+            if(_bt != null && _NConnListener != null)
+                _bt.addConnectedEventListener(_NConnListener);
             this.directoryName = null;
         }
 
@@ -269,7 +269,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
             _bt = new BTClient(btAdapter, BhMacID);
             HarnessHandler harnessHandler = new HarnessHandler();
-            _NConnListener = new NewConnectedListener(harnessHandler, harnessHandler);
+            _NConnListener = new BioHarnessConnectedListener(harnessHandler, harnessHandler);
             _bt.addConnectedEventListener(_NConnListener);
 
             if(_bt.IsConnected()) {
@@ -1069,7 +1069,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     }
 
     class HarnessHandler extends Handler {
-        int maxVals = 250;
+        int maxVals = 50;
         HarnessHandler() {}
         public void handleMessage(Message msg) {
             if(loggingEnabled) {
@@ -1144,14 +1144,14 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     }
     void writeData (String[][] data, String filename) {
         Log.d(TAG, "Write data in " + filename);
-        String[][] copies = new String[data.length][5];
+        String[][] copies = new String[data.length][2];
         System.arraycopy(data, 0, copies, 0, data.length - 1);
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, filename), true));
 
             for (String[] copy : copies) {
                 if (copy[0] != null) {
-                    writer.write(copy[0] + "," + copy[1] + "," + copy[2] + "," + copy[3]);
+                    writer.write(copy[0] + "," + copy[1]);
                     writer.newLine();
                 }
             }
