@@ -178,7 +178,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 createRootDirectory();
             }
 
-            //connectedAllShimmers();
+            connectedAllShimmers();
             connectBioHarness();
         }
 
@@ -422,10 +422,24 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     }
 
     private void connectedAllShimmers() {
-        for (String bluetoothAddress : getBluetoothAddresses()) {
-            Log.d(TAG, "Connect to: " + bluetoothAddress);
-            String btRadioID = bluetoothAddress.replace(":", "").substring(8).toUpperCase();
-            connectShimmer(bluetoothAddress, btRadioID);
+        btAdapter = BluetoothAdapter.getDefaultAdapter();
+
+        Set<BluetoothDevice> pairedDevices = btAdapter.getBondedDevices();
+
+        if (pairedDevices.size() > 0) {
+            for (BluetoothDevice device : pairedDevices) {
+                if (!device.getName().startsWith("BH")) {
+                    BluetoothDevice btDevice = device;
+
+                    String bluetoothAddress = btDevice.getAddress();
+                    Log.d(TAG, "Connect to: " + bluetoothAddress);
+                    String btRadioID = bluetoothAddress.replace(":", "").substring(8).toUpperCase();
+
+                    connectShimmer(bluetoothAddress, btRadioID);
+                    break;
+
+                }
+            }
         }
     }
 
