@@ -45,6 +45,7 @@ public class BioHarnessConnectedListener extends ConnectListenerImpl
 		_aNewHandler.sendMessage(msg);
 		/*Use this object to enable or disable the different Packet types*/
 		RqPacketType.GP_ENABLE = true;
+		RqPacketType.RtoR_ENABLE = true;
 		RqPacketType.BREATHING_ENABLE = true;
 		RqPacketType.LOGGING_ENABLE = true;
 		
@@ -135,6 +136,19 @@ public class BioHarnessConnectedListener extends ConnectListenerImpl
 				case RtoR_MSG_ID:
 					/*Do what you want. Printing Sequence Number for now*/
 					//System.out.println("R to R Packet Sequence Number is "+RtoRInfoPacket.GetSeqNum(DataArray));
+					int[] rrIntervals = RtoRInfoPacket.GetRtoRSamples(DataArray);
+					int index = 0;
+					int rrInterval = 0;
+					for (int i = 0; i < rrIntervals.length; i++) {
+						if (rrIntervals[i] < 2000) {
+							if(rrInterval != rrIntervals[i]) {
+								index++;
+								rrInterval = rrIntervals[i];
+								System.out.println(index + ": " + rrInterval);
+							}
+						}
+					}
+
 					break;
 				case ACCEL_100mg_MSG_ID:
 					/*Do what you want. Printing Sequence Number for now*/
