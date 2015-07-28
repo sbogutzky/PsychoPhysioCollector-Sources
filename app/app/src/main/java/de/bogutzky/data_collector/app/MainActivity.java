@@ -1086,6 +1086,9 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         int maxVals = 5;
         HarnessHandler() {}
         public void handleMessage(Message msg) {
+            if(msg.what == 101) {
+                notifyBHReady();
+            }
             if(loggingEnabled) {
                 switch (msg.what) {
                     case HEART_RATE:
@@ -1197,5 +1200,9 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         //bioharness
         if(_bt != null && _NConnListener != null)
             _bt.addConnectedEventListener(_NConnListener);
+    }
+
+    private void notifyBHReady() {
+        Toast.makeText(this, "BioHarness " + getString(R.string.is_ready), Toast.LENGTH_LONG).show();
     }
 }

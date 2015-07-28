@@ -40,6 +40,9 @@ public class BioHarnessConnectedListener extends ConnectListenerImpl
 	}
 	public void Connected(ConnectedEvent<BTClient> eventArgs) {
 		System.out.println(String.format("Connected to BioHarness %s.", eventArgs.getSource().getDevice().getName()));
+		Message msg = new Message();
+		msg.what = 101; //ready msg
+		_aNewHandler.sendMessage(msg);
 		/*Use this object to enable or disable the different Packet types*/
 		RqPacketType.GP_ENABLE = true;
 		RqPacketType.BREATHING_ENABLE = true;
