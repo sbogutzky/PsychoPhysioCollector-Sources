@@ -16,6 +16,7 @@ public class BioHarnessConnectedListener extends ConnectListenerImpl
 	final int RtoR_MSG_ID = 0x24;
 	final int ACCEL_100mg_MSG_ID = 0x2A;
 	final int SUMMARY_MSG_ID = 0x2B;
+	final int RR_INTERVAL = 0x105;
 	
 	
 	private int GP_HANDLER_ID = 0x20;
@@ -144,6 +145,13 @@ public class BioHarnessConnectedListener extends ConnectListenerImpl
 							if(rrInterval != rrIntervals[i]) {
 								index++;
 								rrInterval = rrIntervals[i];
+								Message rrMessage = new Message();
+								rrMessage.what = RR_INTERVAL;
+								Bundle rrBundle = new Bundle();
+								rrBundle.putInt("rrinterval", rrInterval);
+								rrBundle.putLong("Timestamp", System.currentTimeMillis());
+								rrMessage.setData(rrBundle);
+								_aNewHandler.sendMessage(rrMessage);
 								System.out.println(index + ": " + rrInterval);
 							}
 						}

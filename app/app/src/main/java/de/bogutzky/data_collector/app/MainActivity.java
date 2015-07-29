@@ -67,6 +67,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private final String bhPostureFilename = "bhPosture.csv";
     private final String bhSkinTemperatureFilename = "bhSkinTemperature.csv";
     private final String bhPeakAccelerationFilename = "bhPeakAcceleration.csv";
+    private final String bhRRIntervalFilename = "bhRRInterval.csv";
     private HashMap<String, Shimmer> shimmers;
     private HashMap<String, Shimmer> connectedShimmers;
     private HashMap<String, Shimmer> streamingShimmers;
@@ -104,6 +105,8 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private int bhPostureValueCount;
     private String[][] bhPeakAccelerationValues;
     private int bhPeakAccelerationValueCount;
+    private String[][] bhRRIntervalValues;
+    private int bhRRIntervalValueCount;
 
     /* min api 9*/
     private Sensor linearAccelerationSensor;
@@ -111,6 +114,12 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private Long firstGyroSensorTimestamp;
     private Long firstAccelerometerSensorTimestamp;
     private Long firstLinearAccelerationSensorTimestamp;
+    private Long firstbhHeartRateTimestamp;
+    private Long firstRespirationRateTimestamp;
+    private Long firstSkinTemperatureTimestamp;
+    private Long firstbhPostureTimestamp;
+    private Long firstPeakAccelerationTimestamp;
+    private Long firstRRIntervalTimestamp;
 
     private DecimalFormat decimalFormat;
 
@@ -123,6 +132,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private final int SKIN_TEMPERATURE = 0x102;
     private final int POSTURE = 0x103;
     private final int PEAK_ACCLERATION = 0x104;
+    private final int RR_INTERVAL = 0x105;
     private String BhMacID;
 
     @Override
@@ -145,6 +155,12 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         this.firstGyroSensorTimestamp = 0L;
         this.firstAccelerometerSensorTimestamp = 0L;
         this.firstLinearAccelerationSensorTimestamp = 0L;
+        this.firstbhHeartRateTimestamp = 0L;
+        this.firstRespirationRateTimestamp = 0L;
+        this.firstSkinTemperatureTimestamp = 0L;
+        this.firstbhPostureTimestamp = 0L;
+        this.firstPeakAccelerationTimestamp = 0L;
+        this.firstRRIntervalTimestamp = 0L;
 
         DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols();
         otherSymbols.setDecimalSeparator('.');
@@ -184,8 +200,10 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
         if (id == R.id.action_disconnect) {
             disconnectedAllShimmers();
-            if(_bt != null && _NConnListener != null)
+            if(_bt != null && _NConnListener != null) {
                 _bt.removeConnectedEventListener(_NConnListener);
+                _bt.Close();
+            }
             this.directoryName = null;
         }
 
@@ -240,11 +258,13 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         bhHeartRateValueCount = 0;
         bhPostureValueCount = 0;
         bhSkinTemperatureValueCount = 0;
+        bhRRIntervalValueCount = 0;
         bhHeartRateValues = new String[1000][2];
         bhPostureValues = new String[1000][2];
         bhPeakAccelerationValues = new String[1000][2];
         bhSkinTemperatureValues = new String[1000][2];
         bhRespirationtRateValues = new String[1000][2];
+        bhRRIntervalValues = new String[1000][2];
 
         createBioHarnessFiles();
 
@@ -1084,6 +1104,8 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
     class HarnessHandler extends Handler {
         int maxVals = 5;
+        long timestamp = 0;
+        double time = 0;
         HarnessHandler() {}
         public void handleMessage(Message msg) {
             if(msg.what == 101) {
@@ -1091,9 +1113,32 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             }
             if(loggingEnabled) {
                 switch (msg.what) {
+                    case RR_INTERVAL:
+                        String rrInterval = msg.getData().getString("RR-rrinterval");
+                        timestamp = msg.getData().getLong("Timestamp");
+                        if (firstRRIntervalTimestamp == 0L) {
+                            firstRRIntervalTimestamp = timestamp;
+                        }
+                        time = (timestamp - firstRRIntervalTimestamp) / 1000000000.0;
+                        Log.v(TAG, "time: " + time + ", rrInterval: " + rrInterval);
+                        bhRRIntervalValues[bhRRIntervalValueCount][0] = String.valueOf(time);
+                        bhRRIntervalValues[bhRRIntervalValueCount][1] = String.valueOf(rrInterval);
+                        bhRRIntervalValueCount++;
+                        if(bhRRIntervalValueCount > maxVals) {
+                            bhRRIntervalValueCount++;
+                            writeData(bhRRIntervalValues, bhRRIntervalFilename);
+                            bhRRIntervalValues = new String[1000][2];
+                        }
+                        break;
+
                     case HEART_RATE:
                         String HeartRatetext = msg.getData().getString("HeartRate");
-                        bhHeartRateValues[bhHeartRateValueCount][0] = String.valueOf(msg.getData().getLong("Timestamp"));
+                        timestamp = msg.getData().getLong("Timestamp");
+                        if (firstbhHeartRateTimestamp == 0L) {
+                            firstbhHeartRateTimestamp = timestamp;
+                        }
+                        time = (timestamp - firstbhHeartRateTimestamp) / 1000000000.0;
+                        bhHeartRateValues[bhHeartRateValueCount][0] = String.valueOf(time);
                         bhHeartRateValues[bhHeartRateValueCount][1] = HeartRatetext;
                         bhHeartRateValueCount++;
                         System.out.println("Heart Rate Info is " + HeartRatetext);
@@ -1106,7 +1151,13 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
                     case RESPIRATION_RATE:
                         String RespirationRatetext = msg.getData().getString("RespirationRate");
-                        bhRespirationtRateValues[bhRespirationRateValueCount][0] = String.valueOf(msg.getData().getLong("Timestamp"));
+                        timestamp = msg.getData().getLong("Timestamp");
+                        if (firstRespirationRateTimestamp == 0L) {
+                            firstRespirationRateTimestamp = timestamp;
+                        }
+                        time = (timestamp - firstRespirationRateTimestamp) / 1000000000.0;
+                        Log.v(TAG, "timestamp: " + timestamp + ", time: " + time);
+                        bhRespirationtRateValues[bhRespirationRateValueCount][0] = String.valueOf(time);
                         bhRespirationtRateValues[bhRespirationRateValueCount][1] = RespirationRatetext;
                         bhRespirationRateValueCount++;
                         System.out.println("RespirationRate Info is " + RespirationRatetext);
@@ -1119,7 +1170,12 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
                     case SKIN_TEMPERATURE:
                         String SkinTemperaturetext = msg.getData().getString("SkinTemperature");
-                        bhSkinTemperatureValues[bhSkinTemperatureValueCount][0] = String.valueOf(msg.getData().getLong("Timestamp"));
+                        timestamp = msg.getData().getLong("Timestamp");
+                        if (firstSkinTemperatureTimestamp == 0L) {
+                            firstSkinTemperatureTimestamp = timestamp;
+                        }
+                        time = (timestamp - firstSkinTemperatureTimestamp) / 1000000000.0;
+                        bhSkinTemperatureValues[bhSkinTemperatureValueCount][0] = String.valueOf(time);
                         bhSkinTemperatureValues[bhSkinTemperatureValueCount][1] = SkinTemperaturetext;
                         bhSkinTemperatureValueCount++;
                         System.out.println("SkinTemperature Info is " + SkinTemperaturetext);
@@ -1132,7 +1188,12 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
                     case POSTURE:
                         String PostureText = msg.getData().getString("Posture");
-                        bhPostureValues[bhPostureValueCount][0] = String.valueOf(msg.getData().getLong("Timestamp"));
+                        timestamp = msg.getData().getLong("Timestamp");
+                        if (firstbhPostureTimestamp == 0L) {
+                            firstbhPostureTimestamp = timestamp;
+                        }
+                        time = (timestamp - firstbhPostureTimestamp) / 1000000000.0;
+                        bhPostureValues[bhPostureValueCount][0] = String.valueOf(time);
                         bhPostureValues[bhPostureValueCount][1] = PostureText;
                         bhPostureValueCount++;
                         System.out.println("Posture Info is " + PostureText);
@@ -1145,7 +1206,12 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
                     case PEAK_ACCLERATION:
                         String PeakAccText = msg.getData().getString("PeakAcceleration");
-                        bhPeakAccelerationValues[bhPeakAccelerationValueCount][0] = String.valueOf(msg.getData().getLong("Timestamp"));
+                        timestamp = msg.getData().getLong("Timestamp");
+                        if (firstPeakAccelerationTimestamp == 0L) {
+                            firstPeakAccelerationTimestamp = timestamp;
+                        }
+                        time = (timestamp - firstPeakAccelerationTimestamp) / 1000000000.0;
+                        bhPeakAccelerationValues[bhPeakAccelerationValueCount][0] = String.valueOf(time);
                         bhPeakAccelerationValues[bhPeakAccelerationValueCount][1] = PeakAccText;
                         bhPeakAccelerationValueCount++;
                         System.out.println("PeakAcceleration Info is " + PeakAccText);
