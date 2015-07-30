@@ -275,10 +275,11 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         if (pairedDevices.size() > 0) {
             for (BluetoothDevice device : pairedDevices) {
                 if (device.getName().startsWith("BH")) {
-                    BluetoothDevice btDevice = device;
-                    BhMacID = btDevice.getAddress();
-                    break;
-
+                    if(bluetoothAddresses.contains(device.getAddress())) {
+                        BluetoothDevice btDevice = device;
+                        BhMacID = btDevice.getAddress();
+                        break;
+                    }
                 }
             }
         }
@@ -449,15 +450,16 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         if (pairedDevices.size() > 0) {
             for (BluetoothDevice device : pairedDevices) {
                 if (device.getName().contains("RN42")) {
-                    BluetoothDevice btDevice = device;
+                    if(bluetoothAddresses.contains(device.getAddress())) {
+                        BluetoothDevice btDevice = device;
 
-                    String bluetoothAddress = btDevice.getAddress();
-                    Log.d(TAG, "Connect to: " + bluetoothAddress);
-                    String btRadioID = bluetoothAddress.replace(":", "").substring(8).toUpperCase();
+                        String bluetoothAddress = btDevice.getAddress();
+                        Log.d(TAG, "Connect to: " + bluetoothAddress);
+                        String btRadioID = bluetoothAddress.replace(":", "").substring(8).toUpperCase();
 
-                    connectShimmer(bluetoothAddress, btRadioID);
-                    break;
-
+                        connectShimmer(bluetoothAddress, btRadioID);
+                        break;
+                    }
                 }
             }
         }
