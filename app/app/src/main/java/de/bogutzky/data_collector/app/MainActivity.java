@@ -730,7 +730,8 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
     private void stopStreamingInternalSensorData() {
         sensorManager.unregisterListener(this);
-        locationManager.removeUpdates(locationListener);
+        if(locationManager != null)
+            locationManager.removeUpdates(locationListener);
     }
 
     @Override
@@ -1116,7 +1117,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             if(loggingEnabled) {
                 switch (msg.what) {
                     case RR_INTERVAL:
-                        String rrInterval = msg.getData().getString("RR-rrinterval");
+                        int rrInterval = msg.getData().getInt("rrinterval");
                         timestamp = msg.getData().getLong("Timestamp");
                         if (firstRRIntervalTimestamp == 0L) {
                             firstRRIntervalTimestamp = timestamp;
@@ -1126,7 +1127,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         bhRRIntervalValues[bhRRIntervalValueCount][0] = String.valueOf(time);
                         bhRRIntervalValues[bhRRIntervalValueCount][1] = String.valueOf(rrInterval);
                         bhRRIntervalValueCount++;
-                        if(bhRRIntervalValueCount > maxVals) {
+                        if(bhRRIntervalValueCount >= maxVals) {
                             bhRRIntervalValueCount++;
                             writeData(bhRRIntervalValues, bhRRIntervalFilename);
                             bhRRIntervalValues = new String[1000][2];
@@ -1144,7 +1145,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         bhHeartRateValues[bhHeartRateValueCount][1] = HeartRatetext;
                         bhHeartRateValueCount++;
                         System.out.println("Heart Rate Info is " + HeartRatetext);
-                        if(bhHeartRateValueCount > maxVals) {
+                        if(bhHeartRateValueCount >= maxVals) {
                             bhHeartRateValueCount = 0;
                             writeData(bhHeartRateValues, bhHeartRateFilename);
                             bhHeartRateValues = new String[1000][2];
@@ -1163,7 +1164,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         bhRespirationtRateValues[bhRespirationRateValueCount][1] = RespirationRatetext;
                         bhRespirationRateValueCount++;
                         System.out.println("RespirationRate Info is " + RespirationRatetext);
-                        if(bhRespirationRateValueCount > maxVals) {
+                        if(bhRespirationRateValueCount >= maxVals) {
                             bhRespirationRateValueCount = 0;
                             writeData(bhRespirationtRateValues, bhRespirationRateFilename);
                             bhRespirationtRateValues = new String[1000][2];
@@ -1181,7 +1182,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         bhSkinTemperatureValues[bhSkinTemperatureValueCount][1] = SkinTemperaturetext;
                         bhSkinTemperatureValueCount++;
                         System.out.println("SkinTemperature Info is " + SkinTemperaturetext);
-                        if(bhSkinTemperatureValueCount > maxVals) {
+                        if(bhSkinTemperatureValueCount >= maxVals) {
                             bhSkinTemperatureValueCount = 0;
                             writeData(bhSkinTemperatureValues, bhSkinTemperatureFilename);
                             bhSkinTemperatureValues = new String[1000][2];
@@ -1199,7 +1200,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         bhPostureValues[bhPostureValueCount][1] = PostureText;
                         bhPostureValueCount++;
                         System.out.println("Posture Info is " + PostureText);
-                        if(bhPostureValueCount > maxVals) {
+                        if(bhPostureValueCount >= maxVals) {
                             bhPostureValueCount = 0;
                             writeData(bhPostureValues, bhPostureFilename);
                             bhPostureValues = new String[1000][2];
@@ -1217,7 +1218,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         bhPeakAccelerationValues[bhPeakAccelerationValueCount][1] = PeakAccText;
                         bhPeakAccelerationValueCount++;
                         System.out.println("PeakAcceleration Info is " + PeakAccText);
-                        if(bhPeakAccelerationValueCount > maxVals) {
+                        if(bhPeakAccelerationValueCount >= maxVals) {
                             bhPeakAccelerationValueCount = 0;
                             writeData(bhPeakAccelerationValues, bhPeakAccelerationFilename);
                             bhPeakAccelerationValues = new String[1000][2];
