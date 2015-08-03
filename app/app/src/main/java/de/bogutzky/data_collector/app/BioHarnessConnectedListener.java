@@ -148,7 +148,7 @@ public class BioHarnessConnectedListener extends ConnectListenerImpl
 								Message rrMessage = new Message();
 								rrMessage.what = RR_INTERVAL;
 								Bundle rrBundle = new Bundle();
-								rrBundle.putInt("rrinterval", rrInterval);
+								rrBundle.putString("rrinterval", String.valueOf(rrInterval));
 								rrBundle.putLong("Timestamp", System.currentTimeMillis());
 								rrMessage.setData(rrBundle);
 								_aNewHandler.sendMessage(rrMessage);

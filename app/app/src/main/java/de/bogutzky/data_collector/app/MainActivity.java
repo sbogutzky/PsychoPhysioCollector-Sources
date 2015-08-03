@@ -1117,13 +1117,12 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             if(loggingEnabled) {
                 switch (msg.what) {
                     case RR_INTERVAL:
-                        int rrInterval = msg.getData().getInt("rrinterval");
+                        String rrInterval = msg.getData().getString("rrinterval");
                         timestamp = msg.getData().getLong("Timestamp");
                         if (firstRRIntervalTimestamp == 0L) {
                             firstRRIntervalTimestamp = timestamp;
                         }
-                        time = (timestamp - firstRRIntervalTimestamp) / 1000000000.0;
-                        Log.v(TAG, "time: " + time + ", rrInterval: " + rrInterval);
+                        time = (timestamp - firstRRIntervalTimestamp) / 1000.0;
                         bhRRIntervalValues[bhRRIntervalValueCount][0] = String.valueOf(time);
                         bhRRIntervalValues[bhRRIntervalValueCount][1] = String.valueOf(rrInterval);
                         bhRRIntervalValueCount++;
@@ -1140,7 +1139,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         if (firstbhHeartRateTimestamp == 0L) {
                             firstbhHeartRateTimestamp = timestamp;
                         }
-                        time = (timestamp - firstbhHeartRateTimestamp) / 1000000000.0;
+                        time = (timestamp - firstbhHeartRateTimestamp) / 1000.0;
                         bhHeartRateValues[bhHeartRateValueCount][0] = String.valueOf(time);
                         bhHeartRateValues[bhHeartRateValueCount][1] = HeartRatetext;
                         bhHeartRateValueCount++;
@@ -1158,7 +1157,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         if (firstRespirationRateTimestamp == 0L) {
                             firstRespirationRateTimestamp = timestamp;
                         }
-                        time = (timestamp - firstRespirationRateTimestamp) / 1000000000.0;
+                        time = (timestamp - firstRespirationRateTimestamp) / 1000.0;
                         Log.v(TAG, "timestamp: " + timestamp + ", time: " + time);
                         bhRespirationtRateValues[bhRespirationRateValueCount][0] = String.valueOf(time);
                         bhRespirationtRateValues[bhRespirationRateValueCount][1] = RespirationRatetext;
@@ -1177,7 +1176,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         if (firstSkinTemperatureTimestamp == 0L) {
                             firstSkinTemperatureTimestamp = timestamp;
                         }
-                        time = (timestamp - firstSkinTemperatureTimestamp) / 1000000000.0;
+                        time = (timestamp - firstSkinTemperatureTimestamp) / 1000.0;
                         bhSkinTemperatureValues[bhSkinTemperatureValueCount][0] = String.valueOf(time);
                         bhSkinTemperatureValues[bhSkinTemperatureValueCount][1] = SkinTemperaturetext;
                         bhSkinTemperatureValueCount++;
@@ -1195,7 +1194,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         if (firstbhPostureTimestamp == 0L) {
                             firstbhPostureTimestamp = timestamp;
                         }
-                        time = (timestamp - firstbhPostureTimestamp) / 1000000000.0;
+                        time = (timestamp - firstbhPostureTimestamp) / 1000.0;
                         bhPostureValues[bhPostureValueCount][0] = String.valueOf(time);
                         bhPostureValues[bhPostureValueCount][1] = PostureText;
                         bhPostureValueCount++;
@@ -1213,7 +1212,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         if (firstPeakAccelerationTimestamp == 0L) {
                             firstPeakAccelerationTimestamp = timestamp;
                         }
-                        time = (timestamp - firstPeakAccelerationTimestamp) / 1000000000.0;
+                        time = (timestamp - firstPeakAccelerationTimestamp) / 1000.0;
                         bhPeakAccelerationValues[bhPeakAccelerationValueCount][0] = String.valueOf(time);
                         bhPeakAccelerationValues[bhPeakAccelerationValueCount][1] = PeakAccText;
                         bhPeakAccelerationValueCount++;
