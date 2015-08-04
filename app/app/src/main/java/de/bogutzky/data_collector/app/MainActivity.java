@@ -27,6 +27,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -134,6 +135,10 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private final int PEAK_ACCLERATION = 0x104;
     private final int RR_INTERVAL = 0x105;
     private String BhMacID;
+
+    public final static int REQUEST_MAIN_COMMAND_SHIMMER=3;
+    public final static int REQUEST_COMMANDS_SHIMMER=4;
+    public static final int REQUEST_CONFIGURE_SHIMMER = 5;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -249,6 +254,17 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             toggleLEDs();
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onListItemClick(ListView l, View v, int position, long id) {
+        Object o = l.getItemAtPosition(position);
+        Log.d("Shimmer",o.toString());
+        Intent mainCommandIntent=new Intent(MainActivity.this, MainCommandsActivity.class);
+        mainCommandIntent.putExtra("LocalDeviceID",o.toString());
+        mainCommandIntent.putExtra("CurrentSlot", position);
+        mainCommandIntent.putExtra("requestCode", REQUEST_MAIN_COMMAND_SHIMMER);
+        startActivityForResult(mainCommandIntent, REQUEST_MAIN_COMMAND_SHIMMER);
     }
 
     private void connectBioHarness() {

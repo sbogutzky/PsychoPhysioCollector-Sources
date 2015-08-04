@@ -30,6 +30,9 @@
             android:name=".DeviceListActivity"
             android:label="@string/select_device"
             android:theme="@android:style/Theme.Dialog" />
+        <activity android:name=".CommandsSub" android:theme="@android:style/Theme.Dialog" android:label="SubCommands"></activity>
+        <activity android:name=".ConfigureActivity" android:theme="@android:style/Theme.Dialog" android:label="Configure"></activity>
+        <activity android:name=".MainCommandsActivity" android:theme="@android:style/Theme.Dialog" android:label="Main Commands"></activity>
     </application>
 
 </manifest>

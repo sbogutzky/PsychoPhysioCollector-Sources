@@ -48,4 +48,6 @@
     <string name="action_toggle_led">LEDs ein/ausschalten</string>
     <string name="is_ready">ist bereit</string>
 
+    <string name="enable_sensors_done">Done</string>
+
 </resources>
