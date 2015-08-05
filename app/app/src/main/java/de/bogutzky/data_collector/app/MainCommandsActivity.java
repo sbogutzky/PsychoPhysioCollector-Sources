@@ -128,8 +128,6 @@ public class MainCommandsActivity extends Activity {
     private ServiceConnection mTestServiceConnection = new ServiceConnection() {
 
         public void onServiceConnected(ComponentName arg0, IBinder service) {
-            // TODO Auto-generated method stub
-
             ShimmerService.LocalBinder binder = (ShimmerService.LocalBinder) service;
             mService = binder.getService();
             mServiceBind = true;
@@ -139,7 +137,6 @@ public class MainCommandsActivity extends Activity {
         }
 
         public void onServiceDisconnected(ComponentName arg0) {
-            // TODO Auto-generated method stub
             mServiceBind = false;
         }
     };
