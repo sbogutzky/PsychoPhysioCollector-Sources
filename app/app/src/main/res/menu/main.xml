@@ -16,6 +16,7 @@
         android:id="@+id/action_disconnect"
         android:orderInCategory="100"
         android:title="@string/action_disconnect"
+        android:enabled="false"
         app:showAsAction="never" />
     <item
         android:id="@+id/action_start_streaming"
@@ -26,6 +27,7 @@
         android:id="@+id/action_stop_streaming"
         android:orderInCategory="100"
         android:title="@string/action_stop_streaming"
+        android:enabled="false"
         app:showAsAction="never" />
     <item
         android:id="@+id/action_toggle_led"

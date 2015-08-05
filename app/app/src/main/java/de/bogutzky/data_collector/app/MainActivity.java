@@ -5,8 +5,12 @@ import android.app.Dialog;
 import android.app.ListActivity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -18,6 +22,7 @@ import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
 import android.os.Vibrator;
 import android.util.Log;
@@ -140,6 +145,14 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     public final static int REQUEST_COMMANDS_SHIMMER=4;
     public static final int REQUEST_CONFIGURE_SHIMMER = 5;
 
+    private MenuItem connectMenuItem;
+    private MenuItem disconnectMenuItem;
+    private MenuItem startStreamMenuItem;
+    private MenuItem stopStreamMenuItem;
+
+
+    ShimmerService mService;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -180,6 +193,11 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
+
+        this.connectMenuItem = menu.getItem(1);
+        this.disconnectMenuItem = menu.getItem(2);
+        this.startStreamMenuItem = menu.getItem(3);
+        this.stopStreamMenuItem = menu.getItem(4);
         return true;
     }
 
@@ -198,7 +216,8 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             if (this.directoryName == null) {
                 createRootDirectory();
             }
-
+            disconnectMenuItem.setEnabled(true);
+            connectMenuItem.setEnabled(false);
             connectedAllShimmers();
             connectBioHarness();
         }
@@ -210,10 +229,14 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 _bt.Close();
             }
             this.directoryName = null;
+            connectMenuItem.setEnabled(true);
+            disconnectMenuItem.setEnabled(false);
         }
 
         if (id == R.id.action_start_streaming) {
             loggingEnabled = true;
+            this.startStreamMenuItem.setEnabled(false);
+            this.stopStreamMenuItem.setEnabled(true);
             if (this.directoryName == null) {
                 createRootDirectory();
             }
@@ -248,6 +271,8 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             stopAllStreaming();
             stopTimerThread();
             stopStreamingInternalSensorData();
+            this.startStreamMenuItem.setEnabled(true);
+            this.stopStreamMenuItem.setEnabled(false);
         }
 
         if (id == R.id.action_toggle_led) {
@@ -400,7 +425,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 if (resultCode == Activity.RESULT_OK) {
                     String bluetoothAddress = data.getExtras().getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
                     Log.d(TAG, "Bluetooth Address: " + bluetoothAddress);
-                    BhMacID = bluetoothAddress;
+                    //BhMacID = bluetoothAddress;
 
                     // Check if the bluetooth address has been previously selected
                     boolean isNewAddress = !getBluetoothAddresses().contains(bluetoothAddress);
@@ -410,6 +435,13 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         Log.v("Main", "bond: " + bluetoothAddress);
                     } else {
                         Toast.makeText(this, getString(R.string.device_is_already_in_list), Toast.LENGTH_LONG).show();
+                    }
+                    if(mService == null) {
+                        Log.v(TAG, "service erstellen");
+                        Intent intent=new Intent(this, ShimmerService.class);
+                        startService(intent);
+                        getApplicationContext().bindService(intent, mTestServiceConnection, Context.BIND_AUTO_CREATE);
+                        registerReceiver(myReceiver, new IntentFilter("de.bogutzky.data_collector.app"));
                     }
                 }
                 break;
@@ -462,7 +494,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         btAdapter = BluetoothAdapter.getDefaultAdapter();
 
         Set<BluetoothDevice> pairedDevices = btAdapter.getBondedDevices();
-
+        int count = 0;
         if (pairedDevices.size() > 0) {
             for (BluetoothDevice device : pairedDevices) {
                 if (device.getName().contains("RN42")) {
@@ -470,17 +502,15 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         BluetoothDevice btDevice = device;
 
                         String bluetoothAddress = btDevice.getAddress();
-                        Log.d(TAG, "Connect to: " + bluetoothAddress);
-                        String btRadioID = bluetoothAddress.replace(":", "").substring(8).toUpperCase();
-
-                        connectShimmer(bluetoothAddress, btRadioID);
+                        mService.connectShimmer(bluetoothAddress, Integer.toString(count),new ShimmerHandler("sensor_" + btDevice.getName() + ".csv", this.directoryName, 250));
+                        count++;
                         break;
                     }
                 }
             }
         }
     }
-
+    /*
     private void connectShimmer(String bluetoothAddress, String deviceName) {
         Shimmer shimmer;
         if (!getShimmers().containsKey(bluetoothAddress)) {
@@ -506,12 +536,14 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             Log.d(TAG, "Already connected");
         }
     }
-
+*/
     private void disconnectedAllShimmers() {
-        for (Shimmer shimmer : getConnectedShimmers().values()) {
+        mService.stopSelf();
+        mService.disconnectAllDevices();
+        /*for (Shimmer shimmer : getConnectedShimmers().values()) {
             Log.d(TAG, "Disconnect: " + shimmer.getBluetoothAddress());
             disconnectShimmer(shimmer.getBluetoothAddress());
-        }
+        }*/
     }
 
     private void disconnectShimmer(String bluetoothAddress) {
@@ -526,10 +558,11 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     }
 
     private void startAllStreaming() {
-        for (Shimmer shimmer : getConnectedShimmers().values()) {
+        mService.startStreamingAllDevicesGetSensorNames();
+        /*for (Shimmer shimmer : getConnectedShimmers().values()) {
             Log.d(TAG, "Start streaming from: " + shimmer.getBluetoothAddress());
             startStreaming(shimmer.getBluetoothAddress());
-        }
+        }*/
     }
 
     private void startStreaming(String bluetoothAddress) {
@@ -544,10 +577,11 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     }
 
     private void stopAllStreaming() {
-        for (Shimmer shimmer : getStreamingShimmers().values()) {
+       mService.stopStreamingAllDevices();
+       /* for (Shimmer shimmer : getStreamingShimmers().values()) {
             Log.d(TAG, "Stop streaming from: " + shimmer.getBluetoothAddress());
             stopStreaming(shimmer.getBluetoothAddress());
-        }
+        }*/
     }
 
     private void stopStreaming(String bluetoothAddress) {
@@ -976,7 +1010,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
     }
 
-    class ShimmerHandler extends Handler {
+    public class ShimmerHandler extends Handler {
 
         private static final String TAG = "ShimmerHandler";
         private String filename;
@@ -987,16 +1021,9 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         private String[][] values;
         private String[] fields;
 
-        ShimmerHandler(String filename, String directoryName, int maxValueCount, String[] fields) {
-            this.filename = filename;
-            this.directoryName = directoryName;
-
-            this.root = getStorageDir(this.directoryName);
-
-            this.maxValueCount = maxValueCount;
+        public void setFields(String[] fields) {
             this.fields = fields;
             this.values = new String[maxValueCount][fields.length];
-
             try {
                 BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, this.filename), true));
                 String outputString = "";
@@ -1014,6 +1041,15 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             } catch (IOException e) {
                 Log.e(TAG, "Error while writing in file", e);
             }
+        }
+
+        ShimmerHandler(String filename, String directoryName, int maxValueCount) {
+            this.filename = filename;
+            this.directoryName = directoryName;
+
+            this.root = getStorageDir(this.directoryName);
+
+            this.maxValueCount = maxValueCount;
         }
 
         @Override
@@ -1289,4 +1325,28 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private void notifyBHReady() {
         Toast.makeText(this, "BioHarness " + getString(R.string.is_ready), Toast.LENGTH_LONG).show();
     }
+
+    private ServiceConnection mTestServiceConnection = new ServiceConnection() {
+
+        public void onServiceConnected(ComponentName arg0, IBinder service) {
+            Log.d(TAG, "service connected");
+            ShimmerService.LocalBinder binder = (ShimmerService.LocalBinder) service;
+            mService = binder.getService();
+        }
+
+        public void onServiceDisconnected(ComponentName arg0) {
+            Log.d(TAG, "service connected");
+        }
+    };
+
+    private BroadcastReceiver myReceiver= new BroadcastReceiver(){
+
+        @Override
+        public void onReceive(Context arg0, Intent arg1) {
+            // TODO Auto-generated method stub
+            if(arg1.getIntExtra("ShimmerState", -1)!=-1){
+                Log.v(TAG, "receiver receive");
+            }
+        }
+    };
 }
