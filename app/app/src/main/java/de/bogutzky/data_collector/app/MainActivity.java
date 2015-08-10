@@ -51,7 +51,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Set;
 
 import zephyr.android.BioHarnessBT.BTClient;
@@ -260,6 +259,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
         if (id == R.id.action_stop_streaming) {
             loggingEnabled = false;
+            this.directoryName = null;
             stopAllStreaming();
             stopTimerThread();
             stopStreamingInternalSensorData();
@@ -278,7 +278,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         Object o = l.getItemAtPosition(position);
         Log.d("Shimmer",o.toString());
         Intent mainCommandIntent=new Intent(MainActivity.this, MainCommandsActivity.class);
-        mainCommandIntent.putExtra("LocalDeviceID",o.toString());
+        mainCommandIntent.putExtra("LocalDeviceID", o.toString());
         mainCommandIntent.putExtra("CurrentSlot", position);
         mainCommandIntent.putExtra("requestCode", REQUEST_MAIN_COMMAND_SHIMMER);
         startActivityForResult(mainCommandIntent, REQUEST_MAIN_COMMAND_SHIMMER);
@@ -479,13 +479,13 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     }
 
     private void disconnectedAllShimmers() {
-        mService.stopSelf();
+        stopService(new Intent(MainActivity.this, ShimmerService.class));
         mService.disconnectAllDevices();
     }
 
 
     private void startAllStreaming() {
-        mService.startStreamingAllDevicesGetSensorNames();
+        mService.startStreamingAllDevicesGetSensorNames(this.root);
     }
 
 
@@ -901,6 +901,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     public class ShimmerHandler extends Handler {
 
         private static final String TAG = "ShimmerHandler";
+
         private String filename;
         private String directoryName;
         private File root;
@@ -908,6 +909,10 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         private int maxValueCount;
         private String[][] values;
         private String[] fields;
+
+        public void setRoot(File root) {
+            this.root = root;
+        }
 
         public void setFields(String[] fields) {
             this.fields = fields;

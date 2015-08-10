@@ -15,6 +15,7 @@ import com.shimmerresearch.android.Shimmer;
 
 import org.apache.commons.math.stat.descriptive.DescriptiveStatistics;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -155,11 +156,12 @@ public class ShimmerService extends Service {
         }
     }
 
-    public void startStreamingAllDevicesGetSensorNames() {
+    public void startStreamingAllDevicesGetSensorNames(File root) {
         Collection<Object> colS = mMultiShimmer.values();
         Iterator<Object> iterator = colS.iterator();
         while (iterator.hasNext()) {
             Shimmer stemp = (Shimmer) iterator.next();
+            ((MainActivity.ShimmerHandler)stemp.mHandler).setRoot(root);
             if (stemp.getShimmerState() == Shimmer.STATE_CONNECTED) {
                 stemp.startStreaming();
                 int mPosition = Integer.parseInt(stemp.getDeviceName());
