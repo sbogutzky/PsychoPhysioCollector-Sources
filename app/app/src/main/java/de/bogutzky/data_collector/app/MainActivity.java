@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -34,6 +35,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.RatingBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -51,6 +53,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Random;
 import java.util.Set;
 
 import zephyr.android.BioHarnessBT.BTClient;
@@ -86,6 +89,10 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private Vibrator vibrator;
     private long[] vibratorPatternFeedback = {0, 500, 200, 100, 100, 100, 100, 100};
     private long[] vibratorPatternConnectionLost = {0, 100, 100, 100, 100, 100, 100, 100};
+    private Spinner scale_timerSpinner;
+    private Spinner scale_timerVarianceSpinner;
+    private int scaleTimerValue;
+    private int scaleTimerVarianceValue;
     private String[][] accelerometerValues;
     private int accelerometerValueCount;
     private String[][] gyroscopeValues;
@@ -224,6 +231,10 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             disconnectMenuItem.setEnabled(false);
         }
 
+        if(id == R.id.action_settings) {
+            showSettings();
+        }
+
         if (id == R.id.action_start_streaming) {
             loggingEnabled = true;
             this.startStreamMenuItem.setEnabled(false);
@@ -268,9 +279,55 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         }
 
         if (id == R.id.action_toggle_led) {
-
+            mService.toggleAllLEDS();
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void showSettings() {
+        final SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+        int selectedTimePos = sharedPref.getInt("scaleTimerValue", 2);
+        int selectedVariancePos = sharedPref.getInt("scaleTimerVarianceValue", 0);
+        final Dialog dialog = new Dialog(this);
+        dialog.setContentView(R.layout.settings);
+        dialog.setTitle(getString(R.string.action_settings));
+        dialog.setCancelable(true);
+        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+        lp.copyFrom(dialog.getWindow().getAttributes());
+        lp.width = WindowManager.LayoutParams.MATCH_PARENT;
+        lp.height = WindowManager.LayoutParams.MATCH_PARENT;
+        dialog.getWindow().setAttributes(lp);
+        scale_timerSpinner = (Spinner) dialog.findViewById(R.id.scala_timer_spinner);
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+                R.array.scale_timerValues, android.R.layout.simple_spinner_item);
+        scale_timerSpinner.setAdapter(adapter);
+        scale_timerSpinner.setSelection(selectedTimePos);
+        scale_timerVarianceSpinner = (Spinner) dialog.findViewById(R.id.scala_variance_spinner);
+        ArrayAdapter<CharSequence> adapter2 = ArrayAdapter.createFromResource(this,
+                R.array.scale_timerVarianceValues, android.R.layout.simple_spinner_item);
+        scale_timerVarianceSpinner.setAdapter(adapter2);
+        scale_timerVarianceSpinner.setSelection(selectedVariancePos);
+        Button saveButton = (Button) dialog.findViewById(R.id.saveButton);
+        saveButton.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View view) {
+                scaleTimerValue = Integer.valueOf(scale_timerSpinner.getSelectedItem().toString());
+                scaleTimerVarianceValue = Integer.valueOf(scale_timerVarianceSpinner.getSelectedItem().toString());
+                timerCycleInMin = scaleTimerValue;
+
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putInt("scaleTimerValue", scale_timerSpinner.getSelectedItemPosition());
+                editor.putInt("scaleTimerVarianceValue", scale_timerVarianceSpinner.getSelectedItemPosition());
+                editor.commit();
+                dialog.dismiss();
+                //value speichern und bei app start laden
+                //timer anpassen
+                // + oder - variance beim teimer starten rechnen
+                //dismiss dialog
+            }
+        });
+        dialog.show();
     }
 
     @Override
@@ -485,12 +542,14 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
 
     private void startAllStreaming() {
-        mService.startStreamingAllDevicesGetSensorNames(this.root);
+        if(mService != null)
+            mService.startStreamingAllDevicesGetSensorNames(this.root);
     }
 
 
     private void stopAllStreaming() {
-       mService.stopStreamingAllDevices();
+        if(mService != null)
+            mService.stopStreamingAllDevices();
     }
 
     private void startTimerThread() {
@@ -522,7 +581,9 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             }
         };
 
-        long timerInterval = (long) (1000 * 60 * timerCycleInMin);
+        Random r = new Random();
+        int variance = r.nextInt(scaleTimerVarianceValue*2) - scaleTimerVarianceValue;
+        long timerInterval = (long) (1000 * 60 * timerCycleInMin) - (1000 * variance);
         final long endTime = System.currentTimeMillis() + timerInterval;
 
         timerThread = new Thread(new Runnable() {

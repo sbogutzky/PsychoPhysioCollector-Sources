@@ -1,0 +1,21 @@
+{
+    "questionnaire": {
+        "title": "Flow Skala",
+		"questions": [
+			{
+				"type": "rating",
+				"stars": 7,
+				"question": "fdgsfduigsfdgsfdgs"
+			},
+			{
+				"type": "rating",
+				"stars": 9,
+				"question": "asdasdsads"
+			},
+			{
+				"type": "text",
+				"question": "gisjjfdgis?????"
+			}
+    }
+		]
+}

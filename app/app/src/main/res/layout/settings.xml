@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/settings_scala_time_text"
+            android:id="@+id/textView" />
+
+        <Spinner
+                android:id="@+id/scala_timer_spinner"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/settings_scala_time_variance_text"
+            android:id="@+id/textView4" />
+
+        <Spinner
+                android:id="@+id/scala_variance_spinner"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/settings_save"
+            android:id="@+id/saveButton" />
+</LinearLayout>

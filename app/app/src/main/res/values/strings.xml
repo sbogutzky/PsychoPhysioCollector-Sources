@@ -46,8 +46,31 @@
     <string name="action_stop_streaming">Abrufen stoppen</string>
     <string name="action_start_streaming">Abrufen starten</string>
     <string name="action_toggle_led">LEDs ein/ausschalten</string>
+    <string name="action_settings">Einstellungen</string>
     <string name="is_ready">ist bereit</string>
 
     <string name="enable_sensors_done">Done</string>
+    <string name="settings_scala_time_text">Scala Timer (m)</string>
+    <string name="settings_scala_time_variance_text">Scala Time Variance (s)</string>
+    <string name="settings_save">Speichern</string>
+
+    <string-array name="scale_timerValues">
+        <item>5</item>
+        <item>10</item>
+        <item>15</item>
+        <item>20</item>
+        <item>25</item>
+        <item>30</item>
+        <item>45</item>
+        <item>60</item>
+    </string-array>
+    <string-array name="scale_timerVarianceValues">
+        <item>30</item>
+        <item>60</item>
+        <item>90</item>
+        <item>120</item>
+        <item>150</item>
+        <item>180</item>
+    </string-array>
 
 </resources>
