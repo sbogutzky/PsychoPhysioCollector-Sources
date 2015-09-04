@@ -52,7 +52,7 @@
 
         <TextView
                 android:id="@+id/header2"
-                android:layout_below="@id/item1"
+                android:layout_below="@+id/item1"
                 style="@style/SectionHeader"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"

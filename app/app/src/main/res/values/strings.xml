@@ -53,6 +53,7 @@
     <string name="settings_scala_time_text">Scala Timer (m)</string>
     <string name="settings_scala_time_variance_text">Scala Time Variance (s)</string>
     <string name="settings_save">Speichern</string>
+    <string name="questionnaire">Fragebogen</string>
 
     <string-array name="scale_timerValues">
         <item>5</item>

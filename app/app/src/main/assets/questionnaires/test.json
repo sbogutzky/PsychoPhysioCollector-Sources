@@ -1,0 +1,57 @@
+{
+    "questionnaire": {
+        "title": "Flow Skala",
+		"questions": [
+			{
+				"type": "rating",
+				"stars": 7,
+				"question": "asd"
+			},
+			{
+				"type": "rating",
+				"stars": 9,
+				"question": "qwe"
+			},
+			{
+				"type": "text",
+				"question": "ert?????"
+			},
+		  {
+			"type": "rating",
+			"stars": 9,
+			"question": "dfg"
+		  },
+		  {
+			"type": "text",
+			"question": "xvc?????"
+		  },
+		  {
+			"type": "rating",
+			"stars": 9,
+			"question": "<yx"
+		  },
+		  {
+			"type": "text",
+			"question": "ghjg?????"
+		  },
+		  {
+			"type": "rating",
+			"stars": 9,
+			"question": "trztrz"
+		  },
+		  {
+			"type": "text",
+			"question": "wrewdsf?????"
+		  },
+		  {
+			"type": "rating",
+			"stars": 9,
+			"question": "cxvxvcc"
+		  },
+		  {
+			"type": "text",
+			"question": "jjjjjjjjjjjjjjjjjjjjj?????"
+		  }
+		]
+	}
+}

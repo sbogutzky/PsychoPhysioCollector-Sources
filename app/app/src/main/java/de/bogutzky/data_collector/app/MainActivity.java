@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.res.AssetManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -33,8 +34,11 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.RatingBar;
+import android.widget.RelativeLayout;
+import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -43,10 +47,16 @@ import com.shimmerresearch.android.Shimmer;
 import com.shimmerresearch.driver.FormatCluster;
 import com.shimmerresearch.driver.ObjectCluster;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.SimpleDateFormat;
@@ -91,6 +101,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private long[] vibratorPatternConnectionLost = {0, 100, 100, 100, 100, 100, 100, 100};
     private Spinner scale_timerSpinner;
     private Spinner scale_timerVarianceSpinner;
+    private Spinner questionnaireSpinner;
     private int scaleTimerValue;
     private int scaleTimerVarianceValue;
     private String[][] accelerometerValues;
@@ -111,6 +122,9 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private int bhPeakAccelerationValueCount;
     private String[][] bhRRIntervalValues;
     private int bhRRIntervalValueCount;
+
+    private String questionnaireFileName = "questionnaires/flowskala.json";
+    private JSONObject questionnaire;
 
     /* min api 9*/
     private Sensor linearAccelerationSensor;
@@ -185,6 +199,36 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
         textViewTimer = (TextView) findViewById(R.id.text_view_timer);
         textViewTimer.setVisibility(View.INVISIBLE);
+
+        final SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+        scaleTimerValue = sharedPref.getInt("scaleTimerValue", 15);
+        scaleTimerVarianceValue = sharedPref.getInt("scaleTimerVarianceValue", 30);
+        questionnaireFileName = sharedPref.getString("questionnaireValue", "flowskala.json");
+        timerCycleInMin = scaleTimerValue;
+
+        questionnaire = readQuestionnaireFromJSON();
+    }
+
+    private JSONObject readQuestionnaireFromJSON() {
+        BufferedReader input = null;
+        JSONObject jsonObject = null;
+        try {
+            input = new BufferedReader(new InputStreamReader(
+                    getAssets().open("questionnaires/" + questionnaireFileName)));
+            StringBuffer content = new StringBuffer();
+            char[] buffer = new char[1024];
+            int num;
+            while ((num = input.read(buffer)) > 0) {
+                content.append(buffer, 0, num);
+            }
+            jsonObject = new JSONObject(content.toString());
+
+        }catch (IOException e) {
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return jsonObject;
     }
 
     @Override
@@ -286,8 +330,9 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
     private void showSettings() {
         final SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
-        int selectedTimePos = sharedPref.getInt("scaleTimerValue", 2);
-        int selectedVariancePos = sharedPref.getInt("scaleTimerVarianceValue", 0);
+        int selectedTimePos = sharedPref.getInt("scaleTimerValuePos", 2);
+        int selectedVariancePos = sharedPref.getInt("scaleTimerVarianceValuePos", 0);
+        int questionnairePos = sharedPref.getInt("questionnairePos", 0);
         final Dialog dialog = new Dialog(this);
         dialog.setContentView(R.layout.settings);
         dialog.setTitle(getString(R.string.action_settings));
@@ -307,6 +352,18 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 R.array.scale_timerVarianceValues, android.R.layout.simple_spinner_item);
         scale_timerVarianceSpinner.setAdapter(adapter2);
         scale_timerVarianceSpinner.setSelection(selectedVariancePos);
+
+        questionnaireSpinner = (Spinner) dialog.findViewById(R.id.questionnaireSpinner);
+        AssetManager assetManager = getApplicationContext().getAssets();
+        String[] questionnaires = new String[0];
+        try {
+            questionnaires = assetManager.list("questionnaires");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        ArrayAdapter<String> qSpinnerAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, questionnaires);
+        questionnaireSpinner.setAdapter(qSpinnerAdapter);
+        questionnaireSpinner.setSelection(questionnairePos);
         Button saveButton = (Button) dialog.findViewById(R.id.saveButton);
         saveButton.setOnClickListener(new View.OnClickListener() {
 
@@ -317,14 +374,14 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 timerCycleInMin = scaleTimerValue;
 
                 SharedPreferences.Editor editor = sharedPref.edit();
-                editor.putInt("scaleTimerValue", scale_timerSpinner.getSelectedItemPosition());
-                editor.putInt("scaleTimerVarianceValue", scale_timerVarianceSpinner.getSelectedItemPosition());
+                editor.putInt("scaleTimerValuePos", scale_timerSpinner.getSelectedItemPosition());
+                editor.putInt("scaleTimerVarianceValuePos", scale_timerVarianceSpinner.getSelectedItemPosition());
+                editor.putInt("questionnairePos", questionnaireSpinner.getSelectedItemPosition());
+                editor.putInt("scaleTimerValue", Integer.valueOf(scale_timerSpinner.getSelectedItem().toString()));
+                editor.putInt("scaleTimerVarianceValue", Integer.valueOf(scale_timerVarianceSpinner.getSelectedItem().toString()));
+                editor.putString("questionnaireValue", questionnaireSpinner.getSelectedItem().toString());
                 editor.commit();
                 dialog.dismiss();
-                //value speichern und bei app start laden
-                //timer anpassen
-                // + oder - variance beim teimer starten rechnen
-                //dismiss dialog
             }
         });
         dialog.show();
@@ -622,7 +679,106 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private void showLikertScaleDialog() {
         final Dialog dialog = new Dialog(this);
         final long timestamp = System.currentTimeMillis();
-        dialog.setContentView(R.layout.flow_short_scale);
+
+        ScrollView scrollView = new ScrollView(this);
+        RelativeLayout relativeLayout = new RelativeLayout(this);
+        Button saveButton = new Button(this);
+        RelativeLayout.LayoutParams slp = new RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.MATCH_PARENT,
+                RelativeLayout.LayoutParams.MATCH_PARENT);
+        RelativeLayout.LayoutParams rlp = new RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.MATCH_PARENT,
+                RelativeLayout.LayoutParams.WRAP_CONTENT);
+        Random rnd = new Random();
+        try {
+            JSONArray questions = questionnaire.getJSONObject("questionnaire").getJSONArray("questions");
+            int tmpid = 0;
+            int tmpid2 = 0;
+            int tmpid3 = 0;
+            int oldtmp = 0;
+            for (int i = 0; i < questions.length(); i++) {
+                JSONObject q = questions.getJSONObject(i);
+                if (q.getString("type").equals("rating")) {
+                    RelativeLayout.LayoutParams params1 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
+                    RelativeLayout.LayoutParams params2 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+                    RelativeLayout.LayoutParams params3 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+                    RelativeLayout.LayoutParams params4 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+                    tmpid = rnd.nextInt(Integer.MAX_VALUE);
+                    tmpid2 = rnd.nextInt(Integer.MAX_VALUE);
+                    tmpid3 = rnd.nextInt(Integer.MAX_VALUE);
+                    TextView textView = new TextView(this);
+                    textView.setId(tmpid);
+                    textView.setText(q.getString("question"));
+                    if(i > 0) {
+                        params1.addRule(RelativeLayout.BELOW, oldtmp);
+                    }
+                    textView.setLayoutParams(params1);
+
+                    TextView textView1 = new TextView(this);
+                    textView1.setText(getText(R.string.not_agree));
+                    params2.setMargins(0, 8, 0, 0);
+                    params2.addRule(RelativeLayout.BELOW, tmpid);
+                    textView1.setLayoutParams(params2);
+
+                    TextView textView2 = new TextView(this);
+                    textView2.setId(tmpid2);
+                    textView2.setText(getText(R.string.agree));
+                    params3.setMargins(0, 8, 0, 0);
+                    params3.addRule(RelativeLayout.BELOW, tmpid);
+                    params3.addRule(RelativeLayout.ALIGN_RIGHT);
+                    textView2.setLayoutParams(params3);
+
+                    RatingBar ratingBar = new RatingBar(this);
+                    ratingBar.setStepSize(1);
+                    ratingBar.setNumStars(q.getInt("stars"));
+                    ratingBar.setId(tmpid3);
+                    Log.v(TAG, "id: " + ratingBar.getId());
+                    params4.addRule(RelativeLayout.BELOW, tmpid2);
+                    params4.setMargins(0, 8, 0, 20);
+                    params4.addRule(RelativeLayout.CENTER_HORIZONTAL);
+                    oldtmp = tmpid3;
+                    ratingBar.setLayoutParams(params4);
+
+
+                    relativeLayout.addView(textView);
+                    relativeLayout.addView(textView1);
+                    relativeLayout.addView(textView2);
+                    relativeLayout.addView(ratingBar);
+
+                } else if (q.getString("type").equals("text")) {
+                    RelativeLayout.LayoutParams params1 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
+                    RelativeLayout.LayoutParams params2 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
+
+                    tmpid = rnd.nextInt(Integer.MAX_VALUE);
+                    tmpid2 = rnd.nextInt(Integer.MAX_VALUE);
+
+                    TextView textView = new TextView(this);
+                    textView.setId(tmpid);
+                    textView.setText(q.getString("question"));
+                    if(i > 0) {
+                        params1.addRule(RelativeLayout.BELOW, oldtmp);
+                    }
+                    textView.setLayoutParams(params1);
+
+                    EditText editText = new EditText(this);
+                    editText.setId(tmpid2);
+                    params2.addRule(RelativeLayout.BELOW, tmpid);
+                    editText.setLayoutParams(params2);
+                    oldtmp = tmpid2;
+                    relativeLayout.addView(textView);
+                    relativeLayout.addView(editText);
+                }
+            }
+            saveButton.setText(getText(R.string.save));
+            relativeLayout.addView(saveButton);
+            relativeLayout.setLayoutParams(rlp);
+            scrollView.addView(relativeLayout);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        //dialog.setContentView(R.layout.flow_short_scale);
+        dialog.setContentView(scrollView, slp);
         dialog.setTitle(getString(R.string.feedback));
         dialog.setCancelable(false);
         WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
@@ -631,7 +787,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         lp.height = WindowManager.LayoutParams.MATCH_PARENT;
         dialog.getWindow().setAttributes(lp);
 
-        Button saveButton = (Button) dialog.findViewById(R.id.button_save);
+        //Button saveButton = (Button) dialog.findViewById(R.id.button_save);
         saveButton.setOnClickListener(new View.OnClickListener() {
 
             @Override
