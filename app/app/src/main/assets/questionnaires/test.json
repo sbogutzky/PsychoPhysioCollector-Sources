@@ -1,57 +1,68 @@
 {
-    "questionnaire": {
-        "title": "Flow Skala",
-		"questions": [
-			{
-				"type": "rating",
-				"stars": 7,
-				"question": "asd"
-			},
-			{
-				"type": "rating",
-				"stars": 9,
-				"question": "qwe"
-			},
-			{
-				"type": "text",
-				"question": "ert?????"
-			},
-		  {
-			"type": "rating",
-			"stars": 9,
-			"question": "dfg"
-		  },
-		  {
-			"type": "text",
-			"question": "xvc?????"
-		  },
-		  {
-			"type": "rating",
-			"stars": 9,
-			"question": "<yx"
-		  },
-		  {
-			"type": "text",
-			"question": "ghjg?????"
-		  },
-		  {
-			"type": "rating",
-			"stars": 9,
-			"question": "trztrz"
-		  },
-		  {
-			"type": "text",
-			"question": "wrewdsf?????"
-		  },
-		  {
-			"type": "rating",
-			"stars": 9,
-			"question": "cxvxvcc"
-		  },
-		  {
-			"type": "text",
-			"question": "jjjjjjjjjjjjjjjjjjjjj?????"
-		  }
-		]
-	}
+  "questionnaire": {
+    "title": "Flow Skala",
+    "questions": [
+      {
+        "type": "rating",
+        "stars": 7,
+        "question": "asd",
+        "ratings": ["Trifft nicht zu.", "Trifft zu"]
+      },
+      {
+        "type": "rating",
+        "stars": 9,
+        "question": "qwe",
+        "ratings": ["Trifft nicht zu.", "Trifft zu"]
+      },
+      {
+        "type": "text",
+        "question": "ert?????",
+        "ratings": ["Trifft nicht zu.", "Trifft zu"]
+      },
+      {
+        "type": "rating",
+        "stars": 9,
+        "question": "dfg",
+        "ratings": ["Trifft nicht zu.", "Trifft zu"]
+      },
+      {
+        "type": "text",
+        "question": "xvc?????",
+        "ratings": ["Trifft nicht zu.", "Trifft zu"]
+      },
+      {
+        "type": "rating",
+        "stars": 9,
+        "question": "<yx",
+        "ratings": ["Trifft nicht zu.", "Trifft zu"]
+      },
+      {
+        "type": "text",
+        "question": "ghjg?????",
+        "ratings": ["Trifft nicht zu.", "Trifft zu"]
+      },
+      {
+        "type": "rating",
+        "stars": 9,
+        "question": "trztrz",
+        "ratings": ["Trifft nicht zu.", "Trifft zu"]
+      },
+      {
+        "type": "text",
+        "question": "wrewdsf?????",
+        "ratings": ["Trifft nicht zu.", "Trifft zu"]
+      },
+      {
+        "type": "rating",
+        "stars": 9,
+        "question": "cxvxvcc",
+        "ratings": ["Trifft nicht zu.", "Trifft zu"]
+      },
+      {
+        "type": "text",
+        "question": "jjjjjjjjjjjjjjjjjjjjj?????",
+        "ratings": ["Trifft nicht zu.", "Trifft zu"]
+      }
+    ]
+  }
 }

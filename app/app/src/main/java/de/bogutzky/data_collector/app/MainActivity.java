@@ -13,6 +13,8 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.res.AssetManager;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -28,6 +30,7 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Vibrator;
 import android.util.Log;
+import android.view.ContextThemeWrapper;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -74,7 +77,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private static final int MSG_BLUETOOTH_ADDRESS = 1;
     private static final int TIMER_UPDATE = 1;
     private static final int TIMER_END = 2;
-    private static final int SCALE_ITEM_COUNT = 16;
     private final String bhHeartRateFilename = "bhHeartRate.csv";
     private final String bhRespirationRateFilename = "bhRespirationRate.csv";
     private final String bhPostureFilename = "bhPosture.csv";
@@ -162,6 +164,10 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private MenuItem startStreamMenuItem;
     private MenuItem stopStreamMenuItem;
 
+    private ArrayList<String> scaleTypes;
+    private ArrayList<Integer> scaleViewIds;
+
+    private boolean wroteQuestionnaireHeader = false;
 
     ShimmerService mService;
 
@@ -214,7 +220,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         JSONObject jsonObject = null;
         try {
             input = new BufferedReader(new InputStreamReader(
-                    getAssets().open("questionnaires/" + questionnaireFileName)));
+                    getAssets().open(questionnaireFileName)));
             StringBuffer content = new StringBuffer();
             char[] buffer = new char[1024];
             int num;
@@ -280,6 +286,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         }
 
         if (id == R.id.action_start_streaming) {
+            wroteQuestionnaireHeader = false;
             loggingEnabled = true;
             this.startStreamMenuItem.setEnabled(false);
             this.stopStreamMenuItem.setEnabled(true);
@@ -287,27 +294,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 createRootDirectory();
             }
             startAllStreaming();
-
-            try {
-                BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, "scale.csv"), true));
-
-
-                String outputString = "\"System Timestamp 01\",\"System Timestamp 02\",";
-                for (int i = 1; i <= SCALE_ITEM_COUNT; i++) {
-                    if (i != SCALE_ITEM_COUNT) {
-                        outputString += "\"Item " + String.format("%02d", i) + "\",";
-                    } else {
-                        outputString += "\"Item " + String.format("%02d", i) + "\"";
-                    }
-                }
-                writer.write(outputString);
-                writer.newLine();
-                writer.flush();
-                writer.close();
-            } catch (IOException e) {
-                Log.e(TAG, "Error while writing in file", e);
-            }
-
             startTimerThread();
             startStreamingInternalSensorData();
         }
@@ -379,8 +365,10 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 editor.putInt("questionnairePos", questionnaireSpinner.getSelectedItemPosition());
                 editor.putInt("scaleTimerValue", Integer.valueOf(scale_timerSpinner.getSelectedItem().toString()));
                 editor.putInt("scaleTimerVarianceValue", Integer.valueOf(scale_timerVarianceSpinner.getSelectedItem().toString()));
-                editor.putString("questionnaireValue", questionnaireSpinner.getSelectedItem().toString());
+                editor.putString("questionnaireValue", "questionnaires/" + questionnaireSpinner.getSelectedItem().toString());
                 editor.commit();
+                questionnaireFileName = "questionnaires/" + questionnaireSpinner.getSelectedItem().toString();
+                questionnaire = readQuestionnaireFromJSON();
                 dialog.dismiss();
             }
         });
@@ -680,6 +668,9 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         final Dialog dialog = new Dialog(this);
         final long timestamp = System.currentTimeMillis();
 
+        scaleTypes = new ArrayList<>();
+        scaleViewIds = new ArrayList<>();
+
         ScrollView scrollView = new ScrollView(this);
         RelativeLayout relativeLayout = new RelativeLayout(this);
         Button saveButton = new Button(this);
@@ -689,6 +680,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         RelativeLayout.LayoutParams rlp = new RelativeLayout.LayoutParams(
                 RelativeLayout.LayoutParams.MATCH_PARENT,
                 RelativeLayout.LayoutParams.WRAP_CONTENT);
+        RelativeLayout.LayoutParams saveParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         Random rnd = new Random();
         try {
             JSONArray questions = questionnaire.getJSONObject("questionnaire").getJSONArray("questions");
@@ -708,6 +700,13 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                     tmpid3 = rnd.nextInt(Integer.MAX_VALUE);
                     TextView textView = new TextView(this);
                     textView.setId(tmpid);
+                    Drawable bottom = getResources().getDrawable(R.drawable.section_header);
+                    textView.setCompoundDrawables(null,null,null,bottom);
+                    textView.setCompoundDrawablePadding(4);
+                    textView.setPadding(4, 0, 0, 0);
+                    textView.setTextColor(Color.WHITE);
+                    textView.setTextSize(16);
+                    params1.setMargins(0, 10, 0, 0);
                     textView.setText(q.getString("question"));
                     if(i > 0) {
                         params1.addRule(RelativeLayout.BELOW, oldtmp);
@@ -715,35 +714,36 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                     textView.setLayoutParams(params1);
 
                     TextView textView1 = new TextView(this);
-                    textView1.setText(getText(R.string.not_agree));
+                    textView1.setText(q.getJSONArray("ratings").getString(0));
                     params2.setMargins(0, 8, 0, 0);
                     params2.addRule(RelativeLayout.BELOW, tmpid);
                     textView1.setLayoutParams(params2);
 
                     TextView textView2 = new TextView(this);
                     textView2.setId(tmpid2);
-                    textView2.setText(getText(R.string.agree));
+                    textView2.setText(q.getJSONArray("ratings").getString(1));
                     params3.setMargins(0, 8, 0, 0);
                     params3.addRule(RelativeLayout.BELOW, tmpid);
-                    params3.addRule(RelativeLayout.ALIGN_RIGHT);
+                    params3.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
                     textView2.setLayoutParams(params3);
 
-                    RatingBar ratingBar = new RatingBar(this);
-                    ratingBar.setStepSize(1);
+                    RatingBar ratingBar = new RatingBar(new ContextThemeWrapper(this, R.style.RatingBar), null, 0);
                     ratingBar.setNumStars(q.getInt("stars"));
+                    ratingBar.setStepSize(1.0f);
                     ratingBar.setId(tmpid3);
-                    Log.v(TAG, "id: " + ratingBar.getId());
                     params4.addRule(RelativeLayout.BELOW, tmpid2);
                     params4.setMargins(0, 8, 0, 20);
                     params4.addRule(RelativeLayout.CENTER_HORIZONTAL);
                     oldtmp = tmpid3;
                     ratingBar.setLayoutParams(params4);
 
-
                     relativeLayout.addView(textView);
                     relativeLayout.addView(textView1);
                     relativeLayout.addView(textView2);
                     relativeLayout.addView(ratingBar);
+
+                    scaleTypes.add(q.getString("type"));
+                    scaleViewIds.add(tmpid3);
 
                 } else if (q.getString("type").equals("text")) {
                     RelativeLayout.LayoutParams params1 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
@@ -767,8 +767,13 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                     oldtmp = tmpid2;
                     relativeLayout.addView(textView);
                     relativeLayout.addView(editText);
+
+                    scaleTypes.add(q.getString("type"));
+                    scaleViewIds.add(tmpid2);
                 }
             }
+            saveParams.addRule(RelativeLayout.BELOW, oldtmp);
+            saveButton.setLayoutParams(saveParams);
             saveButton.setText(getText(R.string.save));
             relativeLayout.addView(saveButton);
             relativeLayout.setLayoutParams(rlp);
@@ -792,7 +797,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
             @Override
             public void onClick(View view) {
-                saveScaleItems(dialog, SCALE_ITEM_COUNT, timestamp);
+                saveScaleItems(dialog, timestamp);
                 dialog.dismiss();
                 if (loggingEnabled) {
                     resumeAllSensors();
@@ -804,18 +809,33 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         pauseAllSensors();
     }
 
-    private void saveScaleItems(final Dialog dialog, int items, long timestamp) {
+    private void saveScaleItems(final Dialog dialog, long timestamp) {
 
         String outputString = Long.toString(timestamp) + "," + Long.toString(System.currentTimeMillis()) + ",";
-        for (int i = 1; i <= items; i++) {
-            int identifier = getResources().getIdentifier("item" + i, "id", getPackageName());
-            if (identifier != 0) {
-                RatingBar ratingBar = (RatingBar) dialog.findViewById(identifier);
-                if (i != items) {
-                    outputString += Float.toString(ratingBar.getRating()) + ",";
+        if(!wroteQuestionnaireHeader) {
+            wroteQuestionnaireHeader = true;
+            outputString = "\"System Timestamp 01\",\"System Timestamp 02\",";
+            for (int i = 1; i < scaleTypes.size(); i++) {
+                if (i != scaleTypes.size()) {
+                    outputString += "\"Item " + String.format("%02d", i) + "\",";
                 } else {
-                    outputString += Float.toString(ratingBar.getRating());
+                    outputString += "\"Item " + String.format("%02d", i) + "\"";
                 }
+            }
+        }
+        for (int i = 0; i < scaleTypes.size(); i++) {
+            String value = "";
+            if(scaleTypes.get(i).equals("rating")) {
+                RatingBar r = (RatingBar) dialog.findViewById(scaleViewIds.get(i));
+                value = Float.toString(r.getRating());
+            } else if(scaleTypes.get(i).equals("text")) {
+                EditText e = (EditText) dialog.findViewById(scaleViewIds.get(i));
+                value = e.getText().toString();
+            }
+            if(i != scaleTypes.size()-1) {
+                outputString += value + ",";
+            } else {
+                outputString += value;
             }
         }
 

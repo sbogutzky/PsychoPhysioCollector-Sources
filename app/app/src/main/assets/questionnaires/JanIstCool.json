@@ -5,27 +5,32 @@
 			{
 				"type": "rating",
 				"stars": 7,
-				"question": "bbb"
+				"question": "bbb",
+			  "ratings": ["Trifft nicht zu.", "Trifft zu"]
 			},
 			{
 				"type": "rating",
 				"stars": 9,
-				"question": "aaa"
+				"question": "aaa",
+			  "ratings": ["Trifft nicht zu.", "Trifft zu"]
 			},
 		  {
 			"type": "rating",
 			"stars": 9,
-			"question": "sss"
+			"question": "sss",
+			"ratings": ["Trifft nicht zu.", "Trifft zu"]
 		  },
 		  {
 			"type": "rating",
 			"stars": 9,
-			"question": "fff"
+			"question": "fff",
+			"ratings": ["Trifft nicht zu.", "Trifft zu"]
 		  },
 		  {
 			"type": "rating",
 			"stars": 9,
-			"question": "ddd"
+			"question": "ddd",
+			"ratings": ["Trifft nicht zu.", "Trifft zu"]
 		  }
 		]
 	}
