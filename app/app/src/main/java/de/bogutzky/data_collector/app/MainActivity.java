@@ -1194,7 +1194,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         }
 
         public void setFields(String[] fields) {
-            dataArray = new float[fields.length];
+            dataArray = new float[fields.length-2];
             enabledSensor = mService.getEnabledSensorForMac(graphAdress);
             this.fields = fields;
             this.values = new String[maxValueCount][fields.length];
@@ -1236,16 +1236,18 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
                     if (msg.obj instanceof ObjectCluster) {
                         ObjectCluster objectCluster = (ObjectCluster) msg.obj;
+                        int graphDataCounter = 0;
                         for (int j = 0; j < fields.length; j++) {
-
                             Collection<FormatCluster> clusterCollection = objectCluster.mPropertyCluster.get(fields[j]);
                             if (j < fields.length - 1) {
                                 if (!clusterCollection.isEmpty()) {
                                     FormatCluster formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
                                     values[i][j] = Float.toString((float) formatCluster.mData);
                                     if(graphShowing) {
-                                        dataArray[j] = Float.valueOf(values[i][j]);
-                                        graphView.setDataWithAdjustment(dataArray,graphAdress, "u16");
+                                        if(j != 0 && j != fields.length - 1) {
+                                            dataArray[graphDataCounter] = Float.valueOf(values[i][j]);
+                                            graphDataCounter++;
+                                        }
                                     }
                                 }
                             } else {
@@ -1253,6 +1255,9 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                             }
                         }
 
+                        if(graphShowing) {
+                            graphView.setDataWithAdjustment(dataArray,graphAdress, "i8");
+                        }
                         i++;
                         if (i > maxValueCount - 1) {
                             Log.d(TAG, "Write data in " + this.filename);

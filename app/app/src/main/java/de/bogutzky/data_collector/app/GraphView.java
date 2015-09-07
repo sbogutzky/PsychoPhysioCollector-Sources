@@ -95,7 +95,7 @@ public class GraphView extends View {
         mCanvas.drawText(deviceID, 5, 10, mPaintText);
     	try {
 	    	for (int i=0;i<length;i++){
-	    		addDataPoint(values[i]+offset, mColor[i%3], mLastValue[i], i);
+	    		addDataPoint(values[i] + offset, mColor[i % 3], mLastValue[i], i);
 	    	}
     	} catch (ArrayIndexOutOfBoundsException e){ 
     		/* mLastValue might run into this in extreme situations */
