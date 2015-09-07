@@ -11,7 +11,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ListView;
 
 import java.util.ArrayList;
@@ -23,7 +22,7 @@ public class MainCommandsActivity extends Activity {
     int mCurrentSlot = -1;
     private ShimmerService mService;
     private boolean mServiceBind = false;
-    private String[] commands = new String[]{"Enable Sensors", "Sub Commands"};
+    private String[] commands = new String[]{"Enable Sensors", "Sub Commands", "Show Graph"};
     private double mSamplingRate = -1;
     private int mAccelRange = -1;
     private int mGSRRange = -1;
@@ -69,6 +68,13 @@ public class MainCommandsActivity extends Activity {
                 } else if (position == 0) {
                     Intent mainCommandIntent = new Intent(MainCommandsActivity.this, ConfigureActivity.class);
                     startActivityForResult(mainCommandIntent, MainActivity.REQUEST_CONFIGURE_SHIMMER);
+                } else if (position == 2) {
+                    Log.v("Commands Activity", "set result show graph");
+                    Intent intent = new Intent();
+                    intent.putExtra("mac", mCurrentDevice);
+                    intent.putExtra("action", MainActivity.SHOW_GRAPH);
+                    setResult(Activity.RESULT_OK, intent);
+                    finish();
                 }
             }
         });

@@ -102,7 +102,6 @@ public class CommandsSub extends Activity{
     	buttonToggleLED.setOnClickListener(new OnClickListener(){
 
 			public void onClick(View arg0) {
-				// TODO Auto-generated method stub
 				Intent intent = new Intent();
 	            intent.putExtra("ToggleLED", true);
 	            // Set result and finish this Activity

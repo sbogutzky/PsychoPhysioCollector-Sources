@@ -8,6 +8,7 @@ import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
@@ -158,6 +159,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     public final static int REQUEST_MAIN_COMMAND_SHIMMER=3;
     public final static int REQUEST_COMMANDS_SHIMMER=4;
     public static final int REQUEST_CONFIGURE_SHIMMER = 5;
+    public static final int SHOW_GRAPH = 13;
 
     private MenuItem connectMenuItem;
     private MenuItem disconnectMenuItem;
@@ -170,6 +172,9 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private boolean wroteQuestionnaireHeader = false;
 
     ShimmerService mService;
+    private GraphView graphView;
+    private boolean graphShowing = false;
+    private String graphAdress = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -539,7 +544,40 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                     }
                 }
                 break;
+            case REQUEST_MAIN_COMMAND_SHIMMER:
+                if(resultCode == Activity.RESULT_OK) {
+                    int action = data.getIntExtra("action", 0);
+                    graphAdress = data.getStringExtra("mac");
+                    if(action == MainActivity.SHOW_GRAPH) {
+                        showGraph();
+                        Log.v(TAG, "show graph!!!");
+                    }
+                }
+
+                break;
         }
+    }
+
+    private void showGraph() {
+        graphView = new GraphView(this);
+        graphShowing = true;
+        final Dialog dialog = new Dialog(this);
+        dialog.setContentView(graphView);
+        dialog.setTitle(getString(R.string.graph));
+        dialog.setCancelable(true);
+        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+        lp.copyFrom(dialog.getWindow().getAttributes());
+        lp.width = WindowManager.LayoutParams.MATCH_PARENT;
+        lp.height = WindowManager.LayoutParams.MATCH_PARENT;
+        dialog.getWindow().setAttributes(lp);
+        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                graphShowing = false;
+            }
+        });
+
+        dialog.show();
     }
 
     private ArrayList<String> getBluetoothAddresses() {
@@ -571,7 +609,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         BluetoothDevice btDevice = device;
 
                         String bluetoothAddress = btDevice.getAddress();
-                        mService.connectShimmer(bluetoothAddress, Integer.toString(count),new ShimmerHandler("sensor_" + btDevice.getName() + ".csv", this.directoryName, 250));
+                        mService.connectShimmer(bluetoothAddress, Integer.toString(count),new ShimmerHandler("sensor_" + btDevice.getName() + ".csv", this.directoryName, 250, bluetoothAddress));
                         count++;
                         break;
                     }
@@ -582,7 +620,8 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
     private void disconnectedAllShimmers() {
         stopService(new Intent(MainActivity.this, ShimmerService.class));
-        mService.disconnectAllDevices();
+        if(mService != null)
+            mService.disconnectAllDevices();
     }
 
 
@@ -1146,12 +1185,17 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         private int maxValueCount;
         private String[][] values;
         private String[] fields;
+        private String bluetoothAdress;
+        float[] dataArray;
+        int enabledSensor;
 
         public void setRoot(File root) {
             this.root = root;
         }
 
         public void setFields(String[] fields) {
+            dataArray = new float[fields.length];
+            enabledSensor = mService.getEnabledSensorForMac(graphAdress);
             this.fields = fields;
             this.values = new String[maxValueCount][fields.length];
             try {
@@ -1173,13 +1217,15 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             }
         }
 
-        ShimmerHandler(String filename, String directoryName, int maxValueCount) {
+        ShimmerHandler(String filename, String directoryName, int maxValueCount, String bluetoothAdress) {
             this.filename = filename;
             this.directoryName = directoryName;
 
             this.root = getStorageDir(this.directoryName);
 
             this.maxValueCount = maxValueCount;
+
+            this.bluetoothAdress = bluetoothAdress;
         }
 
         @Override
@@ -1190,7 +1236,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
                     if (msg.obj instanceof ObjectCluster) {
                         ObjectCluster objectCluster = (ObjectCluster) msg.obj;
-
                         for (int j = 0; j < fields.length; j++) {
 
                             Collection<FormatCluster> clusterCollection = objectCluster.mPropertyCluster.get(fields[j]);
@@ -1198,6 +1243,10 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                                 if (!clusterCollection.isEmpty()) {
                                     FormatCluster formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
                                     values[i][j] = Float.toString((float) formatCluster.mData);
+                                    if(graphShowing) {
+                                        dataArray[j] = Float.valueOf(values[i][j]);
+                                        graphView.setDataWithAdjustment(dataArray,graphAdress, "u16");
+                                    }
                                 }
                             } else {
                                 values[i][j] = Long.toString(System.currentTimeMillis());

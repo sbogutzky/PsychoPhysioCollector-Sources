@@ -398,6 +398,19 @@ public class ShimmerService extends Service {
         return gRange;
     }
 
+    public int getEnabledSensorForMac(String adress) {
+        Collection<Object> colS = mMultiShimmer.values();
+        Iterator<Object> iterator = colS.iterator();
+        int sensor = 0;
+        while (iterator.hasNext()) {
+            Shimmer stemp = (Shimmer) iterator.next();
+            if (stemp.getBluetoothAddress().equals(adress)) {
+                sensor = stemp.getEnabledSensors();
+            }
+        }
+        return sensor;
+    }
+
     public void startStreaming(String bluetoothAddress) {
         Collection<Object> colS = mMultiShimmer.values();
         Iterator<Object> iterator = colS.iterator();
