@@ -1359,7 +1359,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         bhRRIntervalValues[bhRRIntervalValueCount][1] = String.valueOf(rrInterval);
                         bhRRIntervalValueCount++;
                         if(bhRRIntervalValueCount >= maxVals) {
-                            bhRRIntervalValueCount++;
+                            bhRRIntervalValueCount = 0;
                             writeData(bhRRIntervalValues, bhRRIntervalFilename);
                             bhRRIntervalValues = new String[1000][2];
                         }
