@@ -61,6 +61,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.SimpleDateFormat;
@@ -69,6 +70,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import zephyr.android.BioHarnessBT.BTClient;
 
@@ -84,6 +86,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private final String bhSkinTemperatureFilename = "bhSkinTemperature.csv";
     private final String bhPeakAccelerationFilename = "bhPeakAcceleration.csv";
     private final String bhRRIntervalFilename = "bhRRInterval.csv";
+    private final String infoFilename = "info.csv";
     private boolean loggingEnabled = false;
     private ArrayAdapter adapter;
     private ArrayList<String> bluetoothAddresses;
@@ -176,6 +179,9 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private boolean graphShowing = false;
     private String graphAdress = "";
 
+    private Date startLoggingDate = null;
+    private Date stopLoggingDate = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -193,15 +199,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
         timerCycleInMin = 15;
 
-        this.firstGyroSensorTimestamp = 0L;
-        this.firstAccelerometerSensorTimestamp = 0L;
-        this.firstLinearAccelerationSensorTimestamp = 0L;
-        this.firstbhHeartRateTimestamp = 0L;
-        this.firstRespirationRateTimestamp = 0L;
-        this.firstSkinTemperatureTimestamp = 0L;
-        this.firstbhPostureTimestamp = 0L;
-        this.firstPeakAccelerationTimestamp = 0L;
-        this.firstRRIntervalTimestamp = 0L;
+        resetTimestamps();
 
         DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols();
         otherSymbols.setDecimalSeparator('.');
@@ -218,6 +216,18 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         timerCycleInMin = scaleTimerValue;
 
         questionnaire = readQuestionnaireFromJSON();
+    }
+
+    private void resetTimestamps() {
+        this.firstGyroSensorTimestamp = 0L;
+        this.firstAccelerometerSensorTimestamp = 0L;
+        this.firstLinearAccelerationSensorTimestamp = 0L;
+        this.firstbhHeartRateTimestamp = 0L;
+        this.firstRespirationRateTimestamp = 0L;
+        this.firstSkinTemperatureTimestamp = 0L;
+        this.firstbhPostureTimestamp = 0L;
+        this.firstPeakAccelerationTimestamp = 0L;
+        this.firstRRIntervalTimestamp = 0L;
     }
 
     private JSONObject readQuestionnaireFromJSON() {
@@ -284,6 +294,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             this.directoryName = null;
             connectMenuItem.setEnabled(true);
             disconnectMenuItem.setEnabled(false);
+            resetTimestamps();
         }
 
         if(id == R.id.action_settings) {
@@ -291,6 +302,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         }
 
         if (id == R.id.action_start_streaming) {
+            startLoggingDate = new Date();
             wroteQuestionnaireHeader = false;
             loggingEnabled = true;
             this.startStreamMenuItem.setEnabled(false);
@@ -304,6 +316,8 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         }
 
         if (id == R.id.action_stop_streaming) {
+            stopLoggingDate = new Date();
+            writeInfoLoggingData();
             loggingEnabled = false;
             this.directoryName = null;
             stopAllStreaming();
@@ -317,6 +331,23 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             mService.toggleAllLEDS();
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void writeInfoLoggingData() {
+        String outputString = "";
+        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        outputString += "StartTime: " + dateFormat.format(startLoggingDate) + "\n";
+        outputString += "EndTime: " + dateFormat.format(stopLoggingDate) + "\n";
+        outputString += "Duration: " + TimeUnit.SECONDS.convert(stopLoggingDate.getTime() - startLoggingDate.getTime(), TimeUnit.MILLISECONDS) + "\n";
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(root, infoFilename), true));
+            writer.write(outputString);
+            writer.newLine();
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            Log.e(TAG, "Error while writing in file", e);
+        }
     }
 
     private void showSettings() {
@@ -850,18 +881,19 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
     private void saveScaleItems(final Dialog dialog, long timestamp) {
 
-        String outputString = Long.toString(timestamp) + "," + Long.toString(System.currentTimeMillis()) + ",";
+        String outputString = "";
         if(!wroteQuestionnaireHeader) {
             wroteQuestionnaireHeader = true;
             outputString = "\"System Timestamp 01\",\"System Timestamp 02\",";
             for (int i = 1; i < scaleTypes.size(); i++) {
-                if (i != scaleTypes.size()) {
+                if (i != scaleTypes.size() - 1) {
                     outputString += "\"Item " + String.format("%02d", i) + "\",";
                 } else {
                     outputString += "\"Item " + String.format("%02d", i) + "\"";
                 }
             }
         }
+        outputString += "\n" + Long.toString(timestamp) + "," + Long.toString(System.currentTimeMillis()) + ",";
         for (int i = 0; i < scaleTypes.size(); i++) {
             String value = "";
             if(scaleTypes.get(i).equals("rating")) {
@@ -1063,7 +1095,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
     private void feedbackNotification() {
         vibrator.vibrate(vibratorPatternFeedback, -1);
-        playSound(R.raw.notifcation);
+        //playSound(R.raw.notifcation);
     }
 
     private void playSound(int soundID) {
@@ -1363,6 +1395,8 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                             writeData(bhRRIntervalValues, bhRRIntervalFilename);
                             bhRRIntervalValues = new String[1000][2];
                         }
+
+                        Log.v(TAG, "Logge RR interval mit Timestamp: " + time);
                         break;
 
                     case HEART_RATE:
