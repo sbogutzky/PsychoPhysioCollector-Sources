@@ -4,6 +4,7 @@ package de.bogutzky.data_collector.app;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 
 import zephyr.android.BioHarnessBT.*;
 
@@ -17,9 +18,6 @@ public class BioHarnessConnectedListener extends ConnectListenerImpl
 	final int ACCEL_100mg_MSG_ID = 0x2A;
 	final int SUMMARY_MSG_ID = 0x2B;
 	final int RR_INTERVAL = 0x105;
-	
-	
-	private int GP_HANDLER_ID = 0x20;
 	
 	private final int HEART_RATE = 0x100;
 	private final int RESPIRATION_RATE = 0x101;
@@ -57,13 +55,6 @@ public class BioHarnessConnectedListener extends ConnectListenerImpl
 		_protocol.addZephyrPacketEventListener(new ZephyrPacketListener() {
 			public void ReceivedPacket(ZephyrPacketEvent eventArgs) {
 				ZephyrPacketArgs msg = eventArgs.getPacket();
-				byte CRCFailStatus;
-				byte RcvdBytes;
-				
-				
-				
-				CRCFailStatus = msg.getCRCStatus();
-				RcvdBytes = msg.getNumRvcdBytes() ;
 				int MsgID = msg.getMsgID();
 				byte [] DataArray = msg.getBytes();	
 				switch (MsgID)
@@ -120,10 +111,7 @@ public class BioHarnessConnectedListener extends ConnectListenerImpl
 				b1.putLong("Timestamp", System.currentTimeMillis());
 				text1.setData(b1);
 				_aNewHandler.sendMessage(text1);
-				//System.out.println("Peak Acceleration is "+ PeakAccDbl);
-				
-				byte ROGStatus = GPInfo.GetROGStatus(DataArray);
-				//System.out.println("ROG Status is "+ ROGStatus);
+				//System.out.println("Peak Acceleration is "+ PeakAccDbl)
 				
 					break;
 				case BREATHING_MSG_ID:
@@ -138,21 +126,19 @@ public class BioHarnessConnectedListener extends ConnectListenerImpl
 					/*Do what you want. Printing Sequence Number for now*/
 					//System.out.println("R to R Packet Sequence Number is "+RtoRInfoPacket.GetSeqNum(DataArray));
 					int[] rrIntervals = RtoRInfoPacket.GetRtoRSamples(DataArray);
-					int index = 0;
 					int rrInterval = 0;
 					for (int i = 0; i < rrIntervals.length; i++) {
 						if (rrIntervals[i] < 2000) {
 							if(rrInterval != rrIntervals[i]) {
-								index++;
 								rrInterval = rrIntervals[i];
 								Message rrMessage = new Message();
 								rrMessage.what = RR_INTERVAL;
 								Bundle rrBundle = new Bundle();
 								rrBundle.putString("rrinterval", String.valueOf(rrInterval));
 								rrBundle.putLong("Timestamp", System.currentTimeMillis());
+								Log.v("Listener", "Timestamp: " + System.currentTimeMillis() + ", rr: " + rrInterval);
 								rrMessage.setData(rrBundle);
 								_aNewHandler.sendMessage(rrMessage);
-								System.out.println(index + ": " + rrInterval);
 							}
 						}
 					}
