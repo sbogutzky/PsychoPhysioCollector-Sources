@@ -1128,7 +1128,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
     private void feedbackNotification() {
         vibrator.vibrate(vibratorPatternFeedback, -1);
-        //playSound(R.raw.notifcation);
+        playSound(R.raw.notifcation);
     }
 
     private void playSound(int soundID) {
