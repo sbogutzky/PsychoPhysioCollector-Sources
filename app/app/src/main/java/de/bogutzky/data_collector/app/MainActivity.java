@@ -697,7 +697,9 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         };
 
         Random r = new Random();
-        int variance = r.nextInt(scaleTimerVarianceValue*2) - scaleTimerVarianceValue;
+        int variance = 0;
+        if(scaleTimerVarianceValue != 0)
+            variance = r.nextInt(scaleTimerVarianceValue*2) - scaleTimerVarianceValue;
         long timerInterval = (long) (1000 * 60 * timerCycleInMin) - (1000 * variance);
         final long endTime = System.currentTimeMillis() + timerInterval;
 
@@ -1095,7 +1097,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
     private void feedbackNotification() {
         vibrator.vibrate(vibratorPatternFeedback, -1);
-        //playSound(R.raw.notifcation);
+        playSound(R.raw.notifcation);
     }
 
     private void playSound(int soundID) {
@@ -1381,12 +1383,12 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             if(loggingEnabled) {
                 switch (msg.what) {
                     case RR_INTERVAL:
-                        String rrInterval = msg.getData().getString("rrinterval");
+                        int rrInterval = msg.getData().getInt("rrinterval");
                         timestamp = msg.getData().getLong("Timestamp");
-                        if (firstRRIntervalTimestamp == 0L) {
-                            firstRRIntervalTimestamp = timestamp;
-                        }
-                        time = (timestamp - firstRRIntervalTimestamp) / 1000.0;
+                        int rrTime = msg.getData().getInt("rrTime");
+                        firstRRIntervalTimestamp += rrTime;
+                        time = 0;
+                        time = firstRRIntervalTimestamp / 1000.0;
                         bhRRIntervalValues[bhRRIntervalValueCount][0] = String.valueOf(time);
                         bhRRIntervalValues[bhRRIntervalValueCount][1] = String.valueOf(rrInterval);
                         bhRRIntervalValueCount++;
