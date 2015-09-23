@@ -740,6 +740,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     }
 
     private void showLikertScaleDialog() {
+        final long showTimestamp = System.currentTimeMillis();
         final Dialog dialog = new Dialog(this);
         dialog.setContentView(R.layout.questionnaire);
         dialog.setTitle(getString(R.string.feedback));
@@ -753,15 +754,15 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         startQuestionnaireButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                createQuestionnaire(dialog);
+                createQuestionnaire(dialog, showTimestamp);
             }
         });
         dialog.show();
         //pauseAllSensors();
     }
 
-    private void createQuestionnaire(final Dialog dialog) {
-        final long timestamp = System.currentTimeMillis();
+    private void createQuestionnaire(final Dialog dialog, final long showTimestamp) {
+        final long startTimestamp = System.currentTimeMillis();
 
         scaleTypes = new ArrayList<>();
         scaleViewIds = new ArrayList<>();
@@ -885,7 +886,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
             @Override
             public void onClick(View view) {
-                saveScaleItems(dialog, timestamp);
+                saveScaleItems(dialog, showTimestamp, startTimestamp);
                 dialog.dismiss();
                 if (loggingEnabled) {
                     //resumeAllSensors();
@@ -895,12 +896,12 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         });
     }
 
-    private void saveScaleItems(final Dialog dialog, long timestamp) {
+    private void saveScaleItems(final Dialog dialog, long showTimestamp, long startTimestamp) {
 
         String outputString = "";
         if(!wroteQuestionnaireHeader) {
             wroteQuestionnaireHeader = true;
-            outputString = "\"System Timestamp 01\",\"System Timestamp 02\",";
+            outputString = "\"System Timestamp Show\",\"System Timestamp Start\",\"System Timestamp Stop\",";
             for (int i = 1; i < scaleTypes.size(); i++) {
                 if (i != scaleTypes.size() - 1) {
                     outputString += "\"Item " + String.format("%02d", i) + "\",";
@@ -909,7 +910,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 }
             }
         }
-        outputString += "\n" + Long.toString(timestamp) + "," + Long.toString(System.currentTimeMillis()) + ",";
+        outputString += "\n" + Long.toString(showTimestamp) + "," + Long.toString(startTimestamp) + "," + Long.toString(System.currentTimeMillis()) + ",";
         for (int i = 0; i < scaleTypes.size(); i++) {
             String value = "";
             if(scaleTypes.get(i).equals("rating")) {
