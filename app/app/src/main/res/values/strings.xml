@@ -55,6 +55,7 @@
     <string name="settings_save">Speichern</string>
     <string name="questionnaire">Fragebogen</string>
     <string name="graph">Graph</string>
+    <string name="startQuestionnaire">Fragebogen starten</string>
 
     <string-array name="scale_timerValues">
         <item>5</item>

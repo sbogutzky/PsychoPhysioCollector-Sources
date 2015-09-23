@@ -738,6 +738,26 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
     private void showLikertScaleDialog() {
         final Dialog dialog = new Dialog(this);
+        dialog.setContentView(R.layout.questionnaire);
+        dialog.setTitle(getString(R.string.feedback));
+        dialog.setCancelable(false);
+        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+        lp.copyFrom(dialog.getWindow().getAttributes());
+        lp.width = WindowManager.LayoutParams.MATCH_PARENT;
+        lp.height = WindowManager.LayoutParams.MATCH_PARENT;
+        dialog.getWindow().setAttributes(lp);
+        Button startQuestionnaireButton = (Button)dialog.findViewById(R.id.startQuestionnaireButton);
+        startQuestionnaireButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                createQuestionnaire(dialog);
+            }
+        });
+        dialog.show();
+        //pauseAllSensors();
+    }
+
+    private void createQuestionnaire(final Dialog dialog) {
         final long timestamp = System.currentTimeMillis();
 
         scaleTypes = new ArrayList<>();
@@ -856,13 +876,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
         //dialog.setContentView(R.layout.flow_short_scale);
         dialog.setContentView(scrollView, slp);
-        dialog.setTitle(getString(R.string.feedback));
-        dialog.setCancelable(false);
-        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
-        lp.copyFrom(dialog.getWindow().getAttributes());
-        lp.width = WindowManager.LayoutParams.MATCH_PARENT;
-        lp.height = WindowManager.LayoutParams.MATCH_PARENT;
-        dialog.getWindow().setAttributes(lp);
 
         //Button saveButton = (Button) dialog.findViewById(R.id.button_save);
         saveButton.setOnClickListener(new View.OnClickListener() {
@@ -872,13 +885,11 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 saveScaleItems(dialog, timestamp);
                 dialog.dismiss();
                 if (loggingEnabled) {
-                    resumeAllSensors();
+                    //resumeAllSensors();
                     startTimerThread();
                 }
             }
         });
-        dialog.show();
-        pauseAllSensors();
     }
 
     private void saveScaleItems(final Dialog dialog, long timestamp) {
@@ -1097,7 +1108,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
     private void feedbackNotification() {
         vibrator.vibrate(vibratorPatternFeedback, -1);
-        playSound(R.raw.notifcation);
+        //playSound(R.raw.notifcation);
     }
 
     private void playSound(int soundID) {
