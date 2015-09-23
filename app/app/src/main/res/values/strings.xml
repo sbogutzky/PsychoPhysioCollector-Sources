@@ -77,4 +77,7 @@
         <item>180</item>
     </string-array>
 
+    <string name="gps_not_connected">GPS nicht verbunden.</string>
+    <string name="gps_connected">GPS verbunden.</string>
+    <string name="gps_connected_fix_received">GPS verbunden und Fix erhalten.</string>
 </resources>

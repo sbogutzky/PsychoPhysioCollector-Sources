@@ -20,6 +20,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -102,6 +103,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private android.hardware.Sensor gyroscope;
     private LocationManager locationManager;
     private LocationListener locationListener;
+    private float lastLocationAccuracy;
     private Vibrator vibrator;
     private long[] vibratorPatternFeedback = {0, 500, 200, 100, 100, 100, 100, 100};
     private long[] vibratorPatternConnectionLost = {0, 100, 100, 100, 100, 100, 100, 100};
@@ -196,6 +198,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         this.linearAccelerationSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+        this.lastLocationAccuracy = 0;
 
         timerCycleInMin = 15;
 
@@ -985,6 +988,23 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
         locationListener = new GPSListener("gps.csv", this.directoryName, 100);
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+        locationManager.addGpsStatusListener(new GpsStatus.Listener() {
+            @Override
+            public void onGpsStatusChanged(int event) {
+                TextView gpsStatusTextView = (TextView)findViewById(R.id.gpsStatusTextView);
+                switch(event) {
+                    case GpsStatus.GPS_EVENT_STARTED:
+                        gpsStatusTextView.setText(getString(R.string.gps_connected));
+                        break;
+                    case GpsStatus.GPS_EVENT_STOPPED:
+                        gpsStatusTextView.setText(getString(R.string.gps_not_connected));
+                        break;
+                    case GpsStatus.GPS_EVENT_FIRST_FIX:
+                        gpsStatusTextView.setText(getString(R.string.gps_connected_fix_received));
+                        break;
+                }
+            }
+        });
     }
 
     private void stopStreamingInternalSensorData() {
@@ -1200,6 +1220,11 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                     } catch (IOException e) {
                         Log.e(TAG, "Error while writing in file", e);
                     }
+                }
+                if(lastLocationAccuracy - location.getAccuracy() > 5.0) {
+                    TextView gpsStatusTextView = (TextView) findViewById(R.id.gpsStatusTextView);
+                    gpsStatusTextView.setText(getText(R.string.gps_connected_fix_received) + " Genauigkeit: " + location.getAccuracy());
+                    lastLocationAccuracy = location.getAccuracy();
                 }
             }
         }
