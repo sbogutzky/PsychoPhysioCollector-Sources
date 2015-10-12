@@ -22,7 +22,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 
-public class ShimmerService extends Service {
+import zephyr.android.BioHarnessBT.BTClient;
+
+public class SensorService extends Service {
     private static final String TAG = "MyService";
     public Shimmer shimmerDevice1 = null;
     private BluetoothAdapter mBluetoothAdapter = null;
@@ -34,6 +36,8 @@ public class ShimmerService extends Service {
     private double[][] mMaxData = new double[7][3];
     DescriptiveStatistics mDataBuffer = new DescriptiveStatistics(5);
     private NotificationManager mNM;
+    private BTClient _bt;
+    private BioHarnessConnectedListener bioHarnessConnectedListener;
 
 
     @Override
@@ -55,10 +59,15 @@ public class ShimmerService extends Service {
         showNotification();
     }
 
+    public void disconnectBioHarness() {
+        if(_bt != null && bioHarnessConnectedListener != null)
+            _bt.removeConnectedEventListener(bioHarnessConnectedListener);
+    }
+
     public class LocalBinder extends Binder {
-        public ShimmerService getService() {
+        public SensorService getService() {
             // Return this instance of LocalService so clients can call public methods
-            return ShimmerService.this;
+            return SensorService.this;
         }
     }
 
@@ -99,6 +108,15 @@ public class ShimmerService extends Service {
 
         Log.d(TAG, "onStart");
 
+    }
+
+    public void connectBioHarness(MainActivity.HarnessHandler harnessHandler, String bhMacID) {
+        _bt = new BTClient(BluetoothAdapter.getDefaultAdapter(), bhMacID);
+        bioHarnessConnectedListener = new BioHarnessConnectedListener(harnessHandler, harnessHandler);
+        _bt.addConnectedEventListener(bioHarnessConnectedListener);
+        if(_bt.IsConnected()) {
+            _bt.start();
+        }
     }
 
     public void connectShimmer(String bluetoothAddress, String selectedDevice, MainActivity.ShimmerHandler handler) {
@@ -143,6 +161,8 @@ public class ShimmerService extends Service {
                 stemp.stopStreaming();
             }
         }
+        if(_bt != null && bioHarnessConnectedListener != null)
+            _bt.removeConnectedEventListener(bioHarnessConnectedListener);
     }
 
     public void startStreamingAllDevices() {

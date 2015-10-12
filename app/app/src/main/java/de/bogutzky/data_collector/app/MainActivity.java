@@ -73,8 +73,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import zephyr.android.BioHarnessBT.BTClient;
-
 public class MainActivity extends ListActivity implements SensorEventListener {
 
     private static final String TAG = "MainActivity";
@@ -151,8 +149,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
     //bth adapter
     private BluetoothAdapter btAdapter = null;
-    private BTClient _bt;
-    private BioHarnessConnectedListener _NConnListener;
     private final int HEART_RATE = 0x100;
     private final int RESPIRATION_RATE = 0x101;
     private final int SKIN_TEMPERATURE = 0x102;
@@ -176,7 +172,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
     private boolean wroteQuestionnaireHeader = false;
 
-    ShimmerService mService;
+    SensorService mService;
     private GraphView graphView;
     private boolean graphShowing = false;
     private String graphAdress = "";
@@ -290,10 +286,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
         if (id == R.id.action_disconnect) {
             disconnectedAllShimmers();
-            if(_bt != null && _NConnListener != null) {
-                _bt.removeConnectedEventListener(_NConnListener);
-                _bt.Close();
-            }
+            disconnectBioHarness();
             this.directoryName = null;
             connectMenuItem.setEnabled(true);
             disconnectMenuItem.setEnabled(false);
@@ -334,6 +327,11 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             mService.toggleAllLEDS();
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void disconnectBioHarness() {
+        if(mService != null)
+            mService.disconnectBioHarness();
     }
 
     private void writeInfoLoggingData() {
@@ -458,17 +456,9 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             }
         }
         if(BhMacID != null) {
-            BluetoothDevice Device = btAdapter.getRemoteDevice(BhMacID);
-            String DeviceName = Device.getName();
-            Log.v(TAG, "connected to: " + DeviceName);
-
-            _bt = new BTClient(btAdapter, BhMacID);
-            HarnessHandler harnessHandler = new HarnessHandler();
-            _NConnListener = new BioHarnessConnectedListener(harnessHandler, harnessHandler);
-            _bt.addConnectedEventListener(_NConnListener);
-
-            if(_bt.IsConnected()) {
-                _bt.start();
+            if(mService != null) {
+                HarnessHandler harnessHandler = new HarnessHandler();
+                mService.connectBioHarness(harnessHandler, BhMacID);
             }
         }
     }
@@ -571,7 +561,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                     }
                     if(mService == null) {
                         Log.v(TAG, "service erstellen");
-                        Intent intent=new Intent(this, ShimmerService.class);
+                        Intent intent=new Intent(this, SensorService.class);
                         startService(intent);
                         getApplicationContext().bindService(intent, mTestServiceConnection, Context.BIND_AUTO_CREATE);
                         registerReceiver(myReceiver, new IntentFilter("de.bogutzky.data_collector.app"));
@@ -653,7 +643,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     }
 
     private void disconnectedAllShimmers() {
-        stopService(new Intent(MainActivity.this, ShimmerService.class));
+        stopService(new Intent(MainActivity.this, SensorService.class));
         if(mService != null)
             mService.disconnectAllDevices();
     }
@@ -1556,12 +1546,9 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         //internal sensors
         sensorManager.unregisterListener(this);
         locationManager.removeUpdates(locationListener);
-        //shimmer sensors
         stopAllStreaming();
-        //bio harness
-        if(_bt != null && _NConnListener != null)
-            _bt.removeConnectedEventListener(_NConnListener);
     }
+
     void resumeAllSensors() {
         //internal
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_FASTEST);
@@ -1571,8 +1558,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         startAllStreaming();
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
         //bioharness
-        if(_bt != null && _NConnListener != null)
-            _bt.addConnectedEventListener(_NConnListener);
+        connectBioHarness();
     }
 
     private void notifyBHReady() {
@@ -1583,7 +1569,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
         public void onServiceConnected(ComponentName arg0, IBinder service) {
             Log.d(TAG, "service connected");
-            ShimmerService.LocalBinder binder = (ShimmerService.LocalBinder) service;
+            SensorService.LocalBinder binder = (SensorService.LocalBinder) service;
             mService = binder.getService();
         }
 

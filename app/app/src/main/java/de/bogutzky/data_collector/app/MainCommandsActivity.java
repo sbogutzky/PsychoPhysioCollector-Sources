@@ -20,7 +20,7 @@ import java.util.Arrays;
 public class MainCommandsActivity extends Activity {
     String mCurrentDevice = null;
     int mCurrentSlot = -1;
-    private ShimmerService mService;
+    private SensorService mService;
     private boolean mServiceBind = false;
     private String[] commands = new String[]{"Enable Sensors", "Sub Commands", "Show Graph"};
     private double mSamplingRate = -1;
@@ -32,7 +32,7 @@ public class MainCommandsActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_commands);
 
-        Intent intent = new Intent(this, ShimmerService.class);
+        Intent intent = new Intent(this, SensorService.class);
         getApplicationContext().bindService(intent, mTestServiceConnection, Context.BIND_AUTO_CREATE);
         Intent sender = getIntent();
         String extraData = sender.getExtras().getString("LocalDeviceID");
@@ -134,7 +134,7 @@ public class MainCommandsActivity extends Activity {
     private ServiceConnection mTestServiceConnection = new ServiceConnection() {
 
         public void onServiceConnected(ComponentName arg0, IBinder service) {
-            ShimmerService.LocalBinder binder = (ShimmerService.LocalBinder) service;
+            SensorService.LocalBinder binder = (SensorService.LocalBinder) service;
             mService = binder.getService();
             mServiceBind = true;
             mSamplingRate = mService.getSamplingRate(mCurrentDevice);
