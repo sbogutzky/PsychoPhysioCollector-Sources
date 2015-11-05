@@ -19,23 +19,32 @@
     <string name="high">hoch</string>
     <string name="easy">leicht</string>
     <string name="difficult">schwer</string>
-    <string name="action_connect">Verbinden</string>
-    <string name="action_disconnect">Trennen</string>
-    <string name="action_stop_streaming">Abrufen stoppen</string>
-    <string name="action_start_streaming">Abrufen starten</string>
-    <string name="action_toggle_led">LEDs ein/ausschalten</string>
-    <string name="action_settings">Einstellungen</string>
+
     <string name="is_ready">ist bereit</string>
 
     <string name="enable_sensors_done">Done</string>
-    <string name="settings_scala_time_text">Scala Timer (m)</string>
-    <string name="settings_scala_time_variance_text">Scala Time Variance (s)</string>
+
     <string name="settings_save">Speichern</string>
-    <string name="questionnaire">Fragebogen</string>
+
     <string name="graph">Graph</string>
     <string name="startQuestionnaire">Fragebogen starten</string>
 
-    <string-array name="scale_timerValues">
+    <string name="gps_not_connected">GPS nicht verbunden.</string>
+    <string name="gps_connected">GPS verbunden.</string>
+    <string name="gps_connected_fix_received">GPS verbunden und Fix erhalten.</string>
+
+    <string name="action_connect_sensors">Sensoren verbinden</string>
+    <string name="action_disconnect_sensors">Sensoren trennen</string>
+    <string name="action_stop_test">Untersuchung stoppen</string>
+    <string name="action_start_test">Untersuchung starten</string>
+    <string name="action_toggle_led">LEDs ein/ausschalten</string>
+    <string name="action_settings">Einstellungen</string>
+
+    <string name="test_protocol_settings">Einstellung des Untersuchungsprotokolls</string>
+    <string name="test_protocol_settings_psychometric_scale">Psychometrische Skala</string>
+    <string name="test_protocol_settings_interval">Interval in Minuten</string>
+    <string name="test_protocol_settings_interval_variance">Intervalvarianz in Sekunden</string>
+    <string-array name="test_protocol_settings_interval_values">
         <item>5</item>
         <item>10</item>
         <item>15</item>
@@ -45,7 +54,7 @@
         <item>45</item>
         <item>60</item>
     </string-array>
-    <string-array name="scale_timerVarianceValues">
+    <string-array name="test_protocol_settings_interval_variance_values">
         <item>0</item>
         <item>30</item>
         <item>60</item>
@@ -54,8 +63,4 @@
         <item>150</item>
         <item>180</item>
     </string-array>
-
-    <string name="gps_not_connected">GPS nicht verbunden.</string>
-    <string name="gps_connected">GPS verbunden.</string>
-    <string name="gps_connected_fix_received">GPS verbunden und Fix erhalten.</string>
 </resources>

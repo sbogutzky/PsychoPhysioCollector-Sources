@@ -322,10 +322,10 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             this.startStreamMenuItem.setEnabled(true);
             this.stopStreamMenuItem.setEnabled(false);
         }
-
+/*
         if (id == R.id.action_toggle_led) {
             mService.toggleAllLEDS();
-        }
+        }*/
         return super.onOptionsItemSelected(item);
     }
 
@@ -367,12 +367,12 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         dialog.getWindow().setAttributes(lp);
         scale_timerSpinner = (Spinner) dialog.findViewById(R.id.scala_timer_spinner);
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
-                R.array.scale_timerValues, android.R.layout.simple_spinner_item);
+                R.array.test_protocol_settings_interval_values, android.R.layout.simple_spinner_item);
         scale_timerSpinner.setAdapter(adapter);
         scale_timerSpinner.setSelection(selectedTimePos);
         scale_timerVarianceSpinner = (Spinner) dialog.findViewById(R.id.scala_variance_spinner);
         ArrayAdapter<CharSequence> adapter2 = ArrayAdapter.createFromResource(this,
-                R.array.scale_timerVarianceValues, android.R.layout.simple_spinner_item);
+                R.array.test_protocol_settings_interval_variance_values, android.R.layout.simple_spinner_item);
         scale_timerVarianceSpinner.setAdapter(adapter2);
         scale_timerVarianceSpinner.setSelection(selectedVariancePos);
 
