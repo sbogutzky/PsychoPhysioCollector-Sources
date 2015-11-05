@@ -41,7 +41,7 @@
     <string name="action_settings">Einstellungen</string>
 
     <string name="test_protocol_settings">Einstellung des Untersuchungsprotokolls</string>
-    <string name="test_protocol_settings_psychometric_scale">Psychometrische Skala</string>
+    <string name="test_protocol_settings_questionnaire">Fragebogen</string>
     <string name="test_protocol_settings_interval">Interval in Minuten</string>
     <string name="test_protocol_settings_interval_variance">Intervalvarianz in Sekunden</string>
     <string-array name="test_protocol_settings_interval_values">

@@ -256,10 +256,10 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
 
-        this.connectMenuItem = menu.getItem(1);
-        this.disconnectMenuItem = menu.getItem(2);
-        this.startStreamMenuItem = menu.getItem(3);
-        this.stopStreamMenuItem = menu.getItem(4);
+        this.connectMenuItem = menu.getItem(4);
+        this.disconnectMenuItem = menu.getItem(5);
+        this.startStreamMenuItem = menu.getItem(0);
+        this.stopStreamMenuItem = menu.getItem(1);
         return true;
     }
 
