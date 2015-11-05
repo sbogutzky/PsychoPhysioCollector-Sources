@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<items version="2" >
+
+    <item
+        jar="/Users/sbogutzky/Entwicklung/bogutzky/repositories/psychophysiocollector-android/psychophysiocollector/app/libs/vecmath-1.3.1.jar"
+        jumboMode="false"
+        revision="22.0.1"
+        sha1="a0ae4f51da409fa0c20fa0ca59e6bbc9413ae71d">
+        <dex dex="/Users/sbogutzky/Entwicklung/bogutzky/repositories/psychophysiocollector-android/psychophysiocollector/app/build/intermediates/pre-dexed/debug/vecmath-1.3.1-46db8cea77a91c1cffa6a7e2e00ed75d001e4b8b.jar" />
+    </item>
+    <item
+        jar="/Users/sbogutzky/Entwicklung/bogutzky/repositories/psychophysiocollector-android/psychophysiocollector/app/libs/BioHarnessBT.jar"
+        jumboMode="false"
+        revision="22.0.1"
+        sha1="06927ba2e62534b7839f4c9d51293be56bd217ce">
+        <dex dex="/Users/sbogutzky/Entwicklung/bogutzky/repositories/psychophysiocollector-android/psychophysiocollector/app/build/intermediates/pre-dexed/debug/BioHarnessBT-f8957e155716f2e4f58ff6170b410c9e7150991b.jar" />
+    </item>
+    <item
+        jar="/Users/sbogutzky/Entwicklung/bogutzky/repositories/psychophysiocollector-android/psychophysiocollector/app/libs/commons-math-2.2.jar"
+        jumboMode="false"
+        revision="22.0.1"
+        sha1="4877b85d388275f994a5cfc7eceb73a8045d3006">
+        <dex dex="/Users/sbogutzky/Entwicklung/bogutzky/repositories/psychophysiocollector-android/psychophysiocollector/app/build/intermediates/pre-dexed/debug/commons-math-2.2-a61330e4f7e4262c62ee148dfeeebf632e07eba4.jar" />
+    </item>
+    <item
+        jar="/Users/sbogutzky/Entwicklung/bogutzky/repositories/psychophysiocollector-android/psychophysiocollector/app/libs/AndroidBluetoothLibrary.jar"
+        jumboMode="false"
+        revision="22.0.1"
+        sha1="03becf78ee96fb5127a875bdb31b0c1c9581771e">
+        <dex dex="/Users/sbogutzky/Entwicklung/bogutzky/repositories/psychophysiocollector-android/psychophysiocollector/app/build/intermediates/pre-dexed/debug/AndroidBluetoothLibrary-12be448a969eeed9989587a7cb4db15ce5ca00f2.jar" />
+    </item>
+    <item
+        jar="/Users/sbogutzky/Entwicklung/bogutzky/repositories/psychophysiocollector-android/psychophysiocollector/app/libs/guava-12.0.jar"
+        jumboMode="false"
+        revision="22.0.1"
+        sha1="5bc66dd95b79db1e437eb08adba124a3e4088dc0">
+        <dex dex="/Users/sbogutzky/Entwicklung/bogutzky/repositories/psychophysiocollector-android/psychophysiocollector/app/build/intermediates/pre-dexed/debug/guava-12.0-6dfb0efd1de71e962416fb4dde7116888cdd19be.jar" />
+    </item>
+    <item
+        jar="/Users/sbogutzky/Entwicklung/bogutzky/repositories/psychophysiocollector-android/psychophysiocollector/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/22.1.1/jars/classes.jar"
+        jumboMode="false"
+        revision="22.0.1"
+        sha1="a3ff3c506644c820eb2bdf06e8339f72be578551">
+        <dex dex="/Users/sbogutzky/Entwicklung/bogutzky/repositories/psychophysiocollector-android/psychophysiocollector/app/build/intermediates/pre-dexed/debug/classes-a854c07a3dd6cd388c73719829775cfba8397614.jar" />
+    </item>
+    <item
+        jar="/Users/sbogutzky/Entwicklung/bogutzky/repositories/psychophysiocollector-android/psychophysiocollector/app/build/intermediates/exploded-aar/com.android.support/support-v4/22.1.1/jars/libs/internal_impl-22.1.1.jar"
+        jumboMode="false"
+        revision="22.0.1"
+        sha1="9e070ad32b2700b0343e8e0cccc437733d91ba3a">
+        <dex dex="/Users/sbogutzky/Entwicklung/bogutzky/repositories/psychophysiocollector-android/psychophysiocollector/app/build/intermediates/pre-dexed/debug/internal_impl-22.1.1-e6baac09fd4c0557008ea61c4f88d16eb27101df.jar" />
+    </item>
+    <item
+        jar="/Users/sbogutzky/Library/Android/sdk/extras/android/m2repository/com/android/support/support-annotations/22.1.1/support-annotations-22.1.1.jar"
+        jumboMode="false"
+        revision="22.0.1"
+        sha1="01d051a6bfb1218b1db2d3a5af0480ac2c25c42a">
+        <dex dex="/Users/sbogutzky/Entwicklung/bogutzky/repositories/psychophysiocollector-android/psychophysiocollector/app/build/intermediates/pre-dexed/debug/support-annotations-22.1.1-d64e60c34e4f708ccf59b1e111667ef8c714184b.jar" />
+    </item>
+    <item
+        jar="/Users/sbogutzky/Entwicklung/bogutzky/repositories/psychophysiocollector-android/psychophysiocollector/app/build/intermediates/exploded-aar/com.android.support/support-v4/22.1.1/jars/classes.jar"
+        jumboMode="false"
+        revision="22.0.1"
+        sha1="c95ba8152923e4872e86a82cfcba9a51c0214328">
+        <dex dex="/Users/sbogutzky/Entwicklung/bogutzky/repositories/psychophysiocollector-android/psychophysiocollector/app/build/intermediates/pre-dexed/debug/classes-f923ab7b137c479d0067277fac93991d02376343.jar" />
+    </item>
+
+</items>
