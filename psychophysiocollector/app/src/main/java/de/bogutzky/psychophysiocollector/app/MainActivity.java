@@ -129,7 +129,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private String[][] bhRRIntervalValues;
     private int bhRRIntervalValueCount;
 
-    private String questionnaireFileName = "questionnaires/flowskala.json";
+    private String questionnaireFileName = "questionnaires/fks.json";
     private JSONObject questionnaire;
 
     /* min api 9*/
@@ -211,7 +211,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         final SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
         scaleTimerValue = sharedPref.getInt("scaleTimerValue", 15);
         scaleTimerVarianceValue = sharedPref.getInt("scaleTimerVarianceValue", 30);
-        questionnaireFileName = sharedPref.getString("questionnaireValue", "flowskala.json");
+        questionnaireFileName = sharedPref.getString("questionnaireValue", "fks.json");
         timerCycleInMin = scaleTimerValue;
 
         questionnaire = readQuestionnaireFromJSON();
