@@ -11,3 +11,7 @@ psychophysiocollector/.idea/workspace.xml
 app/app/build
 app/.idea
 app/build
+psychophysiocollector/.idea/
+psychophysiocollector/.gradle/
+psychophysiocollector/build/intermediates/dex-cache/cache.xml
+psychophysiocollector/local.properties

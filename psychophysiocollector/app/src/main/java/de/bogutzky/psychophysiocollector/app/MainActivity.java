@@ -62,6 +62,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -555,6 +557,9 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
                     if (isNewAddress) {
                         addBluetoothAddress(bluetoothAddress);
+                        btAdapter = BluetoothAdapter.getDefaultAdapter();
+                        BluetoothDevice device = btAdapter.getRemoteDevice(bluetoothAddress);
+                        pairDevice(device);
                         Log.v("Main", "bond: " + bluetoothAddress);
                     } else {
                         Toast.makeText(this, getString(R.string.device_is_already_in_list), Toast.LENGTH_LONG).show();
@@ -1586,6 +1591,28 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             if(arg1.getIntExtra("ShimmerState", -1)!=-1){
                 Log.v(TAG, "receiver receive");
             }
+            String action = arg1.getAction();
+
+            if (BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(action)) {
+                final int state        = arg1.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE, BluetoothDevice.ERROR);
+                final int prevState    = arg1.getIntExtra(BluetoothDevice.EXTRA_PREVIOUS_BOND_STATE, BluetoothDevice.ERROR);
+
+                if (state == BluetoothDevice.BOND_BONDED && prevState == BluetoothDevice.BOND_BONDING) {
+                    Toast.makeText(getApplicationContext(), "Paired", Toast.LENGTH_SHORT);
+                } else if (state == BluetoothDevice.BOND_NONE && prevState == BluetoothDevice.BOND_BONDED){
+                    Toast.makeText(getApplicationContext(), "UnPaired", Toast.LENGTH_SHORT);
+                }
+
+            }
         }
     };
+
+    private void pairDevice(BluetoothDevice device) {
+        try {
+            Method method = device.getClass().getMethod("createBond", (Class[]) null);
+            method.invoke(device, (Object[]) null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
