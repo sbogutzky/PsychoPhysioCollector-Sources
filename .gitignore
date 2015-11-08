@@ -8,3 +8,6 @@ psychophysiocollector/.gradle/2.2.1/taskArtifacts/fileHashes.bin
 psychophysiocollector/.gradle/2.2.1/taskArtifacts/fileSnapshots.bin
 psychophysiocollector/.gradle/2.2.1/taskArtifacts/taskArtifacts.bin
 psychophysiocollector/.idea/workspace.xml
+app/app/build
+app/.idea
+app/build
