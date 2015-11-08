@@ -559,7 +559,15 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         addBluetoothAddress(bluetoothAddress);
                         btAdapter = BluetoothAdapter.getDefaultAdapter();
                         BluetoothDevice device = btAdapter.getRemoteDevice(bluetoothAddress);
-                        pairDevice(device);
+                        Set<BluetoothDevice> pairedDevices = btAdapter.getBondedDevices();
+                        boolean paired = false;
+                        for(BluetoothDevice d:pairedDevices) {
+                            if(d.getAddress().equals(bluetoothAddress)) {
+                                paired = true;
+                            }
+                        }
+                        if(!paired)
+                            pairDevice(device);
                         Log.v("Main", "bond: " + bluetoothAddress);
                     } else {
                         Toast.makeText(this, getString(R.string.device_is_already_in_list), Toast.LENGTH_LONG).show();
