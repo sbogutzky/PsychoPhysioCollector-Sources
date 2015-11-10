@@ -4,9 +4,19 @@
     "questions": [
       {
         "type": "rating",
+        "stars": 2,
+        "question": "Warst du eben gerade im Flow?",
+        "ratings": ["Ja", "Nein"]
+      },
+      {
+        "type": "rating",
         "stars": 7,
-        "question": "Ich fühle mich optimal beansprucht.",
-        "ratings": ["Trifft nicht zu.", "Trifft zu"]
+        "question": "Wie würdest du das auf einer Skala von 1 bis 7 einordnen?",
+        "ratings": ["gar nicht", "total"]
+      },
+      {
+        "type": "text",
+        "question": "Woran machst du das fest?"
       },
       {
         "type": "rating",
