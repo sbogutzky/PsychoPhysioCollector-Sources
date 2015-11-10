@@ -45,6 +45,7 @@ import android.widget.RatingBar;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.Spinner;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -869,6 +870,35 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
                     scaleTypes.add(q.getString("type"));
                     scaleViewIds.add(tmpid2);
+                } else if (q.getString("type").equals("truefalse")) {
+                    RelativeLayout.LayoutParams params1 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
+                    RelativeLayout.LayoutParams params2 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
+
+                    tmpid = rnd.nextInt(Integer.MAX_VALUE);
+                    tmpid2 = rnd.nextInt(Integer.MAX_VALUE);
+
+                    TextView textView = new TextView(this);
+                    textView.setId(tmpid);
+                    textView.setText(q.getString("question"));
+                    if(i > 0) {
+                        params1.addRule(RelativeLayout.BELOW, oldtmp);
+                    }
+                    textView.setLayoutParams(params1);
+
+                    Switch yesNoSwitch = new Switch(this);
+                    yesNoSwitch.setText(getResources().getString(R.string.isTrue));
+                    yesNoSwitch.setTextOff(getResources().getString(R.string.no));
+                    yesNoSwitch.setTextOn(getResources().getString(R.string.yes));
+                    yesNoSwitch.setId(tmpid2);
+
+                    params2.addRule(RelativeLayout.BELOW, tmpid);
+                    yesNoSwitch.setLayoutParams(params2);
+                    oldtmp = tmpid2;
+                    relativeLayout.addView(textView);
+                    relativeLayout.addView(yesNoSwitch);
+
+                    scaleTypes.add(q.getString("type"));
+                    scaleViewIds.add(tmpid2);
                 }
             }
             saveParams.addRule(RelativeLayout.BELOW, oldtmp);
@@ -922,6 +952,12 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             } else if(scaleTypes.get(i).equals("text")) {
                 EditText e = (EditText) dialog.findViewById(scaleViewIds.get(i));
                 value = e.getText().toString();
+            } else if(scaleTypes.get(i).equals("truefalse")) {
+                Switch s = (Switch) dialog.findViewById(scaleViewIds.get(i));
+                if(s.isChecked())
+                    value = "1";
+                else
+                    value = "0";
             }
             if(i != scaleTypes.size()-1) {
                 outputString += value + ",";
