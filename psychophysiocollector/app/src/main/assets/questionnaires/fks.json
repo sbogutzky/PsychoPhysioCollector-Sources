@@ -2,6 +2,10 @@
   "questionnaire": {
     "title": "Flow-Kurzskala",
     "questions": [
+      /*{
+        "type": "truefalse",
+        "question": "Ich fühle mich optimal beansprucht."
+      },*/
       {
         "type": "rating",
         "stars": 2,

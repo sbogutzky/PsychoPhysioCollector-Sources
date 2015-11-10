@@ -45,6 +45,7 @@ import android.widget.RatingBar;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.Spinner;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -62,6 +63,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -555,6 +558,17 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
                     if (isNewAddress) {
                         addBluetoothAddress(bluetoothAddress);
+                        btAdapter = BluetoothAdapter.getDefaultAdapter();
+                        BluetoothDevice device = btAdapter.getRemoteDevice(bluetoothAddress);
+                        Set<BluetoothDevice> pairedDevices = btAdapter.getBondedDevices();
+                        boolean paired = false;
+                        for(BluetoothDevice d:pairedDevices) {
+                            if(d.getAddress().equals(bluetoothAddress)) {
+                                paired = true;
+                            }
+                        }
+                        if(!paired)
+                            pairDevice(device);
                         Log.v("Main", "bond: " + bluetoothAddress);
                     } else {
                         Toast.makeText(this, getString(R.string.device_is_already_in_list), Toast.LENGTH_LONG).show();
@@ -856,6 +870,35 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
                     scaleTypes.add(q.getString("type"));
                     scaleViewIds.add(tmpid2);
+                } else if (q.getString("type").equals("truefalse")) {
+                    RelativeLayout.LayoutParams params1 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
+                    RelativeLayout.LayoutParams params2 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
+
+                    tmpid = rnd.nextInt(Integer.MAX_VALUE);
+                    tmpid2 = rnd.nextInt(Integer.MAX_VALUE);
+
+                    TextView textView = new TextView(this);
+                    textView.setId(tmpid);
+                    textView.setText(q.getString("question"));
+                    if(i > 0) {
+                        params1.addRule(RelativeLayout.BELOW, oldtmp);
+                    }
+                    textView.setLayoutParams(params1);
+
+                    Switch yesNoSwitch = new Switch(this);
+                    yesNoSwitch.setText(getResources().getString(R.string.isTrue));
+                    yesNoSwitch.setTextOff(getResources().getString(R.string.no));
+                    yesNoSwitch.setTextOn(getResources().getString(R.string.yes));
+                    yesNoSwitch.setId(tmpid2);
+
+                    params2.addRule(RelativeLayout.BELOW, tmpid);
+                    yesNoSwitch.setLayoutParams(params2);
+                    oldtmp = tmpid2;
+                    relativeLayout.addView(textView);
+                    relativeLayout.addView(yesNoSwitch);
+
+                    scaleTypes.add(q.getString("type"));
+                    scaleViewIds.add(tmpid2);
                 }
             }
             saveParams.addRule(RelativeLayout.BELOW, oldtmp);
@@ -909,6 +952,12 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             } else if(scaleTypes.get(i).equals("text")) {
                 EditText e = (EditText) dialog.findViewById(scaleViewIds.get(i));
                 value = e.getText().toString();
+            } else if(scaleTypes.get(i).equals("truefalse")) {
+                Switch s = (Switch) dialog.findViewById(scaleViewIds.get(i));
+                if(s.isChecked())
+                    value = "1";
+                else
+                    value = "0";
             }
             if(i != scaleTypes.size()-1) {
                 outputString += value + ",";
@@ -1586,6 +1635,28 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             if(arg1.getIntExtra("ShimmerState", -1)!=-1){
                 Log.v(TAG, "receiver receive");
             }
+            String action = arg1.getAction();
+
+            if (BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(action)) {
+                final int state        = arg1.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE, BluetoothDevice.ERROR);
+                final int prevState    = arg1.getIntExtra(BluetoothDevice.EXTRA_PREVIOUS_BOND_STATE, BluetoothDevice.ERROR);
+
+                if (state == BluetoothDevice.BOND_BONDED && prevState == BluetoothDevice.BOND_BONDING) {
+                    Toast.makeText(getApplicationContext(), "Paired", Toast.LENGTH_SHORT);
+                } else if (state == BluetoothDevice.BOND_NONE && prevState == BluetoothDevice.BOND_BONDED){
+                    Toast.makeText(getApplicationContext(), "UnPaired", Toast.LENGTH_SHORT);
+                }
+
+            }
         }
     };
+
+    private void pairDevice(BluetoothDevice device) {
+        try {
+            Method method = device.getClass().getMethod("createBond", (Class[]) null);
+            method.invoke(device, (Object[]) null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

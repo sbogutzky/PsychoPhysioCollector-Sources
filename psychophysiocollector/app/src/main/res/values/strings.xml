@@ -28,6 +28,9 @@
 
     <string name="graph">Graph</string>
     <string name="startQuestionnaire">Fragebogen starten</string>
+    <string name="isTrue">Trifft zu</string>
+    <string name="yes">Ja</string>
+    <string name="no">Nein</string>
 
     <string name="gps_not_connected">GPS nicht verbunden.</string>
     <string name="gps_connected">GPS verbunden.</string>
