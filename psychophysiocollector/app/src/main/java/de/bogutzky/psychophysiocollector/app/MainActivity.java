@@ -63,7 +63,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
@@ -1632,7 +1631,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
         @Override
         public void onReceive(Context arg0, Intent arg1) {
-            // TODO Auto-generated method stub
             if(arg1.getIntExtra("ShimmerState", -1)!=-1){
                 Log.v(TAG, "receiver receive");
             }
