@@ -65,4 +65,20 @@
         <item>150</item>
         <item>180</item>
     </string-array>
+
+
+    <!-- File names -->
+    <string name="file_name_acceleration">acceleration.csv</string>
+    <string name="file_name_linear_acceleration">linear-acceleration.csv</string>
+    <string name="file_name_angular_velocity">angular-velocity.csv</string>
+
+    <!-- File headers -->
+    <string name="file_header_timestamp">"timestamp.ms"</string>
+    <string name="file_header_acceleration_x">"acceleration.x.ms.2"</string>
+    <string name="file_header_acceleration_y">"acceleration.y.ms.2"</string>
+    <string name="file_header_acceleration_z">"acceleration.z.ms.2"</string>
+    <string name="file_header_system_time">"system.time.ms"</string>
+    <string name="file_header_angular_velocity_x">"angular.velocity.x.deg.s"</string>
+    <string name="file_header_angular_velocity_y">"angular.velocity.y.deg.s"</string>
+    <string name="file_header_angular_velocity_z">"angular.velocity.z.deg.s"</string>
 </resources>
