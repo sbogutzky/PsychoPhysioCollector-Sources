@@ -183,6 +183,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private Date startLoggingDate = null;
     private Date stopLoggingDate = null;
 
+    private int sensorDataDelay = 20000; // ca. 50 Hz
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -1022,9 +1023,9 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             Log.e(TAG, "Error while writing in file", e);
         }
 
-        sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_FASTEST);
-        sensorManager.registerListener(this, gyroscope, SensorManager.SENSOR_DELAY_FASTEST);
-        sensorManager.registerListener(this, linearAccelerationSensor, SensorManager.SENSOR_DELAY_FASTEST);
+        sensorManager.registerListener(this, accelerometer, sensorDataDelay);
+        sensorManager.registerListener(this, gyroscope, sensorDataDelay);
+        sensorManager.registerListener(this, linearAccelerationSensor, sensorDataDelay);
 
         locationListener = new GPSListener("gps.csv", this.directoryName, 100);
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
@@ -1600,9 +1601,9 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
     void resumeAllSensors() {
         //internal
-        sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_FASTEST);
-        sensorManager.registerListener(this, gyroscope, SensorManager.SENSOR_DELAY_FASTEST);
-        sensorManager.registerListener(this, linearAccelerationSensor, SensorManager.SENSOR_DELAY_FASTEST);
+        sensorManager.registerListener(this, accelerometer, sensorDataDelay);
+        sensorManager.registerListener(this, gyroscope, sensorDataDelay);
+        sensorManager.registerListener(this, linearAccelerationSensor, sensorDataDelay);
         //shimmer
         startAllStreaming();
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
