@@ -967,7 +967,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         }
 
         try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(root, "self-report.csv"), true));
+            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(root, getString(R.string.file_name_self_report)), true));
             writer.write(outputString);
             writer.newLine();
             writer.flush();
@@ -1026,7 +1026,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         sensorManager.registerListener(this, gyroscope, sensorDataDelay);
         sensorManager.registerListener(this, linearAccelerationSensor, sensorDataDelay);
 
-        locationListener = new GPSListener("gps.csv", this.directoryName, 100);
+        locationListener = new GPSListener(getString(R.string.file_name_gps_position), this.directoryName, 100);
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
         locationManager.addGpsStatusListener(new GpsStatus.Listener() {
             @Override
