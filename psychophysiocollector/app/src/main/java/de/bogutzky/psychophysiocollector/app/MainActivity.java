@@ -887,7 +887,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                     textView.setLayoutParams(params1);
 
                     Switch yesNoSwitch = new Switch(this);
-                    yesNoSwitch.setText(getResources().getString(R.string.isTrue));
+                    yesNoSwitch.setText("");
                     yesNoSwitch.setTextOff(getResources().getString(R.string.no));
                     yesNoSwitch.setTextOn(getResources().getString(R.string.yes));
                     yesNoSwitch.setId(tmpid2);
