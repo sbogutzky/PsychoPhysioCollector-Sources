@@ -525,7 +525,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         SimpleDateFormat simpleTimeFormat = new SimpleDateFormat("HH-mm-ss");
         String dateString = simpleDateFormat.format(new Date());
         String timeString = simpleTimeFormat.format(new Date());
-        this.directoryName = "DataCollector/" + dateString + "_" + timeString;
+        this.directoryName = "PsychoPhysioCollector/" + dateString + "_" + timeString;
 
         this.root = getStorageDir(this.directoryName);
     }
@@ -968,7 +968,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         }
 
         try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(root, "scale.csv"), true));
+            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(root, "self-report.csv"), true));
             writer.write(outputString);
             writer.newLine();
             writer.flush();
@@ -1013,7 +1013,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         }
 
         try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, "linearAcceleration.csv"), true));
+            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, "linear-acceleration.csv"), true));
             String outputString = "\"Timestamp\",\"Accelerometer X\",\"Accelerometer Y\",\"Accelerometer Z\",\"System Timestamp\"";
             writer.write(outputString);
             writer.newLine();
@@ -1145,7 +1145,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                     System.arraycopy(linearAccelerationValues, 0, linearAccelerationValuesCopies, 0, 999);
                     linearAccelerationValues = new String[1000][5];
                     try {
-                        BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, "linearAcceleration.csv"), true));
+                        BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, "linear-acceleration.csv"), true));
 
                         for (String[] copy : linearAccelerationValuesCopies) {
                             if (copy[0] != null) {
