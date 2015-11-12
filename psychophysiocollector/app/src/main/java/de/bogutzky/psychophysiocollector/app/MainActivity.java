@@ -1,6 +1,7 @@
 package de.bogutzky.psychophysiocollector.app;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ListActivity;
 import android.bluetooth.BluetoothAdapter;
@@ -37,6 +38,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -192,7 +194,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         setContentView(R.layout.activity_main);
 
         deviceNames = new ArrayList<String>();
-        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, getBluetoothAddresses());
+        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, deviceNames);
         setListAdapter(adapter);
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -222,6 +224,28 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         timerCycleInMin = scaleTimerValue;
 
         questionnaire = readQuestionnaireFromJSON();
+
+        getListView().setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+
+                final int index = position;
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                builder.setCancelable(true);
+                builder.setTitle("Delete?");
+                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+
+                    public void onClick(DialogInterface dialog, int which) {
+                        deviceNames.remove(index);
+                        getBluetoothAddresses().remove(index);
+                        adapter.notifyDataSetChanged();
+                    }
+                });
+                builder.create().show();
+                return false;
+            }
+        });
     }
 
     private void resetTimestamps() {
@@ -470,7 +494,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 createBioHarnessFiles();
                 HarnessHandler harnessHandler = new HarnessHandler();
                 mService.connectBioHarness(harnessHandler, BhMacID);
-                deviceNames.add(deviceName);
             }
         }
     }
@@ -569,6 +592,9 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         addBluetoothAddress(bluetoothAddress);
                         btAdapter = BluetoothAdapter.getDefaultAdapter();
                         BluetoothDevice device = btAdapter.getRemoteDevice(bluetoothAddress);
+                        String name = device.getName();
+                        deviceNames.add(name);
+                        adapter.notifyDataSetChanged();
                         Set<BluetoothDevice> pairedDevices = btAdapter.getBondedDevices();
                         boolean paired = false;
                         for(BluetoothDevice d:pairedDevices) {
@@ -636,7 +662,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
     private void addBluetoothAddress(String bluetoothAddress) {
         getBluetoothAddresses().add(bluetoothAddress);
-        adapter.notifyDataSetChanged();
     }
 
     private void findBluetoothAddress() {
@@ -656,8 +681,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         BluetoothDevice btDevice = device;
 
                         String bluetoothAddress = btDevice.getAddress();
-                        mService.connectShimmer(bluetoothAddress, Integer.toString(count),new ShimmerHandler("sensor-" + btDevice.getName().toLowerCase() + ".csv", this.directoryName, 250, bluetoothAddress));
-                        deviceNames.add(device.getName());
+                        mService.connectShimmer(bluetoothAddress, Integer.toString(count), new ShimmerHandler("sensor-" + btDevice.getName().toLowerCase() + ".csv", this.directoryName, 250, bluetoothAddress));
                         count++;
                         break;
                     }
