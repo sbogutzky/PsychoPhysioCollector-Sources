@@ -176,12 +176,13 @@ public class SensorService extends Service {
         }
     }
 
-    public void startStreamingAllDevicesGetSensorNames(File root) {
+    public void startStreamingAllDevicesGetSensorNames(File root, String directoryName) {
         Collection<Object> colS = mMultiShimmer.values();
         Iterator<Object> iterator = colS.iterator();
         while (iterator.hasNext()) {
             Shimmer stemp = (Shimmer) iterator.next();
             ((MainActivity.ShimmerHandler)stemp.mHandler).setRoot(root);
+            ((MainActivity.ShimmerHandler)stemp.mHandler).setDirectoryName(directoryName);
             if (stemp.getShimmerState() == Shimmer.STATE_CONNECTED) {
                 stemp.startStreaming();
                 int mPosition = Integer.parseInt(stemp.getDeviceName());

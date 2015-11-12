@@ -188,6 +188,8 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private Date stopLoggingDate = null;
 
     private int sensorDataDelay = 20000; // ca. 50 Hz
+    private boolean startedStreaming = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -306,9 +308,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         }
 
         if (id == R.id.action_connect) {
-            if (this.directoryName == null) {
-                createRootDirectory();
-            }
             disconnectMenuItem.setEnabled(true);
             connectMenuItem.setEnabled(false);
             connectedAllShimmers();
@@ -333,6 +332,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             startLoggingDate = new Date();
             wroteQuestionnaireHeader = false;
             loggingEnabled = true;
+            startedStreaming = true;
             this.startStreamMenuItem.setEnabled(false);
             this.stopStreamMenuItem.setEnabled(true);
             if (this.directoryName == null) {
@@ -347,6 +347,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             stopLoggingDate = new Date();
             writeInfoLoggingData();
             loggingEnabled = false;
+            startedStreaming = false;
             this.directoryName = null;
             stopAllStreaming();
             stopTimerThread();
@@ -491,7 +492,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         }
         if(BhMacID != null) {
             if(mService != null) {
-                createBioHarnessFiles();
                 HarnessHandler harnessHandler = new HarnessHandler();
                 mService.connectBioHarness(harnessHandler, BhMacID);
             }
@@ -681,7 +681,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         BluetoothDevice btDevice = device;
 
                         String bluetoothAddress = btDevice.getAddress();
-                        mService.connectShimmer(bluetoothAddress, Integer.toString(count), new ShimmerHandler("sensor-" + btDevice.getName().toLowerCase() + ".csv", this.directoryName, 250, bluetoothAddress));
+                        mService.connectShimmer(bluetoothAddress, Integer.toString(count), new ShimmerHandler("sensor-" + btDevice.getName().toLowerCase() + ".csv", 250, bluetoothAddress));
                         count++;
                         break;
                     }
@@ -699,7 +699,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
     private void startAllStreaming() {
         if(mService != null)
-            mService.startStreamingAllDevicesGetSensorNames(this.root);
+            mService.startStreamingAllDevicesGetSensorNames(this.root, this.directoryName);
     }
 
 
@@ -1361,11 +1361,13 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             }
         }
 
-        ShimmerHandler(String filename, String directoryName, int maxValueCount, String bluetoothAdress) {
-            this.filename = filename;
+        public void setDirectoryName(String directoryName) {
             this.directoryName = directoryName;
-
             this.root = getStorageDir(this.directoryName);
+        }
+
+        ShimmerHandler(String filename, int maxValueCount, String bluetoothAdress) {
+            this.filename = filename;
 
             this.maxValueCount = maxValueCount;
 
@@ -1486,8 +1488,13 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         int maxVals = 5;
         long timestamp = 0;
         double time = 0;
+        boolean filesCreated = false;
         HarnessHandler() {}
         public void handleMessage(Message msg) {
+            if(!filesCreated && loggingEnabled) {
+                createBioHarnessFiles();
+                filesCreated = true;
+            }
             if(msg.what == 101) {
                 notifyBHReady();
             }
