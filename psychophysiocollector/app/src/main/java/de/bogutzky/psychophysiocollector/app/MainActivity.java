@@ -289,7 +289,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             connectMenuItem.setEnabled(false);
             connectedAllShimmers();
             connectBioHarness();
-            connected = true;
         }
 
         if (id == R.id.action_disconnect) {
@@ -1438,6 +1437,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                             Log.d(TAG, "Fully initialized: " + bluetoothAddress);
                             String btRadioID = bluetoothAddress.replace(":", "").substring(8).toUpperCase();
                             Toast.makeText(MainActivity.this, btRadioID + " " + getString(R.string.is_ready), Toast.LENGTH_LONG).show();
+                            connected = true;
 
                             break;
                         case Shimmer.MSG_STATE_STREAMING:
