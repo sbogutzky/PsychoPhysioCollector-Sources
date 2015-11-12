@@ -449,8 +449,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         bhRespirationtRateValues = new String[1000][2];
         bhRRIntervalValues = new String[1000][2];
 
-        createBioHarnessFiles();
-
         btAdapter = BluetoothAdapter.getDefaultAdapter();
 
         Set<BluetoothDevice> pairedDevices = btAdapter.getBondedDevices();
@@ -470,6 +468,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         }
         if(BhMacID != null) {
             if(mService != null) {
+                createBioHarnessFiles();
                 HarnessHandler harnessHandler = new HarnessHandler();
                 mService.connectBioHarness(harnessHandler, BhMacID);
                 deviceNames.add(deviceName);
