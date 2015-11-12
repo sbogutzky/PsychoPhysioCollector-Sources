@@ -91,6 +91,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private boolean loggingEnabled = false;
     private ArrayAdapter adapter;
     private ArrayList<String> bluetoothAddresses;
+    private ArrayList<String> deviceNames;
     private TextView textViewTimer;
     private Handler timerHandler;
     private Thread timerThread;
@@ -169,6 +170,8 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private MenuItem startStreamMenuItem;
     private MenuItem stopStreamMenuItem;
 
+    private boolean connected = false;
+
     private ArrayList<String> scaleTypes;
     private ArrayList<Integer> scaleViewIds;
 
@@ -188,6 +191,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        deviceNames = new ArrayList<String>();
         adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, getBluetoothAddresses());
         setListAdapter(adapter);
 
@@ -285,6 +289,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             connectMenuItem.setEnabled(false);
             connectedAllShimmers();
             connectBioHarness();
+            connected = true;
         }
 
         if (id == R.id.action_disconnect) {
@@ -294,6 +299,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             connectMenuItem.setEnabled(true);
             disconnectMenuItem.setEnabled(false);
             resetTimestamps();
+            connected = false;
         }
 
         if(id == R.id.action_settings) {
@@ -417,13 +423,15 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
     @Override
     protected void onListItemClick(ListView l, View v, int position, long id) {
-        Object o = l.getItemAtPosition(position);
-        Log.d("Shimmer",o.toString());
-        Intent mainCommandIntent=new Intent(MainActivity.this, MainCommandsActivity.class);
-        mainCommandIntent.putExtra("LocalDeviceID", o.toString());
-        mainCommandIntent.putExtra("CurrentSlot", position);
-        mainCommandIntent.putExtra("requestCode", REQUEST_MAIN_COMMAND_SHIMMER);
-        startActivityForResult(mainCommandIntent, REQUEST_MAIN_COMMAND_SHIMMER);
+        if(connected && deviceNames.get(position).contains("RN42")) {
+            Object o = l.getItemAtPosition(position);
+            Log.d("Shimmer",o.toString());
+            Intent mainCommandIntent=new Intent(MainActivity.this, MainCommandsActivity.class);
+            mainCommandIntent.putExtra("LocalDeviceID", o.toString());
+            mainCommandIntent.putExtra("CurrentSlot", position);
+            mainCommandIntent.putExtra("requestCode", REQUEST_MAIN_COMMAND_SHIMMER);
+            startActivityForResult(mainCommandIntent, REQUEST_MAIN_COMMAND_SHIMMER);
+        }
     }
 
     private void connectBioHarness() {
@@ -446,12 +454,14 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         btAdapter = BluetoothAdapter.getDefaultAdapter();
 
         Set<BluetoothDevice> pairedDevices = btAdapter.getBondedDevices();
+        String deviceName = "";
 
         if (pairedDevices.size() > 0) {
             for (BluetoothDevice device : pairedDevices) {
                 if (device.getName().startsWith("BH")) {
                     if(bluetoothAddresses.contains(device.getAddress())) {
                         BluetoothDevice btDevice = device;
+                        deviceName = device.getName();
                         BhMacID = btDevice.getAddress();
                         break;
                     }
@@ -462,6 +472,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             if(mService != null) {
                 HarnessHandler harnessHandler = new HarnessHandler();
                 mService.connectBioHarness(harnessHandler, BhMacID);
+                deviceNames.add(deviceName);
             }
         }
     }
@@ -648,6 +659,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
                         String bluetoothAddress = btDevice.getAddress();
                         mService.connectShimmer(bluetoothAddress, Integer.toString(count),new ShimmerHandler("sensor-" + btDevice.getName().toLowerCase() + ".csv", this.directoryName, 250, bluetoothAddress));
+                        deviceNames.add(device.getName());
                         count++;
                         break;
                     }
