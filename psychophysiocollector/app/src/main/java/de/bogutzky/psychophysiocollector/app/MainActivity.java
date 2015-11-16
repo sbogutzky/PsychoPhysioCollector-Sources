@@ -149,6 +149,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private Long firstbhPostureTimestamp;
     private Long firstPeakAccelerationTimestamp;
     private Long firstRRIntervalTimestamp;
+    private Long startTimestamp;
 
     private DecimalFormat decimalFormat;
 
@@ -214,7 +215,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols();
         otherSymbols.setDecimalSeparator('.');
         decimalFormat = new DecimalFormat("#.###", otherSymbols);
-        decimalFormat.setMinimumFractionDigits(5);
+        decimalFormat.setMinimumFractionDigits(3);
 
         textViewTimer = (TextView) findViewById(R.id.text_view_timer);
         textViewTimer.setVisibility(View.INVISIBLE);
@@ -222,7 +223,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         final SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
         scaleTimerValue = sharedPref.getInt("scaleTimerValue", 15);
         scaleTimerVarianceValue = sharedPref.getInt("scaleTimerVarianceValue", 30);
-        questionnaireFileName = sharedPref.getString("questionnaireValue", "fks.json");
+        questionnaireFileName = sharedPref.getString("questionnaireValue", "questionnaires/fks.json");
         timerCycleInMin = scaleTimerValue;
 
         questionnaire = readQuestionnaireFromJSON();
@@ -260,6 +261,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         this.firstbhPostureTimestamp = 0L;
         this.firstPeakAccelerationTimestamp = 0L;
         this.firstRRIntervalTimestamp = 0L;
+        this.startTimestamp = 0L;
     }
 
     private JSONObject readQuestionnaireFromJSON() {
@@ -330,6 +332,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
         if (id == R.id.action_start_streaming) {
             startLoggingDate = new Date();
+            startTimestamp = System.currentTimeMillis();
             wroteQuestionnaireHeader = false;
             loggingEnabled = true;
             startedStreaming = true;
@@ -345,6 +348,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
         if (id == R.id.action_stop_streaming) {
             stopLoggingDate = new Date();
+            startTimestamp = 0L;
             writeInfoLoggingData();
             loggingEnabled = false;
             startedStreaming = false;
@@ -1095,6 +1099,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                     this.firstAccelerometerSensorTimestamp = event.timestamp;
                 }
                 double time = (event.timestamp - this.firstAccelerometerSensorTimestamp) / 1000000000.0;
+                time = (System.currentTimeMillis() - this.startTimestamp) / 1000.0;
 
                 accelerometerValues[accelerometerValueCount][0] = decimalFormat.format(time);
                 accelerometerValues[accelerometerValueCount][1] = Float.toString(event.values[0]);
@@ -1130,6 +1135,8 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                     this.firstGyroSensorTimestamp = event.timestamp;
                 }
                 double time = (event.timestamp - this.firstGyroSensorTimestamp) / 1000000000.0;
+                time = (System.currentTimeMillis() - this.startTimestamp) / 1000.0;
+
                 gyroscopeValues[gyroscopeValueCount][0] = decimalFormat.format(time);
                 gyroscopeValues[gyroscopeValueCount][1] = Float.toString((float) (event.values[0] * 180.0 / Math.PI));
                 gyroscopeValues[gyroscopeValueCount][2] = Float.toString((float) (event.values[1] * 180.0 / Math.PI));
@@ -1164,6 +1171,8 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                     this.firstLinearAccelerationSensorTimestamp = event.timestamp;
                 }
                 double time = (event.timestamp - this.firstLinearAccelerationSensorTimestamp) / 1000000000.0;
+                time = (System.currentTimeMillis() - this.startTimestamp) / 1000.0;
+
                 linearAccelerationValues[linearAccelerationValueCount][0] = decimalFormat.format(time);
                 linearAccelerationValues[linearAccelerationValueCount][1] = Float.toString(event.values[0]);
                 linearAccelerationValues[linearAccelerationValueCount][2] = Float.toString(event.values[1]);
@@ -1268,7 +1277,8 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         @Override
         public void onLocationChanged(Location location) {
             if (loggingEnabled) {
-                values[i][0] = Long.toString(location.getTime());
+                double time = (location.getTime() - startTimestamp) / 1000.0;
+                values[i][0] = Double.toString(time);
                 values[i][1] = Float.toString((float) location.getLatitude());
                 values[i][2] = Float.toString((float) location.getLongitude());
                 values[i][3] = Float.toString((float) location.getAltitude());
@@ -1522,10 +1532,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                     case HEART_RATE:
                         String HeartRatetext = msg.getData().getString("HeartRate");
                         timestamp = msg.getData().getLong("Timestamp");
-                        if (firstbhHeartRateTimestamp == 0L) {
-                            firstbhHeartRateTimestamp = timestamp;
-                        }
-                        time = (timestamp - firstbhHeartRateTimestamp) / 1000.0;
+                        time = (timestamp - startTimestamp) / 1000.0;
                         bhHeartRateValues[bhHeartRateValueCount][0] = String.valueOf(time);
                         bhHeartRateValues[bhHeartRateValueCount][1] = HeartRatetext;
                         bhHeartRateValueCount++;
@@ -1540,10 +1547,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                     case RESPIRATION_RATE:
                         String RespirationRatetext = msg.getData().getString("RespirationRate");
                         timestamp = msg.getData().getLong("Timestamp");
-                        if (firstRespirationRateTimestamp == 0L) {
-                            firstRespirationRateTimestamp = timestamp;
-                        }
-                        time = (timestamp - firstRespirationRateTimestamp) / 1000.0;
+                        time = (timestamp - startTimestamp) / 1000.0;
                         Log.v(TAG, "timestamp: " + timestamp + ", time: " + time);
                         bhRespirationtRateValues[bhRespirationRateValueCount][0] = String.valueOf(time);
                         bhRespirationtRateValues[bhRespirationRateValueCount][1] = RespirationRatetext;
@@ -1559,10 +1563,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                     case SKIN_TEMPERATURE:
                         String SkinTemperaturetext = msg.getData().getString("SkinTemperature");
                         timestamp = msg.getData().getLong("Timestamp");
-                        if (firstSkinTemperatureTimestamp == 0L) {
-                            firstSkinTemperatureTimestamp = timestamp;
-                        }
-                        time = (timestamp - firstSkinTemperatureTimestamp) / 1000.0;
+                        time = (timestamp - startTimestamp) / 1000.0;
                         bhSkinTemperatureValues[bhSkinTemperatureValueCount][0] = String.valueOf(time);
                         bhSkinTemperatureValues[bhSkinTemperatureValueCount][1] = SkinTemperaturetext;
                         bhSkinTemperatureValueCount++;
@@ -1577,10 +1578,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                     case POSTURE:
                         String PostureText = msg.getData().getString("Posture");
                         timestamp = msg.getData().getLong("Timestamp");
-                        if (firstbhPostureTimestamp == 0L) {
-                            firstbhPostureTimestamp = timestamp;
-                        }
-                        time = (timestamp - firstbhPostureTimestamp) / 1000.0;
+                        time = (timestamp - startTimestamp) / 1000.0;
                         bhPostureValues[bhPostureValueCount][0] = String.valueOf(time);
                         bhPostureValues[bhPostureValueCount][1] = PostureText;
                         bhPostureValueCount++;
@@ -1595,10 +1593,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                     case PEAK_ACCLERATION:
                         String PeakAccText = msg.getData().getString("PeakAcceleration");
                         timestamp = msg.getData().getLong("Timestamp");
-                        if (firstPeakAccelerationTimestamp == 0L) {
-                            firstPeakAccelerationTimestamp = timestamp;
-                        }
-                        time = (timestamp - firstPeakAccelerationTimestamp) / 1000.0;
+                        time = (timestamp - startTimestamp) / 1000.0;
                         bhPeakAccelerationValues[bhPeakAccelerationValueCount][0] = String.valueOf(time);
                         bhPeakAccelerationValues[bhPeakAccelerationValueCount][1] = PeakAccText;
                         bhPeakAccelerationValueCount++;
