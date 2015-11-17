@@ -35,13 +35,20 @@ public class ConfigureActivity extends Activity {
         final CheckBox cboxGyro = (CheckBox) findViewById(R.id.checkBoxGyroscope);
         final CheckBox cboxAccel = (CheckBox) findViewById(R.id.checkBoxAccelerometer);
         final CheckBox cboxMag = (CheckBox) findViewById(R.id.checkBoxMagnetometer);
+        cboxMag.setVisibility(View.GONE);
         final CheckBox cboxBA = (CheckBox) findViewById(R.id.checkBoxBridgeAmplifier);
+        cboxBA.setVisibility(View.GONE);
         final CheckBox cboxECG = (CheckBox) findViewById(R.id.checkBoxECG);
         final CheckBox cboxEMG = (CheckBox) findViewById(R.id.checkBoxEMG);
+        cboxEMG.setVisibility(View.GONE);
         final CheckBox cboxGSR = (CheckBox) findViewById(R.id.checkBoxGSR);
+        cboxGSR.setVisibility(View.GONE);
         final CheckBox cboxHR = (CheckBox) findViewById(R.id.checkBoxHeartRate);
+        cboxHR.setVisibility(View.GONE);
         final CheckBox cboxA7 = (CheckBox) findViewById(R.id.checkBoxExpBoardA7);
+        cboxA7.setVisibility(View.GONE);
         final CheckBox cboxA0 = (CheckBox) findViewById(R.id.checkBoxExpBoardA0);
+        cboxA0.setVisibility(View.GONE);
 
         Button enableDone = (Button) findViewById(R.id.enable_sensors_done);
         enableDone.setOnClickListener(new View.OnClickListener() {
