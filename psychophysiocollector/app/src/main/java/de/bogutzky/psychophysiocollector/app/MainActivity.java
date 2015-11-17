@@ -1131,7 +1131,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 if (accelerometerValueCount > 999) {
                     Log.d(TAG, "Write in " + getString(R.string.file_name_acceleration));
                     accelerometerValueCount = 0;
-                    String[][] accelerometerValueCopies = new String[1000][5];
+                    String[][] accelerometerValueCopies = new String[1000][4];
                     System.arraycopy(accelerometerValues, 0, accelerometerValueCopies, 0, 999);
                     accelerometerValues = new String[1000][4];
                     try {
@@ -1166,7 +1166,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 if (gyroscopeValueCount > 999) {
                     Log.d(TAG, "Write in " + getString(R.string.file_name_angular_velocity));
                     gyroscopeValueCount = 0;
-                    String[][] gyroscopeValueCopies = new String[1000][5];
+                    String[][] gyroscopeValueCopies = new String[1000][4];
                     System.arraycopy(gyroscopeValues, 0, gyroscopeValueCopies, 0, 999);
                     gyroscopeValues = new String[1000][4];
                     try {
@@ -1201,7 +1201,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 if (linearAccelerationValueCount > 999) {
                     Log.d(TAG, "Write in " + getString(R.string.file_name_linear_acceleration));
                     linearAccelerationValueCount = 0;
-                    String[][] linearAccelerationValuesCopies = new String[1000][5];
+                    String[][] linearAccelerationValuesCopies = new String[1000][4];
                     System.arraycopy(linearAccelerationValues, 0, linearAccelerationValuesCopies, 0, 999);
                     linearAccelerationValues = new String[1000][4];
                     try {
@@ -1306,9 +1306,9 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 if (i > maxValueCount - 1) {
                     Log.d(TAG, "Write data in " + this.filename);
                     i = 0;
-                    String[][] copies = new String[maxValueCount][5];
+                    String[][] copies = new String[maxValueCount][4];
                     System.arraycopy(values, 0, copies, 0, maxValueCount - 1);
-                    values = new String[maxValueCount][5];
+                    values = new String[maxValueCount][4];
                     try {
                         BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, this.filename), true));
 
