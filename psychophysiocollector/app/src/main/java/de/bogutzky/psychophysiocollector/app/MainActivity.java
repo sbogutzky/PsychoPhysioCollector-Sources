@@ -1035,11 +1035,11 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
     private void startStreamingInternalSensorData() {
 
-        accelerometerValues = new String[1000][5];
+        accelerometerValues = new String[1000][4];
         accelerometerValueCount = 0;
-        gyroscopeValues = new String[1000][5];
+        gyroscopeValues = new String[1000][4];
         gyroscopeValueCount = 0;
-        linearAccelerationValues = new String[1000][5];
+        linearAccelerationValues = new String[1000][4];
         linearAccelerationValueCount = 0;
         this.firstGyroSensorTimestamp = 0L;
         this.firstAccelerometerSensorTimestamp = 0L;
@@ -1048,7 +1048,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_acceleration)), true));
             String outputString = getLoggingHeaderString();
-            outputString += getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_acceleration_x) + "," + getString(R.string.file_header_acceleration_y) + "," + getString(R.string.file_header_acceleration_z) + "," + getString(R.string.file_header_system_time);
+            outputString += getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_acceleration_x) + "," + getString(R.string.file_header_acceleration_y) + "," + getString(R.string.file_header_acceleration_z);
             writer.write(outputString);
             writer.newLine();
             writer.flush();
@@ -1060,7 +1060,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_angular_velocity)), true));
             String outputString = getLoggingHeaderString();
-            outputString += getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_angular_velocity_x) + "," + getString(R.string.file_header_angular_velocity_y) + "," + getString(R.string.file_header_angular_velocity_z) + "," + getString(R.string.file_header_system_time);
+            outputString += getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_angular_velocity_x) + "," + getString(R.string.file_header_angular_velocity_y) + "," + getString(R.string.file_header_angular_velocity_z);
             writer.write(outputString);
             writer.newLine();
             writer.flush();
@@ -1072,7 +1072,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_linear_acceleration)), true));
             String outputString = getLoggingHeaderString();
-            outputString += getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_acceleration_x) + "," + getString(R.string.file_header_acceleration_y) + "," + getString(R.string.file_header_acceleration_z) + "," + getString(R.string.file_header_system_time);
+            outputString += getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_acceleration_x) + "," + getString(R.string.file_header_acceleration_y) + "," + getString(R.string.file_header_acceleration_z);
             writer.write(outputString);
             writer.newLine();
             writer.flush();
@@ -1126,7 +1126,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 accelerometerValues[accelerometerValueCount][1] = Float.toString(event.values[0]);
                 accelerometerValues[accelerometerValueCount][2] = Float.toString(event.values[1]);
                 accelerometerValues[accelerometerValueCount][3] = Float.toString(event.values[2]);
-                accelerometerValues[accelerometerValueCount][4] = Long.toString(System.currentTimeMillis());
 
                 accelerometerValueCount++;
                 if (accelerometerValueCount > 999) {
@@ -1134,13 +1133,13 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                     accelerometerValueCount = 0;
                     String[][] accelerometerValueCopies = new String[1000][5];
                     System.arraycopy(accelerometerValues, 0, accelerometerValueCopies, 0, 999);
-                    accelerometerValues = new String[1000][5];
+                    accelerometerValues = new String[1000][4];
                     try {
                         BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_acceleration)), true));
 
                         for (String[] copy : accelerometerValueCopies) {
                             if (copy[0] != null) {
-                                writer.write(copy[0] + "," + copy[1] + "," + copy[2] + "," + copy[3] + "," + copy[4]);
+                                writer.write(copy[0] + "," + copy[1] + "," + copy[2] + "," + copy[3]);
                                 writer.newLine();
                             }
                         }
@@ -1162,7 +1161,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 gyroscopeValues[gyroscopeValueCount][1] = Float.toString((float) (event.values[0] * 180.0 / Math.PI));
                 gyroscopeValues[gyroscopeValueCount][2] = Float.toString((float) (event.values[1] * 180.0 / Math.PI));
                 gyroscopeValues[gyroscopeValueCount][3] = Float.toString((float) (event.values[2] * 180.0 / Math.PI));
-                gyroscopeValues[gyroscopeValueCount][4] = Long.toString(System.currentTimeMillis());
 
                 gyroscopeValueCount++;
                 if (gyroscopeValueCount > 999) {
@@ -1170,13 +1168,13 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                     gyroscopeValueCount = 0;
                     String[][] gyroscopeValueCopies = new String[1000][5];
                     System.arraycopy(gyroscopeValues, 0, gyroscopeValueCopies, 0, 999);
-                    gyroscopeValues = new String[1000][5];
+                    gyroscopeValues = new String[1000][4];
                     try {
                         BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_angular_velocity)), true));
 
                         for (String[] copy : gyroscopeValueCopies) {
                             if (copy[0] != null) {
-                                writer.write(copy[0] + "," + copy[1] + "," + copy[2] + "," + copy[3] + "," + copy[4]);
+                                writer.write(copy[0] + "," + copy[1] + "," + copy[2] + "," + copy[3]);
                                 writer.newLine();
                             }
                         }
@@ -1198,7 +1196,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 linearAccelerationValues[linearAccelerationValueCount][1] = Float.toString(event.values[0]);
                 linearAccelerationValues[linearAccelerationValueCount][2] = Float.toString(event.values[1]);
                 linearAccelerationValues[linearAccelerationValueCount][3] = Float.toString(event.values[2]);
-                linearAccelerationValues[linearAccelerationValueCount][4] = Long.toString(System.currentTimeMillis());
 
                 linearAccelerationValueCount++;
                 if (linearAccelerationValueCount > 999) {
@@ -1206,13 +1203,13 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                     linearAccelerationValueCount = 0;
                     String[][] linearAccelerationValuesCopies = new String[1000][5];
                     System.arraycopy(linearAccelerationValues, 0, linearAccelerationValuesCopies, 0, 999);
-                    linearAccelerationValues = new String[1000][5];
+                    linearAccelerationValues = new String[1000][4];
                     try {
                         BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_linear_acceleration)), true));
 
                         for (String[] copy : linearAccelerationValuesCopies) {
                             if (copy[0] != null) {
-                                writer.write(copy[0] + "," + copy[1] + "," + copy[2] + "," + copy[3] + "," + copy[4]);
+                                writer.write(copy[0] + "," + copy[1] + "," + copy[2] + "," + copy[3]);
                                 writer.newLine();
                             }
                         }
