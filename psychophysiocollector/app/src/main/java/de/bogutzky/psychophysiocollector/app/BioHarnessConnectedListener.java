@@ -4,6 +4,7 @@ package de.bogutzky.psychophysiocollector.app;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 
 import zephyr.android.BioHarnessBT.*;
 
@@ -15,20 +16,21 @@ public class BioHarnessConnectedListener extends ConnectListenerImpl {
     final int RtoR_MSG_ID = 0x24;
     final int ACCEL_100mg_MSG_ID = 0x2A;
     final int SUMMARY_MSG_ID = 0x2B;
-    final int RR_INTERVAL = 0x105;
 
     private final int HEART_RATE = 0x100;
     private final int RESPIRATION_RATE = 0x101;
     private final int SKIN_TEMPERATURE = 0x102;
     private final int POSTURE = 0x103;
     private final int PEAK_ACCLERATION = 0x104;
-    /*Creating the different Objects for different types of Packets*/
+    private final int RR_INTERVAL = 0x105;
+
+    /* Creating the different Objects for different types of Packets */
     private GeneralPacketInfo GPInfo = new GeneralPacketInfo();
-    private ECGPacketInfo ECGInfoPacket = new ECGPacketInfo();
-    private BreathingPacketInfo BreathingInfoPacket = new BreathingPacketInfo();
+    // private ECGPacketInfo ECGInfoPacket = new ECGPacketInfo();
+    // private BreathingPacketInfo BreathingInfoPacket = new BreathingPacketInfo();
     private RtoRPacketInfo RtoRInfoPacket = new RtoRPacketInfo();
-    private AccelerometerPacketInfo AccInfoPacket = new AccelerometerPacketInfo();
-    private SummaryPacketInfo SummaryInfoPacket = new SummaryPacketInfo();
+    // private AccelerometerPacketInfo AccInfoPacket = new AccelerometerPacketInfo();
+    // private SummaryPacketInfo SummaryInfoPacket = new SummaryPacketInfo();
 
     private PacketTypeRequest RqPacketType = new PacketTypeRequest();
 
@@ -42,7 +44,8 @@ public class BioHarnessConnectedListener extends ConnectListenerImpl {
         Message msg = new Message();
         msg.what = 101; //ready msg
         _aNewHandler.sendMessage(msg);
-        /*Use this object to enable or disable the different Packet types*/
+
+        /* Use this object to enable or disable the different Packet types */
         RqPacketType.GP_ENABLE = true;
         RqPacketType.RtoR_ENABLE = true;
         RqPacketType.ECG_ENABLE = false;
@@ -125,29 +128,8 @@ public class BioHarnessConnectedListener extends ConnectListenerImpl {
                         //System.out.println("ECG Packet Sequence Number is "+ECGInfoPacket.GetSeqNum(DataArray));
                         break;
                     case RtoR_MSG_ID:
-					/*Do what you want. Printing Sequence Number for now*/
                         //System.out.println("R to R Packet Sequence Number is "+RtoRInfoPacket.GetSeqNum(DataArray));
-                        int[] rrIntervals = RtoRInfoPacket.GetRtoRSamples(DataArray);
-                        int time = 0;
-                        int rrInterval = 0;
-                        for (int i = 0; i < rrIntervals.length; i++) {
-                            if (rrIntervals[i] < 2000) {
-                                if (rrInterval != rrIntervals[i]) {
-                                    time = time + rrIntervals[i];
-                                    rrInterval = rrIntervals[i];
-                                    Message rrMessage = new Message();
-                                    rrMessage.what = RR_INTERVAL;
-                                    Bundle rrBundle = new Bundle();
-                                    rrBundle.putInt("rrinterval", rrInterval);
-                                    rrBundle.putLong("Timestamp", System.currentTimeMillis());
-                                    rrBundle.putInt("rrTime" , time);
-                                    rrMessage.setData(rrBundle);
-                                    _aNewHandler.sendMessage(rrMessage);
-                                    time = 0;
-                                }
-                            }
-                        }
-
+                        processPacketRtoR(DataArray);
                         break;
                     case ACCEL_100mg_MSG_ID:
 					/*Do what you want. Printing Sequence Number for now*/
@@ -156,7 +138,6 @@ public class BioHarnessConnectedListener extends ConnectListenerImpl {
                     case SUMMARY_MSG_ID:
 					/*Do what you want. Printing Sequence Number for now*/
                         //System.out.println("Summary Packet Sequence Number is "+SummaryInfoPacket.GetSeqNum(DataArray));
-                        int hrv = SummaryInfoPacket.GetHearRateVariability(DataArray);
                         break;
 
                 }
@@ -164,4 +145,47 @@ public class BioHarnessConnectedListener extends ConnectListenerImpl {
         });
     }
 
+    /**
+     * Process all the info retrieved with the RtoR Packet and send them to the DA
+     *
+     * @param dataArray
+     *      The RtoR Packet binary representation
+     */
+    private short lastRRInterval = 0;
+    private void processPacketRtoR(byte[] dataArray) {
+
+        // Extract timestamp
+        /*
+        long timestamp = TimeConverter.timeToEpoch(
+                rToRInfoPacket.GetTSYear(dataArray),
+                rToRInfoPacket.GetTSMonth(dataArray),
+                rToRInfoPacket.GetTSDay(dataArray),
+                rToRInfoPacket.GetMsofDay(dataArray)
+        );
+        */
+
+        // Extract RtoR Data
+        int[] samples = RtoRInfoPacket.GetRtoRSamples(dataArray);
+
+        // Convert values
+        int rrTime = 0;
+        for (int sample : samples) {
+            short currentRRInterval = (short) sample;
+            if (lastRRInterval != currentRRInterval) {
+                lastRRInterval = currentRRInterval;
+                int rrInterval = Math.abs(lastRRInterval);
+                rrTime += rrInterval;
+                Log.d("BioHarnessCListener", "RR-Interval: " + rrInterval);
+
+                Message rrMessage = new Message();
+                rrMessage.what = RR_INTERVAL;
+                Bundle rrBundle = new Bundle();
+                rrBundle.putInt("rrInterval", rrInterval);
+                rrBundle.putLong("Timestamp", System.currentTimeMillis());
+                rrBundle.putInt("rrTime", rrTime);
+                rrMessage.setData(rrBundle);
+                _aNewHandler.sendMessage(rrMessage);
+            }
+        }
+    }
 }
