@@ -1511,7 +1511,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             if(loggingEnabled) {
                 switch (msg.what) {
                     case RR_INTERVAL:
-                        int rrInterval = msg.getData().getInt("rrinterval");
+                        int rrInterval = msg.getData().getInt("rrInterval");
                         timestamp = msg.getData().getLong("Timestamp");
                         int rrTime = msg.getData().getInt("rrTime");
                         firstRRIntervalTimestamp += rrTime;
