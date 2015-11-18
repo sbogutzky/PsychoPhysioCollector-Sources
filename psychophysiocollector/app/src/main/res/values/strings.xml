@@ -83,4 +83,9 @@
     <string name="file_header_angular_velocity_x">"angular.velocity.x.deg.s"</string>
     <string name="file_header_angular_velocity_y">"angular.velocity.y.deg.s"</string>
     <string name="file_header_angular_velocity_z">"angular.velocity.z.deg.s"</string>
+
+
+    <string name="shimmer_config_enable_sensors">Sensoren aktivieren</string>
+    <string name="shimmer_config_calibrate_sensors">Sensor konfigurieren</string>
+    <string name="shimmer_config_show_graph">Graph anzeigen</string>
 </resources>

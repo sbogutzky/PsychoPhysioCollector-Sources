@@ -22,7 +22,7 @@ public class MainCommandsActivity extends Activity {
     int mCurrentSlot = -1;
     private SensorService mService;
     private boolean mServiceBind = false;
-    private String[] commands = new String[]{"Enable Sensors", "Sub Commands", "Show Graph"};
+    private String[] commands;
     private double mSamplingRate = -1;
     private int mAccelRange = -1;
     private int mGSRRange = -1;
@@ -44,6 +44,7 @@ public class MainCommandsActivity extends Activity {
 
         final ListView listViewCommands = (ListView) findViewById(R.id.listView1);
 
+        commands = new String[]{getString(R.string.shimmer_config_enable_sensors), getString(R.string. shimmer_config_calibrate_sensors), getString(R.string.shimmer_config_show_graph)};
 
         ArrayList<String> commandsList = new ArrayList<String>();
         commandsList.addAll(Arrays.asList(commands));
@@ -111,6 +112,7 @@ public class MainCommandsActivity extends Activity {
                 break;
             case MainActivity.REQUEST_CONFIGURE_SHIMMER:
                 if (resultCode == Activity.RESULT_OK) {
+                    Log.v("TAG", "current device set sensors: " + mCurrentDevice + ", " + data.getExtras().getInt(ConfigureActivity.mDone));
                     mService.setEnabledSensors(data.getExtras().getInt(ConfigureActivity.mDone), mCurrentDevice);
                 }
                 break;
@@ -135,6 +137,7 @@ public class MainCommandsActivity extends Activity {
 
         public void onServiceConnected(ComponentName arg0, IBinder service) {
             SensorService.LocalBinder binder = (SensorService.LocalBinder) service;
+            Log.v("TAG", "service bekommen");
             mService = binder.getService();
             mServiceBind = true;
             mSamplingRate = mService.getSamplingRate(mCurrentDevice);
