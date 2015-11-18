@@ -1367,6 +1367,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         }
 
         public void setFields(String[] fields) {
+            Log.v(TAG, "setfields: " + fields.toString());
             dataArray = new float[fields.length-2];
             enabledSensor = mService.getEnabledSensorForMac(graphAdress);
             this.fields = fields;
@@ -1426,8 +1427,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                                         }
                                     }
                                 }
-                            } else {
-                                values[i][j] = Long.toString(System.currentTimeMillis());
                             }
                         }
 

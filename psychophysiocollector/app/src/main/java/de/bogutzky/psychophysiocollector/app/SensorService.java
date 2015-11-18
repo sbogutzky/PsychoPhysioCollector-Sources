@@ -190,60 +190,40 @@ public class SensorService extends Service {
                 ArrayList<String> fields = new ArrayList<String>();
                 fields.add("Timestamp");
                 if ((mEnabledSensors & Shimmer.SENSOR_ACCEL) != 0) {
-                    mActivatedSensorNamesArray[mPosition][0] = "Accelerometer X";
-                    mActivatedSensorNamesArray[mPosition][1] = "Accelerometer Y";
-                    mActivatedSensorNamesArray[mPosition][2] = "Accelerometer Z";
                     fields.add("Accelerometer X");
                     fields.add("Accelerometer Y");
                     fields.add("Accelerometer Z");
-                } else if ((mEnabledSensors & Shimmer.SENSOR_GYRO) != 0) {
-                    mActivatedSensorNamesArray[mPosition][0] = "Gyroscope X";
-                    mActivatedSensorNamesArray[mPosition][1] = "Gyroscope Y";
-                    mActivatedSensorNamesArray[mPosition][2] = "Gyroscope Z";
+                }
+                if ((mEnabledSensors & Shimmer.SENSOR_GYRO) != 0) {
                     fields.add("Gyroscope X");
                     fields.add("Gyroscope Y");
                     fields.add("Gyroscope Z");
-                } else if ((mEnabledSensors & Shimmer.SENSOR_MAG) != 0) {
-                    mActivatedSensorNamesArray[mPosition][0] = "Magnetometer X";
-                    mActivatedSensorNamesArray[mPosition][1] = "Magnetometer Y";
-                    mActivatedSensorNamesArray[mPosition][2] = "Magnetometer Z";
+                }
+                if ((mEnabledSensors & Shimmer.SENSOR_MAG) != 0) {
                     fields.add("Magnetometer X");
                     fields.add("Magnetometer Y");
                     fields.add("Magnetometer Z");
-                } else if ((mEnabledSensors & Shimmer.SENSOR_GSR) != 0) {
-                    mActivatedSensorNamesArray[mPosition][0] = "GSR";
-                    mActivatedSensorNamesArray[mPosition][1] = "";
-                    mActivatedSensorNamesArray[mPosition][2] = "";
+                }
+                if ((mEnabledSensors & Shimmer.SENSOR_GSR) != 0) {
                     fields.add("GSR");
-                } else if ((mEnabledSensors & Shimmer.SENSOR_EMG) != 0) {
-                    mActivatedSensorNamesArray[mPosition][0] = "EMG";
-                    mActivatedSensorNamesArray[mPosition][1] = "";
-                    mActivatedSensorNamesArray[mPosition][2] = "";
+                }
+                if ((mEnabledSensors & Shimmer.SENSOR_EMG) != 0) {
                     fields.add("EMG");
-                } else if ((mEnabledSensors & Shimmer.SENSOR_ECG) != 0) {
-                    mActivatedSensorNamesArray[mPosition][0] = "ECG RA-LL";
-                    mActivatedSensorNamesArray[mPosition][1] = "ECG LA-LL";
-                    mActivatedSensorNamesArray[mPosition][2] = "";
+                }
+                if ((mEnabledSensors & Shimmer.SENSOR_ECG) != 0) {
                     fields.add("ECG RA-LL");
                     fields.add("ECG LA-LL");
-                } else if ((mEnabledSensors & Shimmer.SENSOR_HEART) != 0) {
-                    mActivatedSensorNamesArray[mPosition][0] = "Heart Rate";
-                    mActivatedSensorNamesArray[mPosition][1] = "";
-                    mActivatedSensorNamesArray[mPosition][2] = "";
+                }
+                if ((mEnabledSensors & Shimmer.SENSOR_HEART) != 0) {
                     fields.add("Heart Rate");
-                } else if ((mEnabledSensors & Shimmer.SENSOR_EXP_BOARD_A0) != 0) {
-                    mActivatedSensorNamesArray[mPosition][0] = "ExpBoard A0";
-                    mActivatedSensorNamesArray[mPosition][1] = "";
-                    mActivatedSensorNamesArray[mPosition][2] = "";
+                }
+                if ((mEnabledSensors & Shimmer.SENSOR_EXP_BOARD_A0) != 0) {
                     fields.add("ExpBoard A0");
-                } else if ((mEnabledSensors & Shimmer.SENSOR_EXP_BOARD_A7) != 0) {
-                    mActivatedSensorNamesArray[mPosition][0] = "ExpBoard A7";
-                    mActivatedSensorNamesArray[mPosition][1] = "";
-                    mActivatedSensorNamesArray[mPosition][2] = "";
+                }
+                if ((mEnabledSensors & Shimmer.SENSOR_EXP_BOARD_A7) != 0) {
                     fields.add("ExpBoard A7");
                 }
 
-                fields.add("SystemTimestamp");
                 String[] handlerFields = fields.toArray(new String[fields.size()]);
                 ((MainActivity.ShimmerHandler) stemp.mHandler).setFields(handlerFields);
             }
