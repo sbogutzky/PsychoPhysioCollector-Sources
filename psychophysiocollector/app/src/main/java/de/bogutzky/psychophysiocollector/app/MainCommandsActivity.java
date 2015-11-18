@@ -68,6 +68,8 @@ public class MainCommandsActivity extends Activity {
                     startActivityForResult(mainCommandIntent, MainActivity.REQUEST_COMMANDS_SHIMMER);
                 } else if (position == 0) {
                     Intent mainCommandIntent = new Intent(MainCommandsActivity.this, ConfigureActivity.class);
+                    Long enabledSensors = mService.getEnabledSensors(mCurrentDevice);
+                    mainCommandIntent.putExtra("enabledSensors", enabledSensors);
                     startActivityForResult(mainCommandIntent, MainActivity.REQUEST_CONFIGURE_SHIMMER);
                 } else if (position == 2) {
                     Log.v("Commands Activity", "set result show graph");

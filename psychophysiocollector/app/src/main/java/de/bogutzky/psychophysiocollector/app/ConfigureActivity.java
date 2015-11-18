@@ -7,6 +7,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 
+import com.shimmerresearch.android.Shimmer;
+
 /**
  * Created by epix on 04.08.2015.
  */
@@ -32,6 +34,10 @@ public class ConfigureActivity extends Activity {
 
         // Setup the window
         setContentView(R.layout.configure);
+
+        Intent intent = getIntent();
+        Long enabledSensors = intent.getLongExtra("enabledSensors", 0);
+
         final CheckBox cboxGyro = (CheckBox) findViewById(R.id.checkBoxGyroscope);
         final CheckBox cboxAccel = (CheckBox) findViewById(R.id.checkBoxAccelerometer);
         final CheckBox cboxMag = (CheckBox) findViewById(R.id.checkBoxMagnetometer);
@@ -49,6 +55,16 @@ public class ConfigureActivity extends Activity {
         cboxA7.setVisibility(View.GONE);
         final CheckBox cboxA0 = (CheckBox) findViewById(R.id.checkBoxExpBoardA0);
         cboxA0.setVisibility(View.GONE);
+
+        if ((enabledSensors & Shimmer.SENSOR_ACCEL) != 0) {
+            cboxAccel.setChecked(true);
+        }
+        if ((enabledSensors & Shimmer.SENSOR_GYRO) != 0) {
+            cboxGyro.setChecked(true);
+        }
+        if ((enabledSensors & Shimmer.SENSOR_ECG) != 0) {
+            cboxECG.setChecked(true);
+        }
 
         Button enableDone = (Button) findViewById(R.id.enable_sensors_done);
         enableDone.setOnClickListener(new View.OnClickListener() {
