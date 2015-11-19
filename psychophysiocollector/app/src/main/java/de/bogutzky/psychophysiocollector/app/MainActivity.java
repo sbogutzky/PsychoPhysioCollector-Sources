@@ -396,7 +396,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private String getLoggingHeaderString() {
         String outputString = "";
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-        outputString += "StartTime: " + dateFormat.format(startLoggingDate) + "\n";
+        outputString += "# StartTime: " + dateFormat.format(startLoggingDate) + "\n";
         return outputString;
     }
 
@@ -1423,7 +1423,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                                 if (!clusterCollection.isEmpty()) {
                                     FormatCluster formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
                                     values[i][j] = Float.toString((float) formatCluster.mData);
-                                    if(graphShowing) {
+                                    if(graphShowing && graphAdress.equals(this.bluetoothAdress)) {
                                         if(j != 0 && j != fields.length - 1) {
                                             dataArray[graphDataCounter] = Float.valueOf(values[i][j]);
                                             graphDataCounter++;
