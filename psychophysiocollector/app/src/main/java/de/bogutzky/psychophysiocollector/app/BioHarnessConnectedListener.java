@@ -168,13 +168,11 @@ public class BioHarnessConnectedListener extends ConnectListenerImpl {
         int[] samples = RtoRInfoPacket.GetRtoRSamples(dataArray);
 
         // Convert values
-        int rrTime = 0;
         for (int sample : samples) {
             short currentRRInterval = (short) sample;
             if (lastRRInterval != currentRRInterval) {
                 lastRRInterval = currentRRInterval;
                 int rrInterval = Math.abs(lastRRInterval);
-                rrTime += rrInterval;
                 Log.d("BioHarnessCListener", "RR-Interval: " + rrInterval);
 
                 Message rrMessage = new Message();
@@ -182,7 +180,6 @@ public class BioHarnessConnectedListener extends ConnectListenerImpl {
                 Bundle rrBundle = new Bundle();
                 rrBundle.putInt("rrInterval", rrInterval);
                 rrBundle.putLong("Timestamp", System.currentTimeMillis());
-                rrBundle.putInt("rrTime", rrTime);
                 rrMessage.setData(rrBundle);
                 _aNewHandler.sendMessage(rrMessage);
             }

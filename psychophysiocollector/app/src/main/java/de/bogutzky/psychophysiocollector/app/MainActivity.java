@@ -465,7 +465,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     protected void onListItemClick(ListView l, View v, int position, long id) {
         if(connected && deviceNames.get(position).contains("RN42")) {
             Object o = l.getItemAtPosition(position);
-            Log.d("Shimmer",o.toString());
             Intent mainCommandIntent=new Intent(MainActivity.this, MainCommandsActivity.class);
             mainCommandIntent.putExtra("LocalDeviceID", o.toString());
             String mac = getBluetoothAddresses().get(position);
@@ -1536,8 +1535,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                     case RR_INTERVAL:
                         int rrInterval = msg.getData().getInt("rrInterval");
                         timestamp = msg.getData().getLong("Timestamp");
-                        int rrTime = msg.getData().getInt("rrTime");
-                        firstRRIntervalTimestamp += rrTime;
+                        firstRRIntervalTimestamp += rrInterval;
                         time = 0;
                         time = firstRRIntervalTimestamp / 1000.0;
                         bhRRIntervalValues[bhRRIntervalValueCount][0] = String.valueOf(time);
