@@ -468,6 +468,8 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             Log.d("Shimmer",o.toString());
             Intent mainCommandIntent=new Intent(MainActivity.this, MainCommandsActivity.class);
             mainCommandIntent.putExtra("LocalDeviceID", o.toString());
+            String mac = getBluetoothAddresses().get(position);
+            mainCommandIntent.putExtra("mac", mac);
             mainCommandIntent.putExtra("CurrentSlot", position);
             mainCommandIntent.putExtra("requestCode", REQUEST_MAIN_COMMAND_SHIMMER);
             startActivityForResult(mainCommandIntent, REQUEST_MAIN_COMMAND_SHIMMER);

@@ -19,6 +19,7 @@ import java.util.Arrays;
 
 public class MainCommandsActivity extends Activity {
     String mCurrentDevice = null;
+    String currentDeviceName;
     int mCurrentSlot = -1;
     private SensorService mService;
     private boolean mServiceBind = false;
@@ -36,8 +37,11 @@ public class MainCommandsActivity extends Activity {
         getApplicationContext().bindService(intent, mTestServiceConnection, Context.BIND_AUTO_CREATE);
         Intent sender = getIntent();
         String extraData = sender.getExtras().getString("LocalDeviceID");
-        mCurrentDevice = extraData;
-        setTitle("CMD: " + mCurrentDevice);
+        String mac = sender.getExtras().getString("mac");
+        Log.v("Tag", "mac: " + mac);
+        currentDeviceName = extraData;
+        mCurrentDevice = mac;
+        setTitle("CMD: " + currentDeviceName);
         mCurrentSlot = sender.getExtras().getInt("CurrentSlot");
         Log.d("Shimmer", "Create MC:  " + extraData);
 
@@ -60,7 +64,7 @@ public class MainCommandsActivity extends Activity {
                     mAccelRange = mService.getAccelRange(mCurrentDevice);
                     mGSRRange = mService.getGSRRange(mCurrentDevice);
                     Intent mainCommandIntent = new Intent(MainCommandsActivity.this, CommandsSub.class);
-                    mainCommandIntent.putExtra("BluetoothAddress", "");
+                    mainCommandIntent.putExtra("BluetoothAddress", mCurrentDevice);
                     mainCommandIntent.putExtra("SamplingRate", mSamplingRate);
                     mainCommandIntent.putExtra("AccelerometerRange", mAccelRange);
                     mainCommandIntent.putExtra("GSRRange", mGSRRange);
