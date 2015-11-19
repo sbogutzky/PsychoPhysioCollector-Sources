@@ -533,7 +533,7 @@ public class SensorService extends Service {
 
     private void showNotification() {
         // In this sample, we'll use the same text for the ticker and the expanded notification
-        CharSequence text = "Service läuft";
+        CharSequence text = getString(R.string.service_running);
 
         // Set the icon, scrolling text and timestamp
         Notification notification = new Notification(R.drawable.ic_launcher, text,
@@ -544,7 +544,7 @@ public class SensorService extends Service {
                 new Intent(this, MainActivity.class), 0);
 
         // Set the info for the views that show in the notification panel.
-        notification.setLatestEventInfo(this, "Shimmer Service",
+        notification.setLatestEventInfo(this, getString(R.string.service_name),
                 text, contentIntent);
 
         // Send the notification.
