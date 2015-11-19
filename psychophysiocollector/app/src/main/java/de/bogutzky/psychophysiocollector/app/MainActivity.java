@@ -1433,6 +1433,9 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                             }
                         }
 
+                        double time = (System.currentTimeMillis() - startTimestamp) / 1000.0;
+                        values[i][0] = Double.toString(time);
+
                         if(graphShowing && graphAdress.equals(this.bluetoothAdress)) {
                             graphView.setDataWithAdjustment(dataArray,graphAdress, "i8");
                         }
