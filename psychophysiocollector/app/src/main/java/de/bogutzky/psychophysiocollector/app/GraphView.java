@@ -85,6 +85,7 @@ public class GraphView extends View {
     public void setDataWithAdjustment(float[] values,String deviceID,String dataType){
     	final int length = values.length;
         final Paint paintText = mPaintText;
+        paintText.setTextSize(28.f);
         int offset=0;
         if (dataType=="u8"){setMaxValue(255);offset=0;}
         else if (dataType=="i8"){setMaxValue(255);offset=127;} //center the graph, so the negative values will be displayed
@@ -92,7 +93,7 @@ public class GraphView extends View {
         else if (dataType=="u16"){setMaxValue(65535);offset=0;}
         else if (dataType=="i16"){setMaxValue(4095);offset=2047;}        // it is actually a signed 12bit value for magnetometer
         	paintText.setColor(Color.argb(255, 255, 255, 255));
-        mCanvas.drawText(deviceID, 5, 10, mPaintText);
+        mCanvas.drawText(deviceID, 5, 20, mPaintText);
     	try {
 	    	for (int i=0;i<length;i++){
 	    		addDataPoint(values[i] + offset, mColor[i % 3], mLastValue[i], i);
