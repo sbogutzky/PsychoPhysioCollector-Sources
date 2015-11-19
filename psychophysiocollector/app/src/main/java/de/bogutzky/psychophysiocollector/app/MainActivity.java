@@ -614,6 +614,9 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         btAdapter = BluetoothAdapter.getDefaultAdapter();
                         BluetoothDevice device = btAdapter.getRemoteDevice(bluetoothAddress);
                         String name = device.getName();
+                        if(name==null) {
+                            name = bluetoothAddress + "";
+                        }
                         deviceNames.add(name);
                         adapter.notifyDataSetChanged();
                         Set<BluetoothDevice> pairedDevices = btAdapter.getBondedDevices();
@@ -704,7 +707,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         String bluetoothAddress = btDevice.getAddress();
                         mService.connectShimmer(bluetoothAddress, Integer.toString(count), new ShimmerHandler("sensor-" + btDevice.getName().toLowerCase() + ".csv", 250, bluetoothAddress));
                         count++;
-                        break;
                     }
                 }
             }
