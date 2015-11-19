@@ -1433,7 +1433,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                             }
                         }
 
-                        if(graphShowing) {
+                        if(graphShowing && graphAdress.equals(this.bluetoothAdress)) {
                             graphView.setDataWithAdjustment(dataArray,graphAdress, "i8");
                         }
                         i++;
