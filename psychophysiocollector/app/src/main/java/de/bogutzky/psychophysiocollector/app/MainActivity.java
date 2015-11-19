@@ -1420,7 +1420,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         int graphDataCounter = 0;
                         for (int j = 0; j < fields.length; j++) {
                             Collection<FormatCluster> clusterCollection = objectCluster.mPropertyCluster.get(fields[j]);
-                            if (j < fields.length - 1) {
+                            if (j < fields.length) {
                                 if (!clusterCollection.isEmpty()) {
                                     FormatCluster formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
                                     values[i][j] = Float.toString((float) formatCluster.mData);
