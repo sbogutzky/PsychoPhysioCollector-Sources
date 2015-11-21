@@ -243,6 +243,9 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         deviceNames.remove(index);
                         getBluetoothAddresses().remove(index);
                         adapter.notifyDataSetChanged();
+                        if (getBluetoothAddresses().size() == 0) {
+                            connectMenuItem.setEnabled(false);
+                        }
                     }
                 });
                 builder.create().show();
@@ -687,6 +690,9 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
     private void addBluetoothAddress(String bluetoothAddress) {
         getBluetoothAddresses().add(bluetoothAddress);
+        if (getBluetoothAddresses().size() > 0) {
+            connectMenuItem.setEnabled(true);
+        }
     }
 
     private void findBluetoothAddress() {
@@ -1432,9 +1438,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                                 }
                             }
                         }
-
-                        double time = (System.currentTimeMillis() - startTimestamp) / 1000.0;
-                        values[i][0] = Double.toString(time);
+                        values[i][0] = String.valueOf(decimalFormat.format(Double.valueOf(values[i][0]) / 1000.0));
 
                         if(graphShowing && graphAdress.equals(this.bluetoothAdress)) {
                             graphView.setDataWithAdjustment(dataArray,graphAdress, "i8");
