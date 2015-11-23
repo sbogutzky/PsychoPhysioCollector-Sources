@@ -81,6 +81,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
     private static final String TAG = "MainActivity";
     private static final int MSG_BLUETOOTH_ADDRESS = 1;
+    private final static int REQUEST_ENABLE_BT = 707;
     private static final int TIMER_UPDATE = 1;
     private static final int TIMER_END = 2;
     private final String bhHeartRateFilename = "bhHeartRate.csv";
@@ -196,6 +197,8 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        checkBtEnabled();
+
         deviceNames = new ArrayList<String>();
         adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, deviceNames);
         setListAdapter(adapter);
@@ -252,6 +255,31 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 return false;
             }
         });
+    }
+
+    private void checkBtEnabled() {
+        btAdapter = BluetoothAdapter.getDefaultAdapter();
+        if(btAdapter == null) {
+            Toast.makeText(this, getString(R.string.bluetooth_not_supported), Toast.LENGTH_LONG).show();
+        } else if(!btAdapter.isEnabled()) {
+            AlertDialog dialog;
+            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+            builder.setCancelable(true);
+            builder.setTitle(getString(R.string.activate_bluetooth));
+            builder.setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                    startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+                }
+            });
+            builder.setNegativeButton(getString(R.string.no), new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            });
+            dialog = builder.create();
+            dialog.show();
+        }
     }
 
     private void resetTimestamps() {
@@ -493,7 +521,8 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         bhRespirationtRateValues = new String[1000][2];
         bhRRIntervalValues = new String[1000][2];
 
-        btAdapter = BluetoothAdapter.getDefaultAdapter();
+        if(btAdapter == null)
+            btAdapter = BluetoothAdapter.getDefaultAdapter();
 
         Set<BluetoothDevice> pairedDevices = btAdapter.getBondedDevices();
         String deviceName = "";
@@ -522,7 +551,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, bhHeartRateFilename), true));
             String outputString = getLoggingHeaderString();
-            outputString += "\"Timestamp\",\"HeartRate\"";
+            outputString += "\"" + getString(R.string.file_header_timestamp) + ",\"HeartRate\"";
             writer.write(outputString);
             writer.newLine();
             writer.flush();
@@ -533,7 +562,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, bhRespirationRateFilename), true));
             String outputString = getLoggingHeaderString();
-            outputString += "\"Timestamp\",\"RespirationRate\"";
+            outputString += "\"" + getString(R.string.file_header_timestamp) + "\",\"RespirationRate\"";
             writer.write(outputString);
             writer.newLine();
             writer.flush();
@@ -544,7 +573,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, bhPostureFilename), true));
             String outputString = getLoggingHeaderString();
-            outputString += "\"Timestamp\",\"Posture\"";
+            outputString += "\"" + getString(R.string.file_header_timestamp) + ",\"Posture\"";
             writer.write(outputString);
             writer.newLine();
             writer.flush();
@@ -555,7 +584,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, bhSkinTemperatureFilename), true));
             String outputString = getLoggingHeaderString();
-            outputString += "\"Timestamp\",\"SkinTemperature\"";
+            outputString += "\"" + getString(R.string.file_header_timestamp) + ",\"SkinTemperature\"";
             writer.write(outputString);
             writer.newLine();
             writer.flush();
@@ -566,7 +595,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, bhPeakAccelerationFilename), true));
             String outputString = getLoggingHeaderString();
-            outputString += "\"Timestamp\",\"PeakAcceleration\"";
+            outputString += "\"" + getString(R.string.file_header_timestamp) + ",\"PeakAcceleration\"";
             writer.write(outputString);
             writer.newLine();
             writer.flush();
@@ -602,6 +631,11 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         super.onActivityResult(requestCode, resultCode, data);
 
         switch (requestCode) {
+            case REQUEST_ENABLE_BT:
+                if(resultCode==RESULT_OK){
+                    Toast.makeText(MainActivity.this, getString(R.string.bluetooth_activated), Toast.LENGTH_LONG).show();
+                }
+                break;
             case MSG_BLUETOOTH_ADDRESS:
 
                 // When DeviceListActivity returns with a device address to connect
@@ -651,7 +685,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                     graphAdress = data.getStringExtra("mac");
                     if(action == MainActivity.SHOW_GRAPH) {
                         showGraph();
-                        Log.v(TAG, "show graph!!!");
                     }
                 }
 
@@ -701,7 +734,8 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     }
 
     private void connectedAllShimmers() {
-        btAdapter = BluetoothAdapter.getDefaultAdapter();
+        if(btAdapter == null)
+            btAdapter = BluetoothAdapter.getDefaultAdapter();
 
         Set<BluetoothDevice> pairedDevices = btAdapter.getBondedDevices();
         int count = 0;
@@ -1292,7 +1326,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             try {
                 BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, this.filename), true));
                 String outputString = getLoggingHeaderString();
-                outputString += "\"System Timestamp\",\"Latitude\",\"Longitude\",\"Altitude\"";
+                outputString += "\"" + getString(R.string.file_header_timestamp) + ",\"Latitude\",\"Longitude\",\"Altitude\"";
                 writer.write(outputString);
                 writer.newLine();
                 writer.flush();
