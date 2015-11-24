@@ -85,6 +85,14 @@
     <string name="file_header_angular_velocity_x">"angular.velocity.x.deg.s"</string>
     <string name="file_header_angular_velocity_y">"angular.velocity.y.deg.s"</string>
     <string name="file_header_angular_velocity_z">"angular.velocity.z.deg.s"</string>
+    <string name="file_header_heartrate">heartrate</string>
+    <string name="file_header_respirationrate">respirationrate</string>
+    <string name="file_header_posture">posture</string>
+    <string name="file_header_skintemperature">skintemperature</string>
+    <string name="file_header_peakacceleration">peakacceleration</string>
+    <string name="file_header_timestamp_show">"timestamp.show.ms"</string>
+    <string name="file_header_timestamp_start">"timestamp.start.ms"</string>
+    <string name="file_header_timestamp_stop">"timestamp.stop.ms"</string>
 
 
     <string name="shimmer_config_enable_sensors">Sensoren aktivieren</string>
@@ -95,4 +103,7 @@
     <string name="bluetooth_activated">Bluetooth wurde aktiviert</string>
     <string name="bluetooth_not_supported">Bluetooth wird von diesem Gerät nicht unterstützt</string>
     <string name="activate_bluetooth">Bluetooth aktivieren?</string>
+
+    <string name="accuracy"> Genauigkeit: </string>
+
 </resources>

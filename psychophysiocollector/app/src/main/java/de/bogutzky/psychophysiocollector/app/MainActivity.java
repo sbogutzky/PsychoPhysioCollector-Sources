@@ -551,7 +551,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, bhHeartRateFilename), true));
             String outputString = getLoggingHeaderString();
-            outputString += "\"" + getString(R.string.file_header_timestamp) + ",\"HeartRate\"";
+            outputString += "\"" + getString(R.string.file_header_timestamp) + ",\"" + getString(R.string.file_header_heartrate) + "\"";
             writer.write(outputString);
             writer.newLine();
             writer.flush();
@@ -562,7 +562,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, bhRespirationRateFilename), true));
             String outputString = getLoggingHeaderString();
-            outputString += "\"" + getString(R.string.file_header_timestamp) + "\",\"RespirationRate\"";
+            outputString += "\"" + getString(R.string.file_header_timestamp) + "\",\"" + getString(R.string.file_header_respirationrate) + "\"";
             writer.write(outputString);
             writer.newLine();
             writer.flush();
@@ -573,7 +573,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, bhPostureFilename), true));
             String outputString = getLoggingHeaderString();
-            outputString += "\"" + getString(R.string.file_header_timestamp) + ",\"Posture\"";
+            outputString += "\"" + getString(R.string.file_header_timestamp) + ",\"" + getString(R.string.file_header_posture) + "\"";
             writer.write(outputString);
             writer.newLine();
             writer.flush();
@@ -584,7 +584,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, bhSkinTemperatureFilename), true));
             String outputString = getLoggingHeaderString();
-            outputString += "\"" + getString(R.string.file_header_timestamp) + ",\"SkinTemperature\"";
+            outputString += "\"" + getString(R.string.file_header_timestamp) + ",\"" + getString(R.string.file_header_skintemperature) + "\"";
             writer.write(outputString);
             writer.newLine();
             writer.flush();
@@ -595,7 +595,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, bhPeakAccelerationFilename), true));
             String outputString = getLoggingHeaderString();
-            outputString += "\"" + getString(R.string.file_header_timestamp) + ",\"PeakAcceleration\"";
+            outputString += "\"" + getString(R.string.file_header_timestamp) + ",\"" + getString(R.string.file_header_peakacceleration) + "\"";
             writer.write(outputString);
             writer.newLine();
             writer.flush();
@@ -1033,7 +1033,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         if(!wroteQuestionnaireHeader) {
             wroteQuestionnaireHeader = true;
             outputString = getLoggingHeaderString();
-            outputString += "\"System Timestamp Show\",\"System Timestamp Start\",\"System Timestamp Stop\",";
+            outputString += "\"" + getString(R.string.file_header_timestamp_show) + "\",\"" + getString(R.string.file_header_timestamp_show) + "\",\"" + getString(R.string.file_header_timestamp_stop) + "\",";
             for (int i = 1; i < scaleTypes.size(); i++) {
                 if (i != scaleTypes.size() - 1) {
                     outputString += "\"Item " + String.format("%02d", i) + "\",";
@@ -1369,7 +1369,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 }
                 if(lastLocationAccuracy - location.getAccuracy() > 5.0) {
                     TextView gpsStatusTextView = (TextView) findViewById(R.id.gpsStatusTextView);
-                    gpsStatusTextView.setText(getText(R.string.gps_connected_fix_received) + " Genauigkeit: " + location.getAccuracy());
+                    gpsStatusTextView.setText(getText(R.string.gps_connected_fix_received) + getString(R.string.accuracy) + location.getAccuracy());
                     lastLocationAccuracy = location.getAccuracy();
                 }
             }
