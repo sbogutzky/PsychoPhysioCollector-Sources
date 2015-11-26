@@ -84,6 +84,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private final static int REQUEST_ENABLE_BT = 707;
     private static final int TIMER_UPDATE = 1;
     private static final int TIMER_END = 2;
+    private static final int INTERNAL_SENSOR_CACHE_LENGTH = 100;
     private final String bhHeartRateFilename = "bhHeartRate.csv";
     private final String bhRespirationRateFilename = "bhRespirationRate.csv";
     private final String bhPostureFilename = "bhPosture.csv";
@@ -141,16 +142,20 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     /* min api 9*/
     private Sensor linearAccelerationSensor;
 
-    private Long firstGyroSensorTimestamp;
-    private Long firstAccelerometerSensorTimestamp;
-    private Long firstLinearAccelerationSensorTimestamp;
+    private long startTimestamp;
+    private long gyroscopeEventStartTimestamp;
+    private long gyroscopeStartTimestamp;
+    private long accelerometerEventStartTimestamp;
+    private long accelerometerStartTimestamp;
+    private long linearAccelerationSensorEventStartTimestamp;
+    private long linearAccelerationSensorStartTimestamp;
     private Long firstbhHeartRateTimestamp;
     private Long firstRespirationRateTimestamp;
     private Long firstSkinTemperatureTimestamp;
     private Long firstbhPostureTimestamp;
     private Long firstPeakAccelerationTimestamp;
     private Long firstRRIntervalTimestamp;
-    private Long startTimestamp;
+
 
     private DecimalFormat decimalFormat;
 
@@ -192,6 +197,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private int sensorDataDelay = 20000; // ca. 50 Hz
     private boolean startedStreaming = false;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -212,8 +218,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         this.lastLocationAccuracy = 0;
 
         timerCycleInMin = 15;
-
-        resetTimestamps();
 
         DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols();
         otherSymbols.setDecimalSeparator('.');
@@ -282,17 +286,17 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         }
     }
 
-    private void resetTimestamps() {
-        this.firstGyroSensorTimestamp = 0L;
-        this.firstAccelerometerSensorTimestamp = 0L;
-        this.firstLinearAccelerationSensorTimestamp = 0L;
+    private void resetTime() {
+        this.startTimestamp = System.currentTimeMillis();
+        this.gyroscopeEventStartTimestamp = 0L;
+        this.accelerometerEventStartTimestamp = 0L;
+        this.linearAccelerationSensorEventStartTimestamp = 0L;
         this.firstbhHeartRateTimestamp = 0L;
         this.firstRespirationRateTimestamp = 0L;
         this.firstSkinTemperatureTimestamp = 0L;
         this.firstbhPostureTimestamp = 0L;
         this.firstPeakAccelerationTimestamp = 0L;
         this.firstRRIntervalTimestamp = 0L;
-        this.startTimestamp = 0L;
     }
 
     private JSONObject readQuestionnaireFromJSON() {
@@ -353,7 +357,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             this.directoryName = null;
             connectMenuItem.setEnabled(true);
             disconnectMenuItem.setEnabled(false);
-            resetTimestamps();
             connected = false;
         }
 
@@ -363,7 +366,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
         if (id == R.id.action_start_streaming) {
             startLoggingDate = new Date();
-            startTimestamp = System.currentTimeMillis();
+            resetTime();
             wroteQuestionnaireHeader = false;
             loggingEnabled = true;
             startedStreaming = true;
@@ -1078,15 +1081,12 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
     private void startStreamingInternalSensorData() {
 
-        accelerometerValues = new String[1000][4];
-        accelerometerValueCount = 0;
-        gyroscopeValues = new String[1000][4];
-        gyroscopeValueCount = 0;
-        linearAccelerationValues = new String[1000][4];
-        linearAccelerationValueCount = 0;
-        this.firstGyroSensorTimestamp = 0L;
-        this.firstAccelerometerSensorTimestamp = 0L;
-        this.firstLinearAccelerationSensorTimestamp = 0L;
+        this.accelerometerValues = new String[INTERNAL_SENSOR_CACHE_LENGTH][4];
+        this.accelerometerValueCount = 0;
+        this.gyroscopeValues = new String[INTERNAL_SENSOR_CACHE_LENGTH][4];
+        this.gyroscopeValueCount = 0;
+        this.linearAccelerationValues = new String[INTERNAL_SENSOR_CACHE_LENGTH][4];
+        this.linearAccelerationValueCount = 0;
 
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_acceleration)), true));
@@ -1159,24 +1159,26 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     public void onSensorChanged(SensorEvent event) {
         if (loggingEnabled) {
             if (event.sensor.getType() == android.hardware.Sensor.TYPE_ACCELEROMETER) {
-                if (this.firstAccelerometerSensorTimestamp == 0L) {
-                    this.firstAccelerometerSensorTimestamp = event.timestamp;
+                
+                if (this.accelerometerEventStartTimestamp == 0L) {
+                    this.accelerometerEventStartTimestamp = event.timestamp; // Nanos
+                    this.accelerometerStartTimestamp = System.currentTimeMillis() - this.startTimestamp; // Millis
                 }
-                double time = (event.timestamp - this.firstAccelerometerSensorTimestamp) / 1000000000.0;
-                time = (System.currentTimeMillis() - this.startTimestamp) / 1000.0;
+                
+                double relativeTimestamp = this.accelerometerStartTimestamp + (event.timestamp - this.accelerometerEventStartTimestamp) / 1000000.0;
 
-                accelerometerValues[accelerometerValueCount][0] = decimalFormat.format(time);
+                accelerometerValues[accelerometerValueCount][0] = decimalFormat.format(relativeTimestamp);
                 accelerometerValues[accelerometerValueCount][1] = Float.toString(event.values[0]);
                 accelerometerValues[accelerometerValueCount][2] = Float.toString(event.values[1]);
                 accelerometerValues[accelerometerValueCount][3] = Float.toString(event.values[2]);
 
                 accelerometerValueCount++;
-                if (accelerometerValueCount > 999) {
+                if (accelerometerValueCount > INTERNAL_SENSOR_CACHE_LENGTH - 1) {
                     Log.d(TAG, "Write in " + getString(R.string.file_name_acceleration));
                     accelerometerValueCount = 0;
-                    String[][] accelerometerValueCopies = new String[1000][4];
-                    System.arraycopy(accelerometerValues, 0, accelerometerValueCopies, 0, 999);
-                    accelerometerValues = new String[1000][4];
+                    String[][] accelerometerValueCopies = new String[INTERNAL_SENSOR_CACHE_LENGTH][4];
+                    System.arraycopy(accelerometerValues, 0, accelerometerValueCopies, 0, INTERNAL_SENSOR_CACHE_LENGTH - 1);
+                    accelerometerValues = new String[INTERNAL_SENSOR_CACHE_LENGTH][4];
                     try {
                         BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_acceleration)), true));
 
@@ -1194,24 +1196,26 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 }
             }
             if (event.sensor.getType() == android.hardware.Sensor.TYPE_GYROSCOPE) {
-                if (this.firstGyroSensorTimestamp == 0L) {
-                    this.firstGyroSensorTimestamp = event.timestamp;
-                }
-                double time = (event.timestamp - this.firstGyroSensorTimestamp) / 1000000000.0;
-                time = (System.currentTimeMillis() - this.startTimestamp) / 1000.0;
 
-                gyroscopeValues[gyroscopeValueCount][0] = decimalFormat.format(time);
+                if (this.gyroscopeEventStartTimestamp == 0L) {
+                    this.gyroscopeEventStartTimestamp = event.timestamp; // Nanos
+                    this.gyroscopeStartTimestamp = System.currentTimeMillis() - this.startTimestamp; // Millis
+                }
+
+                double relativeTimestamp = this.gyroscopeStartTimestamp + (event.timestamp - this.gyroscopeEventStartTimestamp) / 1000000.0;
+
+                gyroscopeValues[gyroscopeValueCount][0] = decimalFormat.format(relativeTimestamp);
                 gyroscopeValues[gyroscopeValueCount][1] = Float.toString((float) (event.values[0] * 180.0 / Math.PI));
                 gyroscopeValues[gyroscopeValueCount][2] = Float.toString((float) (event.values[1] * 180.0 / Math.PI));
                 gyroscopeValues[gyroscopeValueCount][3] = Float.toString((float) (event.values[2] * 180.0 / Math.PI));
 
                 gyroscopeValueCount++;
-                if (gyroscopeValueCount > 999) {
+                if (gyroscopeValueCount > INTERNAL_SENSOR_CACHE_LENGTH -1) {
                     Log.d(TAG, "Write in " + getString(R.string.file_name_angular_velocity));
                     gyroscopeValueCount = 0;
-                    String[][] gyroscopeValueCopies = new String[1000][4];
-                    System.arraycopy(gyroscopeValues, 0, gyroscopeValueCopies, 0, 999);
-                    gyroscopeValues = new String[1000][4];
+                    String[][] gyroscopeValueCopies = new String[INTERNAL_SENSOR_CACHE_LENGTH][4];
+                    System.arraycopy(gyroscopeValues, 0, gyroscopeValueCopies, 0, INTERNAL_SENSOR_CACHE_LENGTH -1);
+                    gyroscopeValues = new String[INTERNAL_SENSOR_CACHE_LENGTH][4];
                     try {
                         BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_angular_velocity)), true));
 
@@ -1229,24 +1233,26 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 }
             }
             if (event.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
-                if (this.firstLinearAccelerationSensorTimestamp == 0L) {
-                    this.firstLinearAccelerationSensorTimestamp = event.timestamp;
-                }
-                double time = (event.timestamp - this.firstLinearAccelerationSensorTimestamp) / 1000000000.0;
-                time = (System.currentTimeMillis() - this.startTimestamp) / 1000.0;
 
-                linearAccelerationValues[linearAccelerationValueCount][0] = decimalFormat.format(time);
+                if (this.linearAccelerationSensorEventStartTimestamp == 0L) {
+                    this.linearAccelerationSensorEventStartTimestamp = event.timestamp; // Nanos
+                    this.linearAccelerationSensorStartTimestamp = System.currentTimeMillis() - this.startTimestamp; // Millis
+                }
+
+                double relativeTimestamp = this.linearAccelerationSensorStartTimestamp + (event.timestamp - this.linearAccelerationSensorEventStartTimestamp) / 1000000.0;
+
+                linearAccelerationValues[linearAccelerationValueCount][0] = decimalFormat.format(relativeTimestamp);
                 linearAccelerationValues[linearAccelerationValueCount][1] = Float.toString(event.values[0]);
                 linearAccelerationValues[linearAccelerationValueCount][2] = Float.toString(event.values[1]);
                 linearAccelerationValues[linearAccelerationValueCount][3] = Float.toString(event.values[2]);
 
                 linearAccelerationValueCount++;
-                if (linearAccelerationValueCount > 999) {
+                if (linearAccelerationValueCount > INTERNAL_SENSOR_CACHE_LENGTH -1) {
                     Log.d(TAG, "Write in " + getString(R.string.file_name_linear_acceleration));
                     linearAccelerationValueCount = 0;
-                    String[][] linearAccelerationValuesCopies = new String[1000][4];
-                    System.arraycopy(linearAccelerationValues, 0, linearAccelerationValuesCopies, 0, 999);
-                    linearAccelerationValues = new String[1000][4];
+                    String[][] linearAccelerationValuesCopies = new String[INTERNAL_SENSOR_CACHE_LENGTH][4];
+                    System.arraycopy(linearAccelerationValues, 0, linearAccelerationValuesCopies, 0, INTERNAL_SENSOR_CACHE_LENGTH -1);
+                    linearAccelerationValues = new String[INTERNAL_SENSOR_CACHE_LENGTH][4];
                     try {
                         BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_linear_acceleration)), true));
 
