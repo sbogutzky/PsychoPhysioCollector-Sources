@@ -554,6 +554,17 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         } catch (IOException e) {
             Log.e(TAG, "Error while writing in file", e);
         }
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_rr_interval)), true));
+            String outputString = getLoggingHeaderString();
+            outputString += "" + getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_rr_interval) + "";
+            writer.write(outputString);
+            writer.newLine();
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            Log.e(TAG, "Error while writing in file", e);
+        }
         if(mService.getBioHarnessConnectedListener().isSkinTemperatureEnabled()) {
             try {
                 BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_skin_temperature)), true));
