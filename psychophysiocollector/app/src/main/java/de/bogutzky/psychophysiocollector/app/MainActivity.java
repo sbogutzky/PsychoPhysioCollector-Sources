@@ -91,7 +91,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private final String bhSkinTemperatureFilename = "bhSkinTemperature.csv";
     private final String bhPeakAccelerationFilename = "bhPeakAcceleration.csv";
     private final String bhRRIntervalFilename = "bhRRInterval.csv";
-    private final String infoFilename = "info.csv";
     private boolean loggingEnabled = false;
     private ArrayAdapter adapter;
     private ArrayList<String> bluetoothAddresses;
@@ -192,7 +191,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private String graphAdress = "";
 
     private Date startLoggingDate = null;
-    private Date stopLoggingDate = null;
 
     private int sensorDataDelay = 20000; // ca. 50 Hz
     private boolean startedStreaming = false;
@@ -381,9 +379,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         }
 
         if (id == R.id.action_stop_streaming) {
-            stopLoggingDate = new Date();
             startTimestamp = 0L;
-            writeInfoLoggingData();
             loggingEnabled = false;
             startedStreaming = false;
             this.directoryName = null;
@@ -403,28 +399,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private void disconnectBioHarness() {
         if(mService != null)
             mService.disconnectBioHarness();
-    }
-
-    private void writeInfoLoggingData() {
-        String outputString = getInfoHeaderString();
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(root, infoFilename), true));
-            writer.write(outputString);
-            writer.newLine();
-            writer.flush();
-            writer.close();
-        } catch (IOException e) {
-            Log.e(TAG, "Error while writing in file", e);
-        }
-    }
-
-    private String getInfoHeaderString() {
-        String outputString = "";
-        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-        outputString += "StartTime: " + dateFormat.format(startLoggingDate) + "\n";
-        outputString += "EndTime: " + dateFormat.format(stopLoggingDate) + "\n";
-        outputString += "Duration: " + TimeUnit.SECONDS.convert(stopLoggingDate.getTime() - startLoggingDate.getTime(), TimeUnit.MILLISECONDS) + "\n";
-        return outputString;
     }
 
     private String getLoggingHeaderString() {
