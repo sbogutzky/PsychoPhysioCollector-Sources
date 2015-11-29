@@ -1316,7 +1316,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             try {
                 BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, this.filename), true));
                 String outputString = getLoggingHeaderString();
-                outputString += "" + getString(R.string.file_header_timestamp) + ",Latitude,Longitude,Altitude";
+                outputString += "" + getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_gps_latitude) + "," + getString(R.string.file_header_gps_longitude) + "," + getString(R.string.file_header_gps_altitude);
                 writer.write(outputString);
                 writer.newLine();
                 writer.flush();

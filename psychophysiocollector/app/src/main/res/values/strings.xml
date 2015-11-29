@@ -100,6 +100,9 @@
     <string name="file_header_timestamp_show">"timestamp.show.ms"</string>
     <string name="file_header_timestamp_start">"timestamp.start.ms"</string>
     <string name="file_header_timestamp_stop">"timestamp.stop.ms"</string>
+    <string name="file_header_gps_latitude">"latitude"</string>
+    <string name="file_header_gps_longitude">"longitude"</string>
+    <string name="file_header_gps_altitude">"altitude"</string>
 
 
     <string name="shimmer_config_enable_sensors">Sensoren aktivieren</string>
