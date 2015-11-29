@@ -73,6 +73,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -373,13 +374,14 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         }
 
         if (id == R.id.action_stop_streaming) {
+            stopAllStreaming();
+            stopTimerThread();
+            stopStreamingInternalSensorData();
+            writeLeftOverData();
             startTimestamp = 0L;
             loggingEnabled = false;
             startedStreaming = false;
             this.directoryName = null;
-            stopAllStreaming();
-            stopTimerThread();
-            stopStreamingInternalSensorData();
             this.startStreamMenuItem.setEnabled(true);
             this.stopStreamMenuItem.setEnabled(false);
         }
@@ -388,6 +390,32 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             mService.toggleAllLEDS();
         }*/
         return super.onOptionsItemSelected(item);
+    }
+
+    private void writeLeftOverData() {
+        //internal sensor data
+        writeAccelerometerValues();
+        writeGyroscopeValues();
+        writeLinearAccelerationValues();
+        ((GPSListener)locationListener).writeGpsValues();
+
+        //all shimmer data
+        if(mService != null) {
+            Collection<Object> colS = mService.mMultiShimmer.values();
+            Iterator<Object> iterator = colS.iterator();
+            while (iterator.hasNext()) {
+                Shimmer stemp = (Shimmer) iterator.next();
+                ((ShimmerHandler)stemp.mHandler).writeShimmerValues();
+            }
+
+            //bh data
+            writeData(bhRRIntervalValues, getString(R.string.file_name_rr_interval));
+            writeData(bhHeartRateValues, getString(R.string.file_name_heart_rate));
+            writeData(bhRespirationtRateValues, getString(R.string.file_name_respiration_rate));
+            writeData(bhSkinTemperatureValues, getString(R.string.file_name_skin_temperature));
+            writeData(bhPostureValues, getString(R.string.file_name_posture));
+            writeData(bhPeakAccelerationValues, getString(R.string.file_name_peak_acceleration));
+        }
     }
 
     private void disconnectBioHarness() {
@@ -1160,23 +1188,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 if (accelerometerValueCount > INTERNAL_SENSOR_CACHE_LENGTH - 1) {
                     Log.d(TAG, "Write in " + getString(R.string.file_name_acceleration));
                     accelerometerValueCount = 0;
-                    String[][] accelerometerValueCopies = new String[INTERNAL_SENSOR_CACHE_LENGTH][4];
-                    System.arraycopy(accelerometerValues, 0, accelerometerValueCopies, 0, INTERNAL_SENSOR_CACHE_LENGTH - 1);
-                    accelerometerValues = new String[INTERNAL_SENSOR_CACHE_LENGTH][4];
-                    try {
-                        BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_acceleration)), true));
-
-                        for (String[] copy : accelerometerValueCopies) {
-                            if (copy[0] != null) {
-                                writer.write(copy[0] + "," + copy[1] + "," + copy[2] + "," + copy[3]);
-                                writer.newLine();
-                            }
-                        }
-                        writer.flush();
-                        writer.close();
-                    } catch (IOException e) {
-                        Log.e(TAG, "Error while writing in file", e);
-                    }
+                    writeAccelerometerValues();
                 }
             }
             if (event.sensor.getType() == android.hardware.Sensor.TYPE_GYROSCOPE) {
@@ -1197,23 +1209,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 if (gyroscopeValueCount > INTERNAL_SENSOR_CACHE_LENGTH -1) {
                     Log.d(TAG, "Write in " + getString(R.string.file_name_angular_velocity));
                     gyroscopeValueCount = 0;
-                    String[][] gyroscopeValueCopies = new String[INTERNAL_SENSOR_CACHE_LENGTH][4];
-                    System.arraycopy(gyroscopeValues, 0, gyroscopeValueCopies, 0, INTERNAL_SENSOR_CACHE_LENGTH -1);
-                    gyroscopeValues = new String[INTERNAL_SENSOR_CACHE_LENGTH][4];
-                    try {
-                        BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_angular_velocity)), true));
-
-                        for (String[] copy : gyroscopeValueCopies) {
-                            if (copy[0] != null) {
-                                writer.write(copy[0] + "," + copy[1] + "," + copy[2] + "," + copy[3]);
-                                writer.newLine();
-                            }
-                        }
-                        writer.flush();
-                        writer.close();
-                    } catch (IOException e) {
-                        Log.e(TAG, "Error while writing in file", e);
-                    }
+                    writeGyroscopeValues();
                 }
             }
             if (event.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
@@ -1234,25 +1230,69 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 if (linearAccelerationValueCount > INTERNAL_SENSOR_CACHE_LENGTH -1) {
                     Log.d(TAG, "Write in " + getString(R.string.file_name_linear_acceleration));
                     linearAccelerationValueCount = 0;
-                    String[][] linearAccelerationValuesCopies = new String[INTERNAL_SENSOR_CACHE_LENGTH][4];
-                    System.arraycopy(linearAccelerationValues, 0, linearAccelerationValuesCopies, 0, INTERNAL_SENSOR_CACHE_LENGTH -1);
-                    linearAccelerationValues = new String[INTERNAL_SENSOR_CACHE_LENGTH][4];
-                    try {
-                        BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_linear_acceleration)), true));
-
-                        for (String[] copy : linearAccelerationValuesCopies) {
-                            if (copy[0] != null) {
-                                writer.write(copy[0] + "," + copy[1] + "," + copy[2] + "," + copy[3]);
-                                writer.newLine();
-                            }
-                        }
-                        writer.flush();
-                        writer.close();
-                    } catch (IOException e) {
-                        Log.e(TAG, "Error while writing in file", e);
-                    }
+                    writeLinearAccelerationValues();
                 }
             }
+        }
+    }
+
+    private void writeLinearAccelerationValues() {
+        String[][] linearAccelerationValuesCopies = new String[INTERNAL_SENSOR_CACHE_LENGTH][4];
+        System.arraycopy(linearAccelerationValues, 0, linearAccelerationValuesCopies, 0, INTERNAL_SENSOR_CACHE_LENGTH -1);
+        linearAccelerationValues = new String[INTERNAL_SENSOR_CACHE_LENGTH][4];
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_linear_acceleration)), true));
+
+            for (String[] copy : linearAccelerationValuesCopies) {
+                if (copy[0] != null) {
+                    writer.write(copy[0] + "," + copy[1] + "," + copy[2] + "," + copy[3]);
+                    writer.newLine();
+                }
+            }
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            Log.e(TAG, "Error while writing in file", e);
+        }
+    }
+
+    private void writeGyroscopeValues() {
+        String[][] gyroscopeValueCopies = new String[INTERNAL_SENSOR_CACHE_LENGTH][4];
+        System.arraycopy(gyroscopeValues, 0, gyroscopeValueCopies, 0, INTERNAL_SENSOR_CACHE_LENGTH -1);
+        gyroscopeValues = new String[INTERNAL_SENSOR_CACHE_LENGTH][4];
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_angular_velocity)), true));
+
+            for (String[] copy : gyroscopeValueCopies) {
+                if (copy[0] != null) {
+                    writer.write(copy[0] + "," + copy[1] + "," + copy[2] + "," + copy[3]);
+                    writer.newLine();
+                }
+            }
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            Log.e(TAG, "Error while writing in file", e);
+        }
+    }
+
+    private void writeAccelerometerValues() {
+        String[][] accelerometerValueCopies = new String[INTERNAL_SENSOR_CACHE_LENGTH][4];
+        System.arraycopy(accelerometerValues, 0, accelerometerValueCopies, 0, INTERNAL_SENSOR_CACHE_LENGTH - 1);
+        accelerometerValues = new String[INTERNAL_SENSOR_CACHE_LENGTH][4];
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_acceleration)), true));
+
+            for (String[] copy : accelerometerValueCopies) {
+                if (copy[0] != null) {
+                    writer.write(copy[0] + "," + copy[1] + "," + copy[2] + "," + copy[3]);
+                    writer.newLine();
+                }
+            }
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            Log.e(TAG, "Error while writing in file", e);
         }
     }
 
@@ -1339,29 +1379,33 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 if (i > maxValueCount - 1) {
                     Log.d(TAG, "Write data in " + this.filename);
                     i = 0;
-                    String[][] copies = new String[maxValueCount][4];
-                    System.arraycopy(values, 0, copies, 0, maxValueCount - 1);
-                    values = new String[maxValueCount][4];
-                    try {
-                        BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, this.filename), true));
-
-                        for (String[] copy : copies) {
-                            if (copy[0] != null) {
-                                writer.write(copy[0] + "," + copy[1] + "," + copy[2] + "," + copy[3]);
-                                writer.newLine();
-                            }
-                        }
-                        writer.flush();
-                        writer.close();
-                    } catch (IOException e) {
-                        Log.e(TAG, "Error while writing in file", e);
-                    }
+                    writeGpsValues();
                 }
                 if(lastLocationAccuracy - location.getAccuracy() > 5.0) {
                     TextView gpsStatusTextView = (TextView) findViewById(R.id.gpsStatusTextView);
                     gpsStatusTextView.setText(getText(R.string.gps_connected_fix_received) + getString(R.string.accuracy) + location.getAccuracy());
                     lastLocationAccuracy = location.getAccuracy();
                 }
+            }
+        }
+
+        public void writeGpsValues() {
+            String[][] copies = new String[maxValueCount][4];
+            System.arraycopy(values, 0, copies, 0, maxValueCount - 1);
+            values = new String[maxValueCount][4];
+            try {
+                BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, this.filename), true));
+
+                for (String[] copy : copies) {
+                    if (copy[0] != null) {
+                        writer.write(copy[0] + "," + copy[1] + "," + copy[2] + "," + copy[3]);
+                        writer.newLine();
+                    }
+                }
+                writer.flush();
+                writer.close();
+            } catch (IOException e) {
+                Log.e(TAG, "Error while writing in file", e);
             }
         }
 
@@ -1471,31 +1515,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         if (i > maxValueCount - 1) {
                             Log.d(TAG, "Write data in " + this.filename);
                             i = 0;
-                            String[][] copies = new String[maxValueCount][fields.length];
-                            System.arraycopy(values, 0, copies, 0, maxValueCount - 1);
-                            values = new String[maxValueCount][fields.length];
-                            try {
-                                BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, this.filename), true));
-
-                                for (String[] copy : copies) {
-                                    if (copy[0] != null) {
-                                        String outputString = "";
-                                        for (int k = 0; k < fields.length; k++) {
-                                            if (fields.length - 1 != k) {
-                                                outputString += copy[k] + ",";
-                                            } else {
-                                                outputString += copy[k];
-                                            }
-                                        }
-                                        writer.write(outputString);
-                                        writer.newLine();
-                                    }
-                                }
-                                writer.flush();
-                                writer.close();
-                            } catch (IOException e) {
-                                Log.e(TAG, "Error while writing in file", e);
-                            }
+                            writeShimmerValues();
                         }
                     }
 
@@ -1543,6 +1563,34 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 case Shimmer.MESSAGE_PACKET_LOSS_DETECTED:
                     Log.d(TAG, "Packet loss detected");
                     break;
+            }
+        }
+
+        public void writeShimmerValues() {
+            String[][] copies = new String[maxValueCount][fields.length];
+            System.arraycopy(values, 0, copies, 0, maxValueCount - 1);
+            values = new String[maxValueCount][fields.length];
+            try {
+                BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, this.filename), true));
+
+                for (String[] copy : copies) {
+                    if (copy[0] != null) {
+                        String outputString = "";
+                        for (int k = 0; k < fields.length; k++) {
+                            if (fields.length - 1 != k) {
+                                outputString += copy[k] + ",";
+                            } else {
+                                outputString += copy[k];
+                            }
+                        }
+                        writer.write(outputString);
+                        writer.newLine();
+                    }
+                }
+                writer.flush();
+                writer.close();
+            } catch (IOException e) {
+                Log.e(TAG, "Error while writing in file", e);
             }
         }
     }
