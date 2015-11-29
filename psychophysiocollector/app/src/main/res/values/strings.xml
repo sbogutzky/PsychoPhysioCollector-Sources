@@ -89,7 +89,7 @@
     <string name="file_header_respirationrate">respirationrate</string>
     <string name="file_header_posture">posture.deg.s</string>
     <string name="file_header_skintemperature">skintemperature</string>
-    <string name="file_header_peakacceleration">peakacceleration</string>
+    <string name="file_header_peakacceleration">peakacceleration.g.s</string>
     <string name="file_header_timestamp_show">"timestamp.show.ms"</string>
     <string name="file_header_timestamp_start">"timestamp.start.ms"</string>
     <string name="file_header_timestamp_stop">"timestamp.stop.ms"</string>
