@@ -529,7 +529,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             try {
                 BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, bhHeartRateFilename), true));
                 String outputString = getLoggingHeaderString();
-                outputString += "\"" + getString(R.string.file_header_timestamp) + ",\"" + getString(R.string.file_header_heartrate) + "\"";
+                outputString += "" + getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_heartrate) + "";
                 writer.write(outputString);
                 writer.newLine();
                 writer.flush();
@@ -541,7 +541,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, bhRespirationRateFilename), true));
             String outputString = getLoggingHeaderString();
-            outputString += "\"" + getString(R.string.file_header_timestamp) + "\",\"" + getString(R.string.file_header_respirationrate) + "\"";
+            outputString += "" + getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_respirationrate) + "";
             writer.write(outputString);
             writer.newLine();
             writer.flush();
@@ -552,7 +552,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, bhPostureFilename), true));
             String outputString = getLoggingHeaderString();
-            outputString += "\"" + getString(R.string.file_header_timestamp) + ",\"" + getString(R.string.file_header_posture) + "\"";
+            outputString += "" + getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_posture) + "";
             writer.write(outputString);
             writer.newLine();
             writer.flush();
@@ -564,7 +564,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             try {
                 BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, bhSkinTemperatureFilename), true));
                 String outputString = getLoggingHeaderString();
-                outputString += "\"" + getString(R.string.file_header_timestamp) + ",\"" + getString(R.string.file_header_skintemperature) + "\"";
+                outputString += "" + getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_skintemperature) + "";
                 writer.write(outputString);
                 writer.newLine();
                 writer.flush();
@@ -577,7 +577,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, bhPeakAccelerationFilename), true));
             String outputString = getLoggingHeaderString();
-            outputString += "\"" + getString(R.string.file_header_timestamp) + ",\"" + getString(R.string.file_header_peakacceleration) + "\"";
+            outputString += "" + getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_peakacceleration) + "";
             writer.write(outputString);
             writer.newLine();
             writer.flush();
@@ -1015,12 +1015,12 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         if(!wroteQuestionnaireHeader) {
             wroteQuestionnaireHeader = true;
             outputString = getLoggingHeaderString();
-            outputString += "\"" + getString(R.string.file_header_timestamp_show) + "\",\"" + getString(R.string.file_header_timestamp_start) + "\",\"" + getString(R.string.file_header_timestamp_stop) + "\",";
+            outputString += "" + getString(R.string.file_header_timestamp_show) + "," + getString(R.string.file_header_timestamp_start) + "," + getString(R.string.file_header_timestamp_stop) + ",";
             for (int i = 1; i < scaleTypes.size(); i++) {
                 if (i != scaleTypes.size() - 1) {
-                    outputString += "\"item." + String.format("%02d", i) + "\",";
+                    outputString += "item." + String.format("%02d", i) + ",";
                 } else {
-                    outputString += "\"item." + String.format("%02d", i) + "\"";
+                    outputString += "item." + String.format("%02d", i) + "";
                 }
             }
         }
@@ -1311,7 +1311,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             try {
                 BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, this.filename), true));
                 String outputString = getLoggingHeaderString();
-                outputString += "\"" + getString(R.string.file_header_timestamp) + ",\"Latitude\",\"Longitude\",\"Altitude\"";
+                outputString += "" + getString(R.string.file_header_timestamp) + ",Latitude,Longitude,Altitude";
                 writer.write(outputString);
                 writer.newLine();
                 writer.flush();
@@ -1406,9 +1406,9 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 outputString += "";
                 for (int k = 0; k < fields.length; k++) {
                     if (fields.length - 1 != k) {
-                        outputString += "\"" + fields[k] + "\",";
+                        outputString += fields[k] + ",";
                     } else {
-                        outputString += "\"" + fields[k] + "\"";
+                        outputString += fields[k] + "";
                     }
                 }
                 writer.write(outputString);
