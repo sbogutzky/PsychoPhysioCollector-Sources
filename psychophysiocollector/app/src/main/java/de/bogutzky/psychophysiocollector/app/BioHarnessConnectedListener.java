@@ -30,6 +30,12 @@ public class BioHarnessConnectedListener extends ConnectListenerImpl {
 
     private boolean heartRateEnabled = false;
 
+    public boolean isSkinTemperatureEnabled() {
+        return skinTemperatureEnabled;
+    }
+
+    private boolean skinTemperatureEnabled = false;
+
     /* Creating the different Objects for different types of Packets */
     private GeneralPacketInfo GPInfo = new GeneralPacketInfo();
     // private ECGPacketInfo ECGInfoPacket = new ECGPacketInfo();
