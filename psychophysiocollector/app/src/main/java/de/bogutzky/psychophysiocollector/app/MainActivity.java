@@ -1018,13 +1018,13 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             outputString += "\"" + getString(R.string.file_header_timestamp_show) + "\",\"" + getString(R.string.file_header_timestamp_start) + "\",\"" + getString(R.string.file_header_timestamp_stop) + "\",";
             for (int i = 1; i < scaleTypes.size(); i++) {
                 if (i != scaleTypes.size() - 1) {
-                    outputString += "\"Item " + String.format("%02d", i) + "\",";
+                    outputString += "\"item." + String.format("%02d", i) + "\",";
                 } else {
-                    outputString += "\"Item " + String.format("%02d", i) + "\"";
+                    outputString += "\"item." + String.format("%02d", i) + "\"";
                 }
             }
         }
-        outputString += "\n" + Long.toString(showTimestamp) + "," + Long.toString(startTimestamp) + "," + Long.toString(System.currentTimeMillis()) + ",";
+        outputString += Long.toString(showTimestamp) + "," + Long.toString(startTimestamp) + "," + Long.toString(System.currentTimeMillis()) + ",";
         for (int i = 0; i < scaleTypes.size(); i++) {
             String value = "";
             if(scaleTypes.get(i).equals("rating")) {
