@@ -1587,17 +1587,19 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
                     case RESPIRATION_RATE:
                         String RespirationRatetext = msg.getData().getString("RespirationRate");
-                        timestamp = msg.getData().getLong("Timestamp");
-                        time = (timestamp - startTimestamp) / 1000.0;
-                        Log.v(TAG, "timestamp: " + timestamp + ", time: " + time);
-                        bhRespirationtRateValues[bhRespirationRateValueCount][0] = String.valueOf(time);
-                        bhRespirationtRateValues[bhRespirationRateValueCount][1] = RespirationRatetext;
-                        bhRespirationRateValueCount++;
-                        System.out.println("RespirationRate Info is " + RespirationRatetext);
-                        if(bhRespirationRateValueCount >= maxVals) {
-                            bhRespirationRateValueCount = 0;
-                            writeData(bhRespirationtRateValues, getString(R.string.file_name_respiration_rate));
-                            bhRespirationtRateValues = new String[1000][2];
+                        if(RespirationRatetext != null) {
+                            timestamp = msg.getData().getLong("Timestamp");
+                            time = (timestamp - startTimestamp) / 1000.0;
+                            Log.v(TAG, "timestamp: " + timestamp + ", time: " + time);
+                            bhRespirationtRateValues[bhRespirationRateValueCount][0] = String.valueOf(time);
+                            bhRespirationtRateValues[bhRespirationRateValueCount][1] = RespirationRatetext;
+                            bhRespirationRateValueCount++;
+                            System.out.println("RespirationRate Info is " + RespirationRatetext);
+                            if(bhRespirationRateValueCount >= maxVals) {
+                                bhRespirationRateValueCount = 0;
+                                writeData(bhRespirationtRateValues, getString(R.string.file_name_respiration_rate));
+                                bhRespirationtRateValues = new String[1000][2];
+                            }
                         }
                         break;
 
