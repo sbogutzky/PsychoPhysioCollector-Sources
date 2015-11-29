@@ -4,17 +4,10 @@
     android:layout_height="match_parent"
     tools:context="de.bogutzky.datacollector.app.MainActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/gps_not_connected"
-        android:id="@+id/gpsStatusTextView" />
-
     <ListView
         android:id="@android:id/list"
         android:layout_width="fill_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/gpsStatusTextView"/>
+        android:layout_height="match_parent"/>
 
     <TextView
         android:layout_width="fill_parent"

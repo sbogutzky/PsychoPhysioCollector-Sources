@@ -102,6 +102,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private android.hardware.Sensor gyroscope;
     private LocationManager locationManager;
     private LocationListener locationListener;
+    private String gpsStatusText;
     private float lastLocationAccuracy;
     private Vibrator vibrator;
     private long[] vibratorPatternFeedback = {0, 500, 200, 100, 100, 100, 100, 100};
@@ -385,10 +386,36 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             this.startStreamMenuItem.setEnabled(true);
             this.stopStreamMenuItem.setEnabled(false);
         }
-/*
-        if (id == R.id.action_toggle_led) {
-            mService.toggleAllLEDS();
-        }*/
+
+        if (id == R.id.action_info) {
+            Dialog dialog = new Dialog(this);
+            dialog.setTitle(getString(R.string.action_info));
+            dialog.setContentView(R.layout.info_popup);
+            TextView statusTV = (TextView) dialog.findViewById(R.id.info_statusTextView);
+            if(startedStreaming) {
+                statusTV.setText(getString(R.string.info_streaming));
+            } else {
+                statusTV.setText(getString(R.string.info_not_streaming));
+            }
+            TextView bhTV = (TextView) dialog.findViewById(R.id.info_bh_connectedTextView);
+            TextView shimmerTV = (TextView) dialog.findViewById(R.id.info_shimmer_connectedTextView);
+            int shimmerCount = 0;
+            int bhCount = 0;
+            if(mService != null) {
+                shimmerCount = mService.mMultiShimmer.values().size();
+                if(mService.hasBioHarnessConnected())
+                    bhCount = 1;
+            }
+            shimmerTV.setText(shimmerCount  + "" + getText(R.string.info_connected));
+            bhTV.setText(bhCount + "" + getText(R.string.info_connected));
+            TextView gpsStatusTV = (TextView) dialog.findViewById(R.id.info_gps_status);
+            if(gpsStatusText == null)
+                gpsStatusText = getString(R.string.gps_not_connected);
+
+            gpsStatusTV.setText(gpsStatusText);
+
+            dialog.show();
+        }
         return super.onOptionsItemSelected(item);
     }
 
@@ -1145,16 +1172,15 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         locationManager.addGpsStatusListener(new GpsStatus.Listener() {
             @Override
             public void onGpsStatusChanged(int event) {
-                TextView gpsStatusTextView = (TextView)findViewById(R.id.gpsStatusTextView);
                 switch(event) {
                     case GpsStatus.GPS_EVENT_STARTED:
-                        gpsStatusTextView.setText(getString(R.string.gps_connected));
+                        gpsStatusText = getString(R.string.gps_connected);
                         break;
                     case GpsStatus.GPS_EVENT_STOPPED:
-                        gpsStatusTextView.setText(getString(R.string.gps_not_connected));
+                        gpsStatusText = getString(R.string.gps_not_connected);
                         break;
                     case GpsStatus.GPS_EVENT_FIRST_FIX:
-                        gpsStatusTextView.setText(getString(R.string.gps_connected_fix_received));
+                        gpsStatusText = getString(R.string.gps_connected_fix_received);
                         break;
                 }
             }
@@ -1382,8 +1408,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                     writeGpsValues();
                 }
                 if(lastLocationAccuracy - location.getAccuracy() > 5.0) {
-                    TextView gpsStatusTextView = (TextView) findViewById(R.id.gpsStatusTextView);
-                    gpsStatusTextView.setText(getText(R.string.gps_connected_fix_received) + getString(R.string.accuracy) + location.getAccuracy());
+                    gpsStatusText = getText(R.string.gps_connected_fix_received) + getString(R.string.accuracy) + location.getAccuracy();
                     lastLocationAccuracy = location.getAccuracy();
                 }
             }

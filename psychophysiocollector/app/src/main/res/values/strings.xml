@@ -43,6 +43,12 @@
     <string name="action_start_test">Untersuchung starten</string>
     <string name="action_toggle_led">LEDs ein/ausschalten</string>
     <string name="action_settings">Einstellungen</string>
+    <string name="action_info">Info</string>
+    <string name="info_connected"> verbunden</string>
+    <string name="info_shimmer">Shimmer: </string>
+    <string name="info_bh">BioHarness: </string>
+    <string name="info_streaming">Untersuchung gestartet.</string>
+    <string name="info_not_streaming">Keine Untersuchung gestartet.</string>
 
     <string name="test_protocol_settings">Einstellung des Untersuchungsprotokolls</string>
     <string name="test_protocol_settings_questionnaire">Fragebogen</string>

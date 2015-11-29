@@ -38,6 +38,12 @@ public class SensorService extends Service {
     private NotificationManager mNM;
     private BTClient _bt;
 
+    public boolean hasBioHarnessConnected() {
+        return bioHarnessConnected;
+    }
+
+    private boolean bioHarnessConnected = false;
+
     public BioHarnessConnectedListener getBioHarnessConnectedListener() {
         return bioHarnessConnectedListener;
     }
@@ -121,6 +127,7 @@ public class SensorService extends Service {
         _bt.addConnectedEventListener(bioHarnessConnectedListener);
         if(_bt.IsConnected()) {
             _bt.start();
+            bioHarnessConnected = true;
         }
     }
 
