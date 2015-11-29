@@ -87,7 +87,7 @@
     <string name="file_header_angular_velocity_z">"angular.velocity.z.deg.s"</string>
     <string name="file_header_heartrate">heartrate</string>
     <string name="file_header_respirationrate">respirationrate</string>
-    <string name="file_header_posture">posture</string>
+    <string name="file_header_posture">posture.deg.s</string>
     <string name="file_header_skintemperature">skintemperature</string>
     <string name="file_header_peakacceleration">peakacceleration</string>
     <string name="file_header_timestamp_show">"timestamp.show.ms"</string>
