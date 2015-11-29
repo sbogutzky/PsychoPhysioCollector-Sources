@@ -75,6 +75,12 @@
     <string name="file_name_angular_velocity">angular-velocity.csv</string>
     <string name="file_name_gps_position">gps-position.csv</string>
     <string name="file_name_self_report">self-report.csv</string>
+    <string name="file_name_heart_rate">heart-rate.csv</string>
+    <string name="file_name_respiration_rate">respiration-rate.csv</string>
+    <string name="file_name_posture">posture.csv</string>
+    <string name="file_name_skin_temperature">skin-temperature.csv</string>
+    <string name="file_name_peak_acceleration">peak-acceleration.csv</string>
+    <string name="file_name_rr_interval">rr-interval.csv</string>
 
     <!-- File headers -->
     <string name="file_header_timestamp">"timestamp.ms"</string>

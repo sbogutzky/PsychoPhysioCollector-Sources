@@ -85,12 +85,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private static final int TIMER_UPDATE = 1;
     private static final int TIMER_END = 2;
     private static final int INTERNAL_SENSOR_CACHE_LENGTH = 100;
-    private final String bhHeartRateFilename = "bhHeartRate.csv";
-    private final String bhRespirationRateFilename = "bhRespirationRate.csv";
-    private final String bhPostureFilename = "bhPosture.csv";
-    private final String bhSkinTemperatureFilename = "bhSkinTemperature.csv";
-    private final String bhPeakAccelerationFilename = "bhPeakAcceleration.csv";
-    private final String bhRRIntervalFilename = "bhRRInterval.csv";
     private boolean loggingEnabled = false;
     private ArrayAdapter adapter;
     private ArrayList<String> bluetoothAddresses;
@@ -527,7 +521,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private void createBioHarnessFiles() {
         if(mService.getBioHarnessConnectedListener().isHeartRateEnabled()) {
             try {
-                BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, bhHeartRateFilename), true));
+                BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_heart_rate)), true));
                 String outputString = getLoggingHeaderString();
                 outputString += "" + getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_heartrate) + "";
                 writer.write(outputString);
@@ -539,7 +533,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             }
         }
         try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, bhRespirationRateFilename), true));
+            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_respiration_rate)), true));
             String outputString = getLoggingHeaderString();
             outputString += "" + getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_respirationrate) + "";
             writer.write(outputString);
@@ -550,7 +544,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             Log.e(TAG, "Error while writing in file", e);
         }
         try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, bhPostureFilename), true));
+            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_posture)), true));
             String outputString = getLoggingHeaderString();
             outputString += "" + getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_posture) + "";
             writer.write(outputString);
@@ -562,7 +556,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         }
         if(mService.getBioHarnessConnectedListener().isSkinTemperatureEnabled()) {
             try {
-                BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, bhSkinTemperatureFilename), true));
+                BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_skin_temperature)), true));
                 String outputString = getLoggingHeaderString();
                 outputString += "" + getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_skintemperature) + "";
                 writer.write(outputString);
@@ -575,7 +569,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         }
 
         try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, bhPeakAccelerationFilename), true));
+            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_peak_acceleration)), true));
             String outputString = getLoggingHeaderString();
             outputString += "" + getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_peakacceleration) + "";
             writer.write(outputString);
@@ -1569,7 +1563,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         bhRRIntervalValueCount++;
                         if(bhRRIntervalValueCount >= maxVals) {
                             bhRRIntervalValueCount = 0;
-                            writeData(bhRRIntervalValues, bhRRIntervalFilename);
+                            writeData(bhRRIntervalValues, getString(R.string.file_name_rr_interval));
                             bhRRIntervalValues = new String[1000][2];
                         }
 
@@ -1586,7 +1580,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         System.out.println("Heart Rate Info is " + HeartRatetext);
                         if(bhHeartRateValueCount >= maxVals) {
                             bhHeartRateValueCount = 0;
-                            writeData(bhHeartRateValues, bhHeartRateFilename);
+                            writeData(bhHeartRateValues, getString(R.string.file_name_heart_rate));
                             bhHeartRateValues = new String[1000][2];
                         }
                         break;
@@ -1602,7 +1596,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         System.out.println("RespirationRate Info is " + RespirationRatetext);
                         if(bhRespirationRateValueCount >= maxVals) {
                             bhRespirationRateValueCount = 0;
-                            writeData(bhRespirationtRateValues, bhRespirationRateFilename);
+                            writeData(bhRespirationtRateValues, getString(R.string.file_name_respiration_rate));
                             bhRespirationtRateValues = new String[1000][2];
                         }
                         break;
@@ -1617,7 +1611,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         System.out.println("SkinTemperature Info is " + SkinTemperaturetext);
                         if(bhSkinTemperatureValueCount >= maxVals) {
                             bhSkinTemperatureValueCount = 0;
-                            writeData(bhSkinTemperatureValues, bhSkinTemperatureFilename);
+                            writeData(bhSkinTemperatureValues, getString(R.string.file_name_skin_temperature));
                             bhSkinTemperatureValues = new String[1000][2];
                         }
                         break;
@@ -1632,7 +1626,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         System.out.println("Posture Info is " + PostureText);
                         if(bhPostureValueCount >= maxVals) {
                             bhPostureValueCount = 0;
-                            writeData(bhPostureValues, bhPostureFilename);
+                            writeData(bhPostureValues, getString(R.string.file_name_posture));
                             bhPostureValues = new String[1000][2];
                         }
                         break;
@@ -1647,7 +1641,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         System.out.println("PeakAcceleration Info is " + PeakAccText);
                         if(bhPeakAccelerationValueCount >= maxVals) {
                             bhPeakAccelerationValueCount = 0;
-                            writeData(bhPeakAccelerationValues, bhPeakAccelerationFilename);
+                            writeData(bhPeakAccelerationValues, getString(R.string.file_name_peak_acceleration));
                             bhPeakAccelerationValues = new String[1000][2];
                         }
                         break;
