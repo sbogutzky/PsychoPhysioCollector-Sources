@@ -551,16 +551,18 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     }
 
     private void createBioHarnessFiles() {
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, bhHeartRateFilename), true));
-            String outputString = getLoggingHeaderString();
-            outputString += "\"" + getString(R.string.file_header_timestamp) + ",\"" + getString(R.string.file_header_heartrate) + "\"";
-            writer.write(outputString);
-            writer.newLine();
-            writer.flush();
-            writer.close();
-        } catch (IOException e) {
-            Log.e(TAG, "Error while writing in file", e);
+        if(mService.getBioHarnessConnectedListener().isHeartRateEnabled()) {
+            try {
+                BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, bhHeartRateFilename), true));
+                String outputString = getLoggingHeaderString();
+                outputString += "\"" + getString(R.string.file_header_timestamp) + ",\"" + getString(R.string.file_header_heartrate) + "\"";
+                writer.write(outputString);
+                writer.newLine();
+                writer.flush();
+                writer.close();
+            } catch (IOException e) {
+                Log.e(TAG, "Error while writing in file", e);
+            }
         }
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, bhRespirationRateFilename), true));
@@ -1036,7 +1038,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         if(!wroteQuestionnaireHeader) {
             wroteQuestionnaireHeader = true;
             outputString = getLoggingHeaderString();
-            outputString += "\"" + getString(R.string.file_header_timestamp_show) + "\",\"" + getString(R.string.file_header_timestamp_show) + "\",\"" + getString(R.string.file_header_timestamp_stop) + "\",";
+            outputString += "\"" + getString(R.string.file_header_timestamp_show) + "\",\"" + getString(R.string.file_header_timestamp_start) + "\",\"" + getString(R.string.file_header_timestamp_stop) + "\",";
             for (int i = 1; i < scaleTypes.size(); i++) {
                 if (i != scaleTypes.size() - 1) {
                     outputString += "\"Item " + String.format("%02d", i) + "\",";

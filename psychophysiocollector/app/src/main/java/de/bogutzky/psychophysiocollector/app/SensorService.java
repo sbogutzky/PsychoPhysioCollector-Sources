@@ -37,6 +37,11 @@ public class SensorService extends Service {
     DescriptiveStatistics mDataBuffer = new DescriptiveStatistics(5);
     private NotificationManager mNM;
     private BTClient _bt;
+
+    public BioHarnessConnectedListener getBioHarnessConnectedListener() {
+        return bioHarnessConnectedListener;
+    }
+
     private BioHarnessConnectedListener bioHarnessConnectedListener;
 
 

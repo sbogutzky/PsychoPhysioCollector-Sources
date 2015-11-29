@@ -24,6 +24,12 @@ public class BioHarnessConnectedListener extends ConnectListenerImpl {
     private final int PEAK_ACCLERATION = 0x104;
     private final int RR_INTERVAL = 0x105;
 
+    public boolean isHeartRateEnabled() {
+        return heartRateEnabled;
+    }
+
+    private boolean heartRateEnabled = false;
+
     /* Creating the different Objects for different types of Packets */
     private GeneralPacketInfo GPInfo = new GeneralPacketInfo();
     // private ECGPacketInfo ECGInfoPacket = new ECGPacketInfo();
@@ -66,16 +72,17 @@ public class BioHarnessConnectedListener extends ConnectListenerImpl {
                 switch (MsgID) {
 
                     case GP_MSG_ID:
-
-                        //***************Displaying the Heart Rate********************************
-                        int HRate = GPInfo.GetHeartRate(DataArray);
-                        Message text1 = _aNewHandler.obtainMessage(HEART_RATE);
+                        Message text1;
                         Bundle b1 = new Bundle();
-                        b1.putString("HeartRate", String.valueOf(HRate));
-                        b1.putLong("Timestamp", System.currentTimeMillis());
-                        text1.setData(b1);
-                        _aNewHandler.sendMessage(text1);
-                        //System.out.println("Heart Rate is "+ HRate);
+                        //***************Displaying the Heart Rate********************************
+                        if(heartRateEnabled) {
+                            int HRate = GPInfo.GetHeartRate(DataArray);
+                            text1 = _aNewHandler.obtainMessage(HEART_RATE);
+                            b1.putString("HeartRate", String.valueOf(HRate));
+                            b1.putLong("Timestamp", System.currentTimeMillis());
+                            text1.setData(b1);
+                            _aNewHandler.sendMessage(text1);
+                        }
 
                         //***************Displaying the Respiration Rate********************************
                         double RespRate = GPInfo.GetRespirationRate(DataArray);
