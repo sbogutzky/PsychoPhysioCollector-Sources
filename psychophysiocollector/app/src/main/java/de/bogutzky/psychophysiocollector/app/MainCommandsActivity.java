@@ -1,8 +1,10 @@
 package de.bogutzky.psychophysiocollector.app;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
@@ -13,8 +15,12 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import com.shimmerresearch.android.Shimmer;
+
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
 
 
 public class MainCommandsActivity extends Activity {
@@ -76,12 +82,37 @@ public class MainCommandsActivity extends Activity {
                     mainCommandIntent.putExtra("enabledSensors", enabledSensors);
                     startActivityForResult(mainCommandIntent, MainActivity.REQUEST_CONFIGURE_SHIMMER);
                 } else if (position == 2) {
-                    Log.v("Commands Activity", "set result show graph");
-                    Intent intent = new Intent();
-                    intent.putExtra("mac", mCurrentDevice);
-                    intent.putExtra("action", MainActivity.SHOW_GRAPH);
-                    setResult(Activity.RESULT_OK, intent);
-                    finish();
+                    ArrayList<String> spinnerArray = new ArrayList<String>();
+                    Collection<Object> colS = mService.mMultiShimmer.values();
+                    Iterator<Object> iterator = colS.iterator();
+                    while (iterator.hasNext()) {
+                        Shimmer stemp = (Shimmer) iterator.next();
+                        int enabledSensors = stemp.getEnabledSensors();
+                        if ((enabledSensors & Shimmer.SENSOR_ACCEL) != 0) {
+                            spinnerArray.add(getString(R.string.accel_name));
+                        }
+                        if ((enabledSensors & Shimmer.SENSOR_GYRO) != 0) {
+                            spinnerArray.add(getString(R.string.gyro_name));
+                        }
+                        if ((enabledSensors & Shimmer.SENSOR_ECG) != 0) {
+                            spinnerArray.add(getString(R.string.ecg_name));
+                        }
+                    }
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getApplicationContext());
+                    CharSequence[] cs = spinnerArray.toArray(new CharSequence[spinnerArray.size()]);
+                    builder.setTitle(getString(R.string.select_graph_gata))
+                            .setItems(cs, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    Log.v("Commands Activity", "set result show graph");
+                                    Intent intent = new Intent();
+                                    intent.putExtra("mac", mCurrentDevice);
+                                    intent.putExtra("action", MainActivity.SHOW_GRAPH);
+                                    intent.putExtra("datastart", which);
+                                    setResult(Activity.RESULT_OK, intent);
+                                    finish();
+                                }
+                            });
+                    builder.show();
                 }
             }
         });

@@ -121,5 +121,9 @@
     <string name="activate_bluetooth">Bluetooth aktivieren?</string>
 
     <string name="accuracy"> Genauigkeit: </string>
+    <string name="gyro_name">Gyroskop</string>
+    <string name="accel_name">Accelerometer</string>
+    <string name="ecg_name">ECG</string>
+    <string name="select_graph_gata">Sensor wählen</string>
 
 </resources>

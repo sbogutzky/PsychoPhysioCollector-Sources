@@ -76,7 +76,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends ListActivity implements SensorEventListener {
 
@@ -725,8 +724,9 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 if(resultCode == Activity.RESULT_OK) {
                     int action = data.getIntExtra("action", 0);
                     graphAdress = data.getStringExtra("mac");
+                    int which = data.getIntExtra("datastart", 0);
                     if(action == MainActivity.SHOW_GRAPH) {
-                        showGraph();
+                        showGraph(which);
                     }
                 }
 
@@ -734,8 +734,8 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         }
     }
 
-    private void showGraph() {
-        graphView = new GraphView(this);
+    private void showGraph(int which) {
+        graphView = new GraphView(this, which);
         graphShowing = true;
         final Dialog dialog = new Dialog(this);
         dialog.setContentView(graphView);

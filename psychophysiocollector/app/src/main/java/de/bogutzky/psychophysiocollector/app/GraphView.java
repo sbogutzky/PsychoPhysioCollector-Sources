@@ -42,8 +42,14 @@ public class GraphView extends View {
     private float   mWidth;
     private float   maxValue = 1024f;
     public float mTempV;
+    private int dataStart;
     public GraphView(Context context) {
         super(context);
+        init();
+    }
+    public GraphView(Context context, int which) {
+        super(context);
+        dataStart = which*3;
         init();
     }
     
@@ -96,7 +102,7 @@ public class GraphView extends View {
         mCanvas.drawText(deviceID, 5, 20, mPaintText);
     	try {
 	    	for (int i=0;i<length;i++){
-	    		addDataPoint(values[i] + offset, mColor[i % 3], mLastValue[i], i);
+	    		addDataPoint(values[i+dataStart] + offset, mColor[i % 3], mLastValue[i], i);
 	    	}
     	} catch (ArrayIndexOutOfBoundsException e){ 
     		/* mLastValue might run into this in extreme situations */
