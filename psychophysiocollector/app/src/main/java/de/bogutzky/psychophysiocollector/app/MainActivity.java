@@ -437,9 +437,9 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
             //bh data
             writeData(bhRRIntervalValues, getString(R.string.file_name_rr_interval));
-            writeData(bhHeartRateValues, getString(R.string.file_name_heart_rate));
+            //writeData(bhHeartRateValues, getString(R.string.file_name_heart_rate));
             writeData(bhRespirationtRateValues, getString(R.string.file_name_respiration_rate));
-            writeData(bhSkinTemperatureValues, getString(R.string.file_name_skin_temperature));
+            //writeData(bhSkinTemperatureValues, getString(R.string.file_name_skin_temperature));
             writeData(bhPostureValues, getString(R.string.file_name_posture));
             writeData(bhPeakAccelerationValues, getString(R.string.file_name_peak_acceleration));
         }

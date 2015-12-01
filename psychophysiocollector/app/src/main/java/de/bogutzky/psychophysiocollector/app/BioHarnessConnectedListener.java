@@ -102,16 +102,16 @@ public class BioHarnessConnectedListener extends ConnectListenerImpl {
 
                         //***************Displaying the Skin Temperature*******************************
 
-
-                        double SkinTempDbl = GPInfo.GetSkinTemperature(DataArray);
-                        text1 = _aNewHandler.obtainMessage(SKIN_TEMPERATURE);
-                        //Bundle b1 = new Bundle();
-                        b1.putLong("Timestamp", System.currentTimeMillis());
-                        b1.putString("SkinTemperature", String.valueOf(SkinTempDbl));
-                        text1.setData(b1);
-                        _aNewHandler.sendMessage(text1);
-                        //System.out.println("Skin Temperature is "+ SkinTempDbl);
-
+                        if(skinTemperatureEnabled) {
+                            double SkinTempDbl = GPInfo.GetSkinTemperature(DataArray);
+                            text1 = _aNewHandler.obtainMessage(SKIN_TEMPERATURE);
+                            //Bundle b1 = new Bundle();
+                            b1.putLong("Timestamp", System.currentTimeMillis());
+                            b1.putString("SkinTemperature", String.valueOf(SkinTempDbl));
+                            text1.setData(b1);
+                            _aNewHandler.sendMessage(text1);
+                        }
+                        
                         //***************Displaying the Posture******************************************
 
                         int PostureInt = GPInfo.GetPosture(DataArray);
