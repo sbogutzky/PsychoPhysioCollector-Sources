@@ -109,6 +109,8 @@
     <string name="file_header_gps_latitude">"latitude"</string>
     <string name="file_header_gps_longitude">"longitude"</string>
     <string name="file_header_gps_altitude">"altitude"</string>
+    <string name="file_header_ecg_ra_ll">"ecg.ra.ll"</string>
+    <string name="file_header_ecg_la_ll">"ecg.la.ll"</string>
 
 
     <string name="shimmer_config_enable_sensors">Sensoren aktivieren</string>

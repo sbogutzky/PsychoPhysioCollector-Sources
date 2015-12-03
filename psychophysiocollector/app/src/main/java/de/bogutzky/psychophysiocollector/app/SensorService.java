@@ -200,16 +200,24 @@ public class SensorService extends Service {
                 int mPosition = Integer.parseInt(stemp.getDeviceName());
                 long mEnabledSensors = stemp.getEnabledSensors();
                 ArrayList<String> fields = new ArrayList<String>();
+                ArrayList<String> header = new ArrayList<String>();
                 fields.add("Timestamp");
+                header.add(getApplicationContext().getString(R.string.file_header_timestamp));
                 if ((mEnabledSensors & Shimmer.SENSOR_ACCEL) != 0) {
                     fields.add("Accelerometer X");
                     fields.add("Accelerometer Y");
                     fields.add("Accelerometer Z");
+                    header.add(getApplicationContext().getString(R.string.file_header_acceleration_x));
+                    header.add(getApplicationContext().getString(R.string.file_header_acceleration_y));
+                    header.add(getApplicationContext().getString(R.string.file_header_acceleration_z));
                 }
                 if ((mEnabledSensors & Shimmer.SENSOR_GYRO) != 0) {
                     fields.add("Gyroscope X");
                     fields.add("Gyroscope Y");
                     fields.add("Gyroscope Z");
+                    header.add(getApplicationContext().getString(R.string.file_header_angular_velocity_x));
+                    header.add(getApplicationContext().getString(R.string.file_header_angular_velocity_y));
+                    header.add(getApplicationContext().getString(R.string.file_header_angular_velocity_z));
                 }
                 if ((mEnabledSensors & Shimmer.SENSOR_MAG) != 0) {
                     fields.add("Magnetometer X");
@@ -225,6 +233,8 @@ public class SensorService extends Service {
                 if ((mEnabledSensors & Shimmer.SENSOR_ECG) != 0) {
                     fields.add("ECG RA-LL");
                     fields.add("ECG LA-LL");
+                    header.add(getString(R.string.file_header_ecg_ra_ll));
+                    header.add(getString(R.string.file_header_ecg_la_ll));
                 }
                 if ((mEnabledSensors & Shimmer.SENSOR_HEART) != 0) {
                     fields.add("Heart Rate");
@@ -238,6 +248,8 @@ public class SensorService extends Service {
 
                 String[] handlerFields = fields.toArray(new String[fields.size()]);
                 ((MainActivity.ShimmerHandler) stemp.mHandler).setFields(handlerFields);
+                String[] handlerHeaders = header.toArray(new String[header.size()]);
+                ((MainActivity.ShimmerHandler) stemp.mHandler).setHeader(handlerHeaders);
             }
         }
     }

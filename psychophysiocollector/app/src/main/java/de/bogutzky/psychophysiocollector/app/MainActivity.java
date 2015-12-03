@@ -1468,21 +1468,16 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             this.root = root;
         }
 
-        public void setFields(String[] fields) {
-            Log.v(TAG, "setfields: " + fields.toString());
-            dataArray = new float[fields.length-2];
-            enabledSensor = mService.getEnabledSensorForMac(graphAdress);
-            this.fields = fields;
-            this.values = new String[maxValueCount][fields.length];
+        public void setHeader(String[] header) {
             try {
                 BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, this.filename), true));
                 String outputString = getLoggingHeaderString();
                 outputString += "";
-                for (int k = 0; k < fields.length; k++) {
-                    if (fields.length - 1 != k) {
-                        outputString += fields[k] + ",";
+                for (int k = 0; k < header.length; k++) {
+                    if (header.length - 1 != k) {
+                        outputString += header[k] + ",";
                     } else {
-                        outputString += fields[k] + "";
+                        outputString += header[k] + "";
                     }
                 }
                 writer.write(outputString);
@@ -1492,6 +1487,13 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             } catch (IOException e) {
                 Log.e(TAG, "Error while writing in file", e);
             }
+        }
+
+        public void setFields(String[] fields) {
+            dataArray = new float[fields.length-2];
+            enabledSensor = mService.getEnabledSensorForMac(graphAdress);
+            this.fields = fields;
+            this.values = new String[maxValueCount][fields.length];
         }
 
         public void setDirectoryName(String directoryName) {
