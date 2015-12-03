@@ -98,7 +98,7 @@ public class MainCommandsActivity extends Activity {
                             spinnerArray.add(getString(R.string.ecg_name));
                         }
                     }
-                    AlertDialog.Builder builder = new AlertDialog.Builder(getApplicationContext());
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MainCommandsActivity.this);
                     CharSequence[] cs = spinnerArray.toArray(new CharSequence[spinnerArray.size()]);
                     builder.setTitle(getString(R.string.select_graph_gata))
                             .setItems(cs, new DialogInterface.OnClickListener() {
