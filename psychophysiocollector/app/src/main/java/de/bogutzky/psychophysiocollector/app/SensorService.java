@@ -71,8 +71,10 @@ public class SensorService extends Service {
     }
 
     public void disconnectBioHarness() {
-        if(_bt != null && bioHarnessConnectedListener != null)
+        if(_bt != null && bioHarnessConnectedListener != null) {
             _bt.removeConnectedEventListener(bioHarnessConnectedListener);
+            _bt.Close();
+        }
     }
 
     public class LocalBinder extends Binder {
