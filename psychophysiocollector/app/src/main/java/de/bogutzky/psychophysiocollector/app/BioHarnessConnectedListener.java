@@ -41,7 +41,7 @@ public class BioHarnessConnectedListener extends ConnectListenerImpl {
     // private ECGPacketInfo ECGInfoPacket = new ECGPacketInfo();
     // private BreathingPacketInfo BreathingInfoPacket = new BreathingPacketInfo();
     private RtoRPacketInfo RtoRInfoPacket = new RtoRPacketInfo();
-    // private AccelerometerPacketInfo AccInfoPacket = new AccelerometerPacketInfo();
+    private AccelerometerPacketInfo accInfoPacket = new AccelerometerPacketInfo();
     // private SummaryPacketInfo SummaryInfoPacket = new SummaryPacketInfo();
 
     private PacketTypeRequest RqPacketType = new PacketTypeRequest();
@@ -159,7 +159,36 @@ public class BioHarnessConnectedListener extends ConnectListenerImpl {
     }
 
     private void processPacketAccel(byte[] dataArray) {
+        double[] samplesX;
+        double[] samplesY;
+        double[] samplesZ;
+        long timestamp = TimeConverter.timeToEpoch(
+                accInfoPacket.GetTSYear(dataArray),
+                accInfoPacket.GetTSMonth(dataArray),
+                accInfoPacket.GetTSDay(dataArray),
+                accInfoPacket.GetMsofDay(dataArray)
+        );
 
+        accInfoPacket.UnpackAccelerationData(dataArray);
+        samplesX = accInfoPacket.GetX_axisAccnData();
+        String[] strSamplesX = new String[samplesX.length];
+        samplesY = accInfoPacket.GetY_axisAccnData();
+        String[] strSamplesY = new String[samplesY.length];
+        samplesZ = accInfoPacket.GetZ_axisAccnData();
+        String[] strSamplesZ = new String[samplesZ.length];
+
+        // Convert double values to String
+        for (int i = 0; i < samplesX.length; i++) {
+            strSamplesX[i] = Double.toString(samplesX[i]);
+        }
+
+        for (int i = 0; i < samplesY.length; i++) {
+            strSamplesY[i] = Double.toString(samplesY[i]);
+        }
+
+        for (int i = 0; i < samplesZ.length; i++) {
+            strSamplesZ[i] = Double.toString(samplesZ[i]);
+        }
     }
 
 

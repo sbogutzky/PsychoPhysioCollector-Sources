@@ -137,6 +137,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private Sensor linearAccelerationSensor;
 
     private long startTimestamp;
+    private long questionnaireTimestamp;
     private long gyroscopeEventStartTimestamp;
     private long gyroscopeStartTimestamp;
     private long accelerometerEventStartTimestamp;
@@ -364,6 +365,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
         if (id == R.id.action_start_streaming) {
             startLoggingDate = new Date();
+            questionnaireTimestamp = System.currentTimeMillis();
             resetTime();
             wroteQuestionnaireHeader = false;
             loggingEnabled = true;
@@ -1107,15 +1109,15 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             wroteQuestionnaireHeader = true;
             outputString = getLoggingHeaderString();
             outputString += "" + getString(R.string.file_header_timestamp_show) + "," + getString(R.string.file_header_timestamp_start) + "," + getString(R.string.file_header_timestamp_stop) + ",";
-            for (int i = 1; i < scaleTypes.size(); i++) {
+            for (int i = 0; i < scaleTypes.size(); i++) {
                 if (i != scaleTypes.size() - 1) {
-                    outputString += "item." + String.format("%02d", i) + ",";
+                    outputString += "item." + String.format("%02d", (i+1)) + ",";
                 } else {
-                    outputString += "item." + String.format("%02d", i) + "\n";
+                    outputString += "item." + String.format("%02d", (i+1)) + "\n";
                 }
             }
         }
-        outputString += Long.toString(showTimestamp) + "," + Long.toString(startTimestamp) + "," + Long.toString(System.currentTimeMillis()) + ",";
+        outputString += Long.toString((showTimestamp-questionnaireTimestamp)) + "," + Long.toString((startTimestamp-questionnaireTimestamp)) + "," + Long.toString((System.currentTimeMillis()-questionnaireTimestamp)) + ",";
         for (int i = 0; i < scaleTypes.size(); i++) {
             String value = "";
             if(scaleTypes.get(i).equals("rating")) {
