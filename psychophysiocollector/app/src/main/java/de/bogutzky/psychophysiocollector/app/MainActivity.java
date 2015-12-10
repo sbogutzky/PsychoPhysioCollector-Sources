@@ -471,7 +471,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     }
 
     private void disconnectBioHarness() {
-        if(mService != null)
+        if(mService != null && hasBHSensor)
             mService.disconnectBioHarness();
     }
 
