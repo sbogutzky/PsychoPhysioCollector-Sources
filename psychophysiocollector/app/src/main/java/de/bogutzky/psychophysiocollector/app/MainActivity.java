@@ -186,6 +186,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private String graphAdress = "";
 
     private Date startLoggingDate = null;
+    private Date stopLoggingDate = null;
 
     private int sensorDataDelay = 20000; // ca. 50 Hz
     private boolean startedStreaming = false;
@@ -374,10 +375,12 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         }
 
         if (id == R.id.action_stop_streaming) {
+            stopLoggingDate = new Date();
             stopAllStreaming();
             stopTimerThread();
             stopStreamingInternalSensorData();
             writeLeftOverData();
+            writeFooters();
             startTimestamp = 0L;
             loggingEnabled = false;
             startedStreaming = false;
@@ -418,12 +421,24 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         return super.onOptionsItemSelected(item);
     }
 
+    private void writeFooters() {
+        String footer = getLoggingFooterString();
+        writeFoooter(footer, getString(R.string.file_name_rr_interval));
+        writeFoooter(footer, getString(R.string.file_name_respiration_rate));
+        writeFoooter(footer, getString(R.string.file_name_posture));
+        writeFoooter(footer, getString(R.string.file_name_peak_acceleration));
+        writeFoooter(footer, getString(R.string.file_name_acceleration));
+        writeFoooter(footer, getString(R.string.file_name_angular_velocity));
+        writeFoooter(footer, getString(R.string.file_name_linear_acceleration));
+    }
+
     private void writeLeftOverData() {
         //internal sensor data
         writeAccelerometerValues();
         writeGyroscopeValues();
         writeLinearAccelerationValues();
         ((GPSListener)locationListener).writeGpsValues();
+        ((GPSListener)locationListener).writeGpsFooter();
 
         //all shimmer data
         if(mService != null) {
@@ -432,6 +447,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             while (iterator.hasNext()) {
                 Shimmer stemp = (Shimmer) iterator.next();
                 ((ShimmerHandler)stemp.mHandler).writeShimmerValues();
+                ((ShimmerHandler)stemp.mHandler).writeShimmerFooter();
             }
 
             //bh data
@@ -453,6 +469,13 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         String outputString = "";
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         outputString += "# StartTime: " + dateFormat.format(startLoggingDate) + "\n";
+        return outputString;
+    }
+
+    private String getLoggingFooterString() {
+        String outputString = "";
+        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        outputString += "# StopTime: " + dateFormat.format(stopLoggingDate) + "\n";
         return outputString;
     }
 
@@ -1322,6 +1345,18 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         }
     }
 
+    private void writeFoooter (String data, String filename) {
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, filename), true));
+            writer.write(data);
+            writer.newLine();
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            Log.e(TAG, "Error while writing in file", e);
+        }
+    }
+
     @Override
     public void onAccuracyChanged(Sensor sensor, int i) {
     }
@@ -1447,6 +1482,17 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         public void onStatusChanged(String provider, int status, Bundle extras) {
         }
 
+        public void writeGpsFooter() {
+            try {
+                BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, this.filename), true));
+                writer.write(getLoggingFooterString());
+                writer.newLine();
+                writer.flush();
+                writer.close();
+            } catch (IOException e) {
+                Log.e(TAG, "Error while writing in file", e);
+            }
+        }
     }
 
     public class ShimmerHandler extends Handler {
@@ -1614,6 +1660,18 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         writer.newLine();
                     }
                 }
+                writer.flush();
+                writer.close();
+            } catch (IOException e) {
+                Log.e(TAG, "Error while writing in file", e);
+            }
+        }
+
+        public void writeShimmerFooter() {
+            try {
+                BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, this.filename), true));
+                writer.write(getLoggingFooterString());
+                writer.newLine();
                 writer.flush();
                 writer.close();
             } catch (IOException e) {
