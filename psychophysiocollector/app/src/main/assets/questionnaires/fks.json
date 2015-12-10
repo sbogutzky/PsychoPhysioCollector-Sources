@@ -72,24 +72,6 @@
       },
       {
         "type": "rating",
-        "stars": 7,
-        "question": "Es steht etwas für mich Wichtiges auf dem Spiel.",
-        "ratings": ["Trifft nicht zu.", "Trifft zu"]
-      },
-      {
-        "type": "rating",
-        "stars": 7,
-        "question": "Ich darf jetzt keine Fehler machen.",
-        "ratings": ["Trifft nicht zu.", "Trifft zu"]
-      },
-      {
-        "type": "rating",
-        "stars": 7,
-        "question": "Ich mache mir Sorgen über einen Misserfolg.",
-        "ratings": ["Trifft nicht zu.", "Trifft zu"]
-      },
-      {
-        "type": "rating",
         "stars": 9,
         "question": "Verglichen mit allen anderen Tätigkeiten, die ich sonst mache, ist die jetzige Tätigkeit...",
         "ratings": ["leicht", "schwer"]

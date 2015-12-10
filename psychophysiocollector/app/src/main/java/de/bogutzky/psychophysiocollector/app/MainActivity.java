@@ -1577,7 +1577,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                             if (j < fields.length) {
                                 if (!clusterCollection.isEmpty()) {
                                     FormatCluster formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
-                                    values[i][j] = Float.toString((float) formatCluster.mData);
+                                    values[i][j] = Double.toString(formatCluster.mData);
                                     if(graphShowing && graphAdress.equals(this.bluetoothAdress)) {
                                         if(j != 0 && j != fields.length - 1) {
                                             dataArray[graphDataCounter] = Float.valueOf(values[i][j]);
@@ -1587,7 +1587,9 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                                 }
                             }
                         }
-                        values[i][0] = String.valueOf(decimalFormat.format(Double.valueOf(values[i][0]) / 10000.0));
+
+                        values[i][0] = decimalFormat.format(Double.valueOf(values[i][0]));
+
 
                         if(graphShowing && graphAdress.equals(this.bluetoothAdress)) {
                             graphView.setDataWithAdjustment(dataArray,graphAdress, "i8");
