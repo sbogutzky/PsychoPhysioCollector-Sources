@@ -9,7 +9,7 @@ import android.util.Log;
 import zephyr.android.BioHarnessBT.*;
 
 public class BioHarnessConnectedListener extends ConnectListenerImpl {
-    private Handler _aNewHandler;
+    private Handler messageHandler;
     final int GP_MSG_ID = 0x20;
     final int BREATHING_MSG_ID = 0x21;
     final int ECG_MSG_ID = 0x22;
@@ -48,14 +48,14 @@ public class BioHarnessConnectedListener extends ConnectListenerImpl {
 
     public BioHarnessConnectedListener(Handler handler, Handler _NewHandler) {
         super(handler, null);
-        _aNewHandler = _NewHandler;
+        messageHandler = _NewHandler;
     }
 
     public void Connected(ConnectedEvent<BTClient> eventArgs) {
         System.out.println(String.format("Connected to BioHarness %s.", eventArgs.getSource().getDevice().getName()));
         Message msg = new Message();
         msg.what = 101; //ready msg
-        _aNewHandler.sendMessage(msg);
+        messageHandler.sendMessage(msg);
 
         /* Use this object to enable or disable the different Packet types */
         RqPacketType.GP_ENABLE = true;
@@ -73,90 +73,174 @@ public class BioHarnessConnectedListener extends ConnectListenerImpl {
         _protocol.addZephyrPacketEventListener(new ZephyrPacketListener() {
             public void ReceivedPacket(ZephyrPacketEvent eventArgs) {
                 ZephyrPacketArgs msg = eventArgs.getPacket();
-                int MsgID = msg.getMsgID();
-                byte[] DataArray = msg.getBytes();
-                switch (MsgID) {
+                int msgID = msg.getMsgID();
+                byte[] dataArray = msg.getBytes();
+                switch (msgID) {
 
                     case GP_MSG_ID:
-                        Message text1;
-                        Bundle b1 = new Bundle();
-                        //***************Displaying the Heart Rate********************************
-                        if(heartRateEnabled) {
-                            int HRate = GPInfo.GetHeartRate(DataArray);
-                            text1 = _aNewHandler.obtainMessage(HEART_RATE);
-                            b1.putString("HeartRate", String.valueOf(HRate));
-                            b1.putLong("Timestamp", System.currentTimeMillis());
-                            text1.setData(b1);
-                            _aNewHandler.sendMessage(text1);
-                        }
-
-                        //***************Displaying the Respiration Rate********************************
-                        double RespRate = GPInfo.GetRespirationRate(DataArray);
-
-                        text1 = _aNewHandler.obtainMessage(RESPIRATION_RATE);
-                        b1.putString("RespirationRate", String.valueOf(RespRate));
-                        b1.putLong("Timestamp", System.currentTimeMillis());
-                        text1.setData(b1);
-                        _aNewHandler.sendMessage(text1);
-                        //System.out.println("Respiration Rate is "+ RespRate);
-
-                        //***************Displaying the Skin Temperature*******************************
-
-                        if(skinTemperatureEnabled) {
-                            double SkinTempDbl = GPInfo.GetSkinTemperature(DataArray);
-                            text1 = _aNewHandler.obtainMessage(SKIN_TEMPERATURE);
-                            //Bundle b1 = new Bundle();
-                            b1.putLong("Timestamp", System.currentTimeMillis());
-                            b1.putString("SkinTemperature", String.valueOf(SkinTempDbl));
-                            text1.setData(b1);
-                            _aNewHandler.sendMessage(text1);
-                        }
-                        
-                        //***************Displaying the Posture******************************************
-
-                        int PostureInt = GPInfo.GetPosture(DataArray);
-                        text1 = _aNewHandler.obtainMessage(POSTURE);
-                        b1.putString("Posture", String.valueOf(PostureInt));
-                        b1.putLong("Timestamp", System.currentTimeMillis());
-                        text1.setData(b1);
-                        _aNewHandler.sendMessage(text1);
-                        //System.out.println("Posture is "+ PostureInt);
-                        //***************Displaying the Peak Acceleration******************************************
-
-                        double PeakAccDbl = GPInfo.GetPeakAcceleration(DataArray);
-                        text1 = _aNewHandler.obtainMessage(PEAK_ACCLERATION);
-                        b1.putString("PeakAcceleration", String.valueOf(PeakAccDbl));
-                        b1.putLong("Timestamp", System.currentTimeMillis());
-                        text1.setData(b1);
-                        _aNewHandler.sendMessage(text1);
-                        //System.out.println("Peak Acceleration is "+ PeakAccDbl)
-
+                        processPacketGeneral(dataArray);
                         break;
+
                     case BREATHING_MSG_ID:
-					/*Do what you want. Printing Sequence Number for now*/
-                        //System.out.println("Breathing Packet Sequence Number is "+BreathingInfoPacket.GetSeqNum(DataArray));
+                        processPacketBreath(dataArray);
                         break;
+
                     case ECG_MSG_ID:
-					/*Do what you want. Printing Sequence Number for now*/
-                        //System.out.println("ECG Packet Sequence Number is "+ECGInfoPacket.GetSeqNum(DataArray));
+                        processPacketEcg(dataArray);
                         break;
+
                     case RtoR_MSG_ID:
-                        //System.out.println("R to R Packet Sequence Number is "+RtoRInfoPacket.GetSeqNum(DataArray));
-                        processPacketRtoR(DataArray);
+                        processPacketRtoR(dataArray);
                         break;
+
                     case ACCEL_100mg_MSG_ID:
-					/*Do what you want. Printing Sequence Number for now*/
-                        //System.out.println("Accelerometry Packet Sequence Number is "+AccInfoPacket.GetSeqNum(DataArray));
+                        processPacketAccel(dataArray);
                         break;
-                    case SUMMARY_MSG_ID:
-					/*Do what you want. Printing Sequence Number for now*/
-                        //System.out.println("Summary Packet Sequence Number is "+SummaryInfoPacket.GetSeqNum(DataArray));
-                        break;
+
+
+//                    case GP_MSG_ID:
+//                        Message text1;
+//                        Bundle b1 = new Bundle();
+//                        //***************Displaying the Heart Rate********************************
+//                        if(heartRateEnabled) {
+//                            int HRate = GPInfo.GetHeartRate(dataArray);
+//                            text1 = messageHandler.obtainMessage(HEART_RATE);
+//                            b1.putString("HeartRate", String.valueOf(HRate));
+//                            b1.putLong("Timestamp", System.currentTimeMillis());
+//                            text1.setData(b1);
+//                            messageHandler.sendMessage(text1);
+//                        }
+//
+//                        //***************Displaying the Respiration Rate********************************
+//                        double RespRate = GPInfo.GetRespirationRate(dataArray);
+//
+//                        text1 = messageHandler.obtainMessage(RESPIRATION_RATE);
+//                        b1.putString("RespirationRate", String.valueOf(RespRate));
+//                        b1.putLong("Timestamp", System.currentTimeMillis());
+//                        text1.setData(b1);
+//                        messageHandler.sendMessage(text1);
+//                        //System.out.println("Respiration Rate is "+ RespRate);
+//
+//                        //***************Displaying the Skin Temperature*******************************
+//
+//                        if(skinTemperatureEnabled) {
+//                            double SkinTempDbl = GPInfo.GetSkinTemperature(dataArray);
+//                            text1 = messageHandler.obtainMessage(SKIN_TEMPERATURE);
+//                            //Bundle b1 = new Bundle();
+//                            b1.putLong("Timestamp", System.currentTimeMillis());
+//                            b1.putString("SkinTemperature", String.valueOf(SkinTempDbl));
+//                            text1.setData(b1);
+//                            messageHandler.sendMessage(text1);
+//                        }
+//
+//                        //***************Displaying the Posture******************************************
+//
+//                        int PostureInt = GPInfo.GetPosture(dataArray);
+//                        text1 = messageHandler.obtainMessage(POSTURE);
+//                        b1.putString("Posture", String.valueOf(PostureInt));
+//                        b1.putLong("Timestamp", System.currentTimeMillis());
+//                        text1.setData(b1);
+//                        messageHandler.sendMessage(text1);
+//                        //System.out.println("Posture is "+ PostureInt);
+//                        //***************Displaying the Peak Acceleration******************************************
+//
+//                        double PeakAccDbl = GPInfo.GetPeakAcceleration(dataArray);
+//                        text1 = messageHandler.obtainMessage(PEAK_ACCLERATION);
+//                        b1.putString("PeakAcceleration", String.valueOf(PeakAccDbl));
+//                        b1.putLong("Timestamp", System.currentTimeMillis());
+//                        text1.setData(b1);
+//                        messageHandler.sendMessage(text1);
+//                        //System.out.println("Peak Acceleration is "+ PeakAccDbl)
+//
+//                        break;
+//                    case BREATHING_MSG_ID:
+//					/*Do what you want. Printing Sequence Number for now*/
+//                        //System.out.println("Breathing Packet Sequence Number is "+BreathingInfoPacket.GetSeqNum(dataArray));
+//                        break;
+//                    case ECG_MSG_ID:
+//					/*Do what you want. Printing Sequence Number for now*/
+//                        //System.out.println("ECG Packet Sequence Number is "+ECGInfoPacket.GetSeqNum(dataArray));
+//                        break;
+//                    case RtoR_MSG_ID:
+//                        //System.out.println("R to R Packet Sequence Number is "+RtoRInfoPacket.GetSeqNum(dataArray));
+//                        processPacketRtoR(dataArray);
+//                        break;
+//                    case ACCEL_100mg_MSG_ID:
+//					/*Do what you want. Printing Sequence Number for now*/
+//                        //System.out.println("Accelerometry Packet Sequence Number is "+AccInfoPacket.GetSeqNum(dataArray));
+//                        break;
+//                    case SUMMARY_MSG_ID:
+//					/*Do what you want. Printing Sequence Number for now*/
+//                        //System.out.println("Summary Packet Sequence Number is "+SummaryInfoPacket.GetSeqNum(dataArray));
+//                        break;
 
                 }
             }
         });
     }
+
+    private void processPacketGeneral(byte[] dataArray) {
+        long timestamp = TimeConverter.timeToEpoch(
+                GPInfo.GetTSYear(dataArray),
+                GPInfo.GetTSMonth(dataArray),
+                GPInfo.GetTSDay(dataArray),
+                GPInfo.GetMsofDay(dataArray)
+        );
+        Message msg;
+        Bundle bundle = new Bundle();
+        if(heartRateEnabled) {
+            int heartRate = GPInfo.GetHeartRate(dataArray);
+            msg = messageHandler.obtainMessage(HEART_RATE);
+            bundle.putString("HeartRate", String.valueOf(heartRate));
+            bundle.putLong("Timestamp", timestamp);
+            msg.setData(bundle);
+            messageHandler.sendMessage(msg);
+        }
+
+        double RespRate = GPInfo.GetRespirationRate(dataArray);
+        msg = messageHandler.obtainMessage(RESPIRATION_RATE);
+        bundle.putString("RespirationRate", String.valueOf(RespRate));
+        bundle.putLong("Timestamp", timestamp);
+        msg.setData(bundle);
+        messageHandler.sendMessage(msg);
+
+        if(skinTemperatureEnabled) {
+            double SkinTempDbl = GPInfo.GetSkinTemperature(dataArray);
+            msg = messageHandler.obtainMessage(SKIN_TEMPERATURE);
+            bundle.putLong("Timestamp", timestamp);
+            bundle.putString("SkinTemperature", String.valueOf(SkinTempDbl));
+            msg.setData(bundle);
+            messageHandler.sendMessage(msg);
+        }
+
+        int PostureInt = GPInfo.GetPosture(dataArray);
+        msg = messageHandler.obtainMessage(POSTURE);
+        bundle.putString("Posture", String.valueOf(PostureInt));
+        bundle.putLong("Timestamp", timestamp);
+        msg.setData(bundle);
+        messageHandler.sendMessage(msg);
+
+        double PeakAccDbl = GPInfo.GetPeakAcceleration(dataArray);
+        msg = messageHandler.obtainMessage(PEAK_ACCLERATION);
+        bundle.putString("PeakAcceleration", String.valueOf(PeakAccDbl));
+        bundle.putLong("Timestamp", timestamp);
+        msg.setData(bundle);
+        messageHandler.sendMessage(msg);
+    }
+
+    private void processPacketBreath(byte[] dataArray) {
+
+    }
+
+    private void processPacketEcg(byte[] dataArray) {
+
+    }
+
+    private void processPacketAccel(byte[] dataArray) {
+
+    }
+
+
 
     /**
      * Process all the info retrieved with the RtoR Packet and send them to the DA
@@ -168,14 +252,13 @@ public class BioHarnessConnectedListener extends ConnectListenerImpl {
     private void processPacketRtoR(byte[] dataArray) {
 
         // Extract timestamp
-        /*
         long timestamp = TimeConverter.timeToEpoch(
-                rToRInfoPacket.GetTSYear(dataArray),
-                rToRInfoPacket.GetTSMonth(dataArray),
-                rToRInfoPacket.GetTSDay(dataArray),
-                rToRInfoPacket.GetMsofDay(dataArray)
+                RtoRInfoPacket.GetTSYear(dataArray),
+                RtoRInfoPacket.GetTSMonth(dataArray),
+                RtoRInfoPacket.GetTSDay(dataArray),
+                RtoRInfoPacket.GetMsofDay(dataArray)
         );
-        */
+
 
         // Extract RtoR Data
         int[] samples = RtoRInfoPacket.GetRtoRSamples(dataArray);
@@ -192,9 +275,9 @@ public class BioHarnessConnectedListener extends ConnectListenerImpl {
                 rrMessage.what = RR_INTERVAL;
                 Bundle rrBundle = new Bundle();
                 rrBundle.putInt("rrInterval", rrInterval);
-                rrBundle.putLong("Timestamp", System.currentTimeMillis());
+                rrBundle.putLong("Timestamp", timestamp);
                 rrMessage.setData(rrBundle);
-                _aNewHandler.sendMessage(rrMessage);
+                messageHandler.sendMessage(rrMessage);
             }
         }
     }
