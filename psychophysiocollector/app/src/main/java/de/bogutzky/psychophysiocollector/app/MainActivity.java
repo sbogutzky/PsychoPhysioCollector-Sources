@@ -174,6 +174,8 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private MenuItem stopStreamMenuItem;
 
     private boolean connected = false;
+    private boolean hasBHSensor = false;
+    private boolean hasShimmerSensor = false;
 
     private ArrayList<String> scaleTypes;
     private ArrayList<Integer> scaleViewIds;
@@ -423,10 +425,12 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
     private void writeFooters() {
         String footer = getLoggingFooterString();
-        writeFoooter(footer, getString(R.string.file_name_rr_interval));
-        writeFoooter(footer, getString(R.string.file_name_respiration_rate));
-        writeFoooter(footer, getString(R.string.file_name_posture));
-        writeFoooter(footer, getString(R.string.file_name_peak_acceleration));
+        if(hasBHSensor) {
+            writeFoooter(footer, getString(R.string.file_name_rr_interval));
+            writeFoooter(footer, getString(R.string.file_name_respiration_rate));
+            writeFoooter(footer, getString(R.string.file_name_posture));
+            writeFoooter(footer, getString(R.string.file_name_peak_acceleration));
+        }
         writeFoooter(footer, getString(R.string.file_name_acceleration));
         writeFoooter(footer, getString(R.string.file_name_angular_velocity));
         writeFoooter(footer, getString(R.string.file_name_linear_acceleration));
@@ -1620,6 +1624,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                             String btRadioID = bluetoothAddress.replace(":", "").substring(8).toUpperCase();
                             Toast.makeText(MainActivity.this, btRadioID + " " + getString(R.string.is_ready), Toast.LENGTH_LONG).show();
                             connected = true;
+                            hasShimmerSensor = true;
 
                             break;
                         case Shimmer.MSG_STATE_STREAMING:
@@ -1836,6 +1841,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
     private void notifyBHReady() {
         Toast.makeText(this, "BioHarness " + getString(R.string.is_ready), Toast.LENGTH_LONG).show();
+        hasBHSensor = true;
     }
 
     private ServiceConnection mTestServiceConnection = new ServiceConnection() {
