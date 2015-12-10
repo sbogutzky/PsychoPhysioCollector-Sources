@@ -251,6 +251,8 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         if (getBluetoothAddresses().size() == 0) {
                             connectMenuItem.setEnabled(false);
                         }
+                        disconnectBioHarness();
+                        disconnectedAllShimmers();
                     }
                 });
                 builder.create().show();
