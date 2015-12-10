@@ -1716,7 +1716,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         }
                         rrTime += rrInterval;
 
-                        bhRRIntervalValues[bhRRIntervalValueCount][0] = String.valueOf(time);
+                        bhRRIntervalValues[bhRRIntervalValueCount][0] = String.valueOf(rrTime);
                         bhRRIntervalValues[bhRRIntervalValueCount][1] = String.valueOf(rrInterval);
                         bhRRIntervalValueCount++;
                         if(bhRRIntervalValueCount >= maxVals) {
