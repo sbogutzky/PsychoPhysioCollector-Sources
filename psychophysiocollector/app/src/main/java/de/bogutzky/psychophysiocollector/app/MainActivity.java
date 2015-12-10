@@ -1080,7 +1080,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 if (i != scaleTypes.size() - 1) {
                     outputString += "item." + String.format("%02d", i) + ",";
                 } else {
-                    outputString += "item." + String.format("%02d", i) + "";
+                    outputString += "item." + String.format("%02d", i) + "\n";
                 }
             }
         }
@@ -1103,7 +1103,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             if(i != scaleTypes.size()-1) {
                 outputString += value + ",";
             } else {
-                outputString += value;
+                outputString += value + "\n";
             }
         }
 

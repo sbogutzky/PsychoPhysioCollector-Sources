@@ -99,10 +99,10 @@
     <string name="file_header_angular_velocity_z">"angular.velocity.z.deg.s"</string>
     <string name="file_header_heartrate">heartrate</string>
     <string name="file_header_respirationrate">respiration.rate</string>
-    <string name="file_header_posture">posture.deg.s</string>
+    <string name="file_header_posture">posture.deg.s</string> <!-- check -->
     <string name="file_header_skintemperature">skin.temperature</string>
     <string name="file_header_peakacceleration">peak.acceleration.g.s</string>
-    <string name="file_header_rr_interval">"rr.interval"</string>
+    <string name="file_header_rr_interval">"rr.interval.s"</string>
     <string name="file_header_timestamp_show">"timestamp.show.ms"</string>
     <string name="file_header_timestamp_start">"timestamp.start.ms"</string>
     <string name="file_header_timestamp_stop">"timestamp.stop.ms"</string>
