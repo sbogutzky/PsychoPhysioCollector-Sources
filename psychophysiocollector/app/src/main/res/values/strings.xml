@@ -128,4 +128,6 @@
     <string name="ecg_name">ECG</string>
     <string name="select_graph_gata">Sensor wählen</string>
 
+    <string name="delete">Löschen?</string>
+
 </resources>

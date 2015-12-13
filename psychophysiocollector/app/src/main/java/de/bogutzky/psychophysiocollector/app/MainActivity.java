@@ -26,6 +26,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.media.MediaPlayer;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -85,6 +86,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private static final int TIMER_UPDATE = 1;
     private static final int TIMER_END = 2;
     private static final int INTERNAL_SENSOR_CACHE_LENGTH = 100;
+    private static final int DATA_ARRAY_BACKUP_LENGTH = 50;
     private boolean loggingEnabled = false;
     private ArrayAdapter adapter;
     private ArrayList<String> bluetoothAddresses;
@@ -162,12 +164,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private final int SKIN_TEMPERATURE = 0x102;
     private final int POSTURE = 0x103;
     private final int PEAK_ACCLERATION = 0x104;
-
-    private final int BREATHING_MSG_ID = 0x21;
-    private final int ECG_MSG_ID = 0x22;
-    private final int RtoR_MSG_ID = 0x24;
-    private final int ACCEL_100mg_MSG_ID = 0x2A;
-
+    private final int RR_INTERVAL = 0x105;
     private String BhMacID;
 
     public final static int REQUEST_MAIN_COMMAND_SHIMMER=3;
@@ -199,6 +196,8 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
     private int sensorDataDelay = 20000; // ca. 50 Hz
     private boolean startedStreaming = false;
+
+    private boolean writingData = false;
 
 
     @Override
@@ -246,8 +245,8 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                 builder.setCancelable(true);
-                builder.setTitle("Delete?");
-                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                builder.setTitle(getString(R.string.delete));
+                builder.setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
 
                     public void onClick(DialogInterface dialog, int which) {
                         deviceNames.remove(index);
@@ -467,12 +466,12 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
             if(hasBHSensor) {
                 //bh data
-                writeData(bhRRIntervalValues, getString(R.string.file_name_rr_interval));
+                writeData(bhRRIntervalValues, getString(R.string.file_name_rr_interval), 1);
                 //writeData(bhHeartRateValues, getString(R.string.file_name_heart_rate));
-                writeData(bhRespirationtRateValues, getString(R.string.file_name_respiration_rate));
+                writeData(bhRespirationtRateValues, getString(R.string.file_name_respiration_rate), 1);
                 //writeData(bhSkinTemperatureValues, getString(R.string.file_name_skin_temperature));
-                writeData(bhPostureValues, getString(R.string.file_name_posture));
-                writeData(bhPeakAccelerationValues, getString(R.string.file_name_peak_acceleration));
+                writeData(bhPostureValues, getString(R.string.file_name_posture), 1);
+                writeData(bhPeakAccelerationValues, getString(R.string.file_name_peak_acceleration), 1);
             }
         }
     }
@@ -579,12 +578,12 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         bhPostureValueCount = 0;
         bhSkinTemperatureValueCount = 0;
         bhRRIntervalValueCount = 0;
-        bhHeartRateValues = new String[1000][2];
-        bhPostureValues = new String[1000][2];
-        bhPeakAccelerationValues = new String[1000][2];
-        bhSkinTemperatureValues = new String[1000][2];
-        bhRespirationtRateValues = new String[1000][2];
-        bhRRIntervalValues = new String[1000][2];
+        bhHeartRateValues = new String[1025][2];
+        bhPostureValues = new String[1025][2];
+        bhPeakAccelerationValues = new String[1025][2];
+        bhSkinTemperatureValues = new String[1025][2];
+        bhRespirationtRateValues = new String[1025][2];
+        bhRRIntervalValues = new String[1025][2];
 
         if(btAdapter == null)
             btAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -1143,7 +1142,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             if(i != scaleTypes.size()-1) {
                 outputString += value + ",";
             } else {
-                outputString += value + "\n";
+                outputString += value;
             }
         }
 
@@ -1160,11 +1159,11 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
     private void startStreamingInternalSensorData() {
 
-        this.accelerometerValues = new String[INTERNAL_SENSOR_CACHE_LENGTH][4];
+        this.accelerometerValues = new String[INTERNAL_SENSOR_CACHE_LENGTH + DATA_ARRAY_BACKUP_LENGTH][4];
         this.accelerometerValueCount = 0;
-        this.gyroscopeValues = new String[INTERNAL_SENSOR_CACHE_LENGTH][4];
+        this.gyroscopeValues = new String[INTERNAL_SENSOR_CACHE_LENGTH + DATA_ARRAY_BACKUP_LENGTH][4];
         this.gyroscopeValueCount = 0;
-        this.linearAccelerationValues = new String[INTERNAL_SENSOR_CACHE_LENGTH][4];
+        this.linearAccelerationValues = new String[INTERNAL_SENSOR_CACHE_LENGTH + DATA_ARRAY_BACKUP_LENGTH][4];
         this.linearAccelerationValueCount = 0;
 
         try {
@@ -1237,12 +1236,12 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     public void onSensorChanged(SensorEvent event) {
         if (loggingEnabled) {
             if (event.sensor.getType() == android.hardware.Sensor.TYPE_ACCELEROMETER) {
-                
+
                 if (this.accelerometerEventStartTimestamp == 0L) {
                     this.accelerometerEventStartTimestamp = event.timestamp; // Nanos
                     this.accelerometerStartTimestamp = System.currentTimeMillis() - this.startTimestamp; // Millis
                 }
-                
+
                 double relativeTimestamp = this.accelerometerStartTimestamp + (event.timestamp - this.accelerometerEventStartTimestamp) / 1000000.0;
 
                 accelerometerValues[accelerometerValueCount][0] = decimalFormat.format(relativeTimestamp);
@@ -1251,10 +1250,12 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 accelerometerValues[accelerometerValueCount][3] = Float.toString(event.values[2]);
 
                 accelerometerValueCount++;
-                if (accelerometerValueCount > INTERNAL_SENSOR_CACHE_LENGTH - 1) {
+                if (accelerometerValueCount > INTERNAL_SENSOR_CACHE_LENGTH - 1 && !writingData) {
                     Log.d(TAG, "Write in " + getString(R.string.file_name_acceleration));
                     accelerometerValueCount = 0;
+                    writingData = true;
                     writeAccelerometerValues();
+                    linearAccelerationValues = new String[INTERNAL_SENSOR_CACHE_LENGTH + DATA_ARRAY_BACKUP_LENGTH][4];
                 }
             }
             if (event.sensor.getType() == android.hardware.Sensor.TYPE_GYROSCOPE) {
@@ -1272,10 +1273,12 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 gyroscopeValues[gyroscopeValueCount][3] = Float.toString((float) (event.values[2] * 180.0 / Math.PI));
 
                 gyroscopeValueCount++;
-                if (gyroscopeValueCount > INTERNAL_SENSOR_CACHE_LENGTH -1) {
+                if (gyroscopeValueCount > INTERNAL_SENSOR_CACHE_LENGTH -1 && !writingData) {
                     Log.d(TAG, "Write in " + getString(R.string.file_name_angular_velocity));
                     gyroscopeValueCount = 0;
+                    writingData = true;
                     writeGyroscopeValues();
+                    gyroscopeValues = new String[INTERNAL_SENSOR_CACHE_LENGTH + DATA_ARRAY_BACKUP_LENGTH][4];
                 }
             }
             if (event.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
@@ -1293,73 +1296,27 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 linearAccelerationValues[linearAccelerationValueCount][3] = Float.toString(event.values[2]);
 
                 linearAccelerationValueCount++;
-                if (linearAccelerationValueCount > INTERNAL_SENSOR_CACHE_LENGTH -1) {
+                if (linearAccelerationValueCount > INTERNAL_SENSOR_CACHE_LENGTH -1 && !writingData) {
                     Log.d(TAG, "Write in " + getString(R.string.file_name_linear_acceleration));
                     linearAccelerationValueCount = 0;
+                    writingData = true;
                     writeLinearAccelerationValues();
+                    accelerometerValues = new String[INTERNAL_SENSOR_CACHE_LENGTH + DATA_ARRAY_BACKUP_LENGTH][4];
                 }
             }
         }
     }
 
     private void writeLinearAccelerationValues() {
-        String[][] linearAccelerationValuesCopies = new String[INTERNAL_SENSOR_CACHE_LENGTH][4];
-        System.arraycopy(linearAccelerationValues, 0, linearAccelerationValuesCopies, 0, INTERNAL_SENSOR_CACHE_LENGTH -1);
-        linearAccelerationValues = new String[INTERNAL_SENSOR_CACHE_LENGTH][4];
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_linear_acceleration)), true));
-
-            for (String[] copy : linearAccelerationValuesCopies) {
-                if (copy[0] != null) {
-                    writer.write(copy[0] + "," + copy[1] + "," + copy[2] + "," + copy[3]);
-                    writer.newLine();
-                }
-            }
-            writer.flush();
-            writer.close();
-        } catch (IOException e) {
-            Log.e(TAG, "Error while writing in file", e);
-        }
+        writeData(linearAccelerationValues, getString(R.string.file_name_linear_acceleration), 4);
     }
 
     private void writeGyroscopeValues() {
-        String[][] gyroscopeValueCopies = new String[INTERNAL_SENSOR_CACHE_LENGTH][4];
-        System.arraycopy(gyroscopeValues, 0, gyroscopeValueCopies, 0, INTERNAL_SENSOR_CACHE_LENGTH -1);
-        gyroscopeValues = new String[INTERNAL_SENSOR_CACHE_LENGTH][4];
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_angular_velocity)), true));
-
-            for (String[] copy : gyroscopeValueCopies) {
-                if (copy[0] != null) {
-                    writer.write(copy[0] + "," + copy[1] + "," + copy[2] + "," + copy[3]);
-                    writer.newLine();
-                }
-            }
-            writer.flush();
-            writer.close();
-        } catch (IOException e) {
-            Log.e(TAG, "Error while writing in file", e);
-        }
+        writeData(gyroscopeValues, getString(R.string.file_name_angular_velocity), 4);
     }
 
     private void writeAccelerometerValues() {
-        String[][] accelerometerValueCopies = new String[INTERNAL_SENSOR_CACHE_LENGTH][4];
-        System.arraycopy(accelerometerValues, 0, accelerometerValueCopies, 0, INTERNAL_SENSOR_CACHE_LENGTH - 1);
-        accelerometerValues = new String[INTERNAL_SENSOR_CACHE_LENGTH][4];
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_acceleration)), true));
-
-            for (String[] copy : accelerometerValueCopies) {
-                if (copy[0] != null) {
-                    writer.write(copy[0] + "," + copy[1] + "," + copy[2] + "," + copy[3]);
-                    writer.newLine();
-                }
-            }
-            writer.flush();
-            writer.close();
-        } catch (IOException e) {
-            Log.e(TAG, "Error while writing in file", e);
-        }
+        writeData(accelerometerValues, getString(R.string.file_name_acceleration), 4);
     }
 
     private void writeFoooter (String data, String filename) {
@@ -1454,10 +1411,11 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 values[i][3] = Float.toString((float) location.getAltitude());
 
                 i++;
-                if (i > maxValueCount - 1) {
+                if (i > maxValueCount - 1 && !writingData) {
                     Log.d(TAG, "Write data in " + this.filename);
                     i = 0;
                     writeGpsValues();
+                    values = new String[maxValueCount + DATA_ARRAY_BACKUP_LENGTH][4];
                 }
                 if(lastLocationAccuracy - location.getAccuracy() > 5.0) {
                     gpsStatusText = getText(R.string.gps_connected_fix_received) + getString(R.string.accuracy) + location.getAccuracy();
@@ -1467,23 +1425,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         }
 
         public void writeGpsValues() {
-            String[][] copies = new String[maxValueCount][4];
-            System.arraycopy(values, 0, copies, 0, maxValueCount - 1);
-            values = new String[maxValueCount][4];
-            try {
-                BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, this.filename), true));
-
-                for (String[] copy : copies) {
-                    if (copy[0] != null) {
-                        writer.write(copy[0] + "," + copy[1] + "," + copy[2] + "," + copy[3]);
-                        writer.newLine();
-                    }
-                }
-                writer.flush();
-                writer.close();
-            } catch (IOException e) {
-                Log.e(TAG, "Error while writing in file", e);
-            }
+            writeData(values,this.filename,4);
         }
 
         @Override
@@ -1556,7 +1498,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             dataArray = new float[fields.length-2];
             enabledSensor = mService.getEnabledSensorForMac(graphAdress);
             this.fields = fields;
-            this.values = new String[maxValueCount][fields.length];
+            this.values = new String[maxValueCount + DATA_ARRAY_BACKUP_LENGTH][fields.length];
         }
 
         public void setDirectoryName(String directoryName) {
@@ -1604,10 +1546,12 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                             graphView.setDataWithAdjustment(dataArray,graphAdress, "i8");
                         }
                         i++;
-                        if (i > maxValueCount - 1) {
+                        if (i > maxValueCount - 1 && !writingData) {
                             Log.d(TAG, "Write data in " + this.filename);
                             i = 0;
+                            writingData = true;
                             writeShimmerValues();
+                            values = new String[maxValueCount + DATA_ARRAY_BACKUP_LENGTH][fields.length];
                         }
                     }
 
@@ -1660,31 +1604,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         }
 
         public void writeShimmerValues() {
-            String[][] copies = new String[maxValueCount][fields.length];
-            System.arraycopy(values, 0, copies, 0, maxValueCount - 1);
-            values = new String[maxValueCount][fields.length];
-            try {
-                BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, this.filename), true));
-
-                for (String[] copy : copies) {
-                    if (copy[0] != null) {
-                        String outputString = "";
-                        for (int k = 0; k < fields.length; k++) {
-                            if (fields.length - 1 != k) {
-                                outputString += copy[k] + ",";
-                            } else {
-                                outputString += copy[k];
-                            }
-                        }
-                        writer.write(outputString);
-                        writer.newLine();
-                    }
-                }
-                writer.flush();
-                writer.close();
-            } catch (IOException e) {
-                Log.e(TAG, "Error while writing in file", e);
-            }
+            writeData(values,this.filename, fields.length);
         }
 
         public void writeShimmerFooter() {
@@ -1718,7 +1638,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 double time = 0;
                 long timestamp = 0;
                 switch (msg.what) {
-                    case RtoR_MSG_ID:
+                    case RR_INTERVAL:
                         int rrInterval = msg.getData().getInt("rrInterval");
                         timestamp = msg.getData().getLong("Timestamp");
                         if(firstRRIntervalTimestamp == 0L) {
@@ -1730,10 +1650,11 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         bhRRIntervalValues[bhRRIntervalValueCount][0] = String.valueOf(rrTime);
                         bhRRIntervalValues[bhRRIntervalValueCount][1] = String.valueOf(rrInterval);
                         bhRRIntervalValueCount++;
-                        if(bhRRIntervalValueCount >= maxVals) {
+                        if(bhRRIntervalValueCount >= maxVals && !writingData) {
                             bhRRIntervalValueCount = 0;
-                            writeData(bhRRIntervalValues, getString(R.string.file_name_rr_interval));
-                            bhRRIntervalValues = new String[1000][2];
+                            writingData = true;
+                            writeData(bhRRIntervalValues, getString(R.string.file_name_rr_interval), 2);
+                            bhRRIntervalValues = new String[1025][2];
                         }
 
                         Log.v(TAG, "Logge RR interval mit Timestamp: " + time);
@@ -1751,10 +1672,11 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         bhHeartRateValues[bhHeartRateValueCount][1] = HeartRatetext;
                         bhHeartRateValueCount++;
                         System.out.println("Heart Rate Info is " + HeartRatetext);
-                        if(bhHeartRateValueCount >= maxVals) {
+                        if(bhHeartRateValueCount >= maxVals && !writingData) {
                             bhHeartRateValueCount = 0;
-                            writeData(bhHeartRateValues, getString(R.string.file_name_heart_rate));
-                            bhHeartRateValues = new String[1000][2];
+                            writingData = true;
+                            writeData(bhHeartRateValues, getString(R.string.file_name_heart_rate), 2);
+                            bhHeartRateValues = new String[1025][2];
                         }
                         break;
 
@@ -1771,10 +1693,11 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                             bhRespirationtRateValues[bhRespirationRateValueCount][1] = RespirationRatetext;
                             bhRespirationRateValueCount++;
                             System.out.println("RespirationRate Info is " + RespirationRatetext);
-                            if(bhRespirationRateValueCount >= maxVals) {
+                            if(bhRespirationRateValueCount >= maxVals && !writingData) {
                                 bhRespirationRateValueCount = 0;
-                                writeData(bhRespirationtRateValues, getString(R.string.file_name_respiration_rate));
-                                bhRespirationtRateValues = new String[1000][2];
+                                writingData = true;
+                                writeData(bhRespirationtRateValues, getString(R.string.file_name_respiration_rate), 2);
+                                bhRespirationtRateValues = new String[1025][2];
                             }
                         }
                         break;
@@ -1791,10 +1714,11 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         bhSkinTemperatureValues[bhSkinTemperatureValueCount][1] = SkinTemperaturetext;
                         bhSkinTemperatureValueCount++;
                         System.out.println("SkinTemperature Info is " + SkinTemperaturetext);
-                        if(bhSkinTemperatureValueCount >= maxVals) {
+                        if(bhSkinTemperatureValueCount >= maxVals && !writingData) {
                             bhSkinTemperatureValueCount = 0;
-                            writeData(bhSkinTemperatureValues, getString(R.string.file_name_skin_temperature));
-                            bhSkinTemperatureValues = new String[1000][2];
+                            writingData = true;
+                            writeData(bhSkinTemperatureValues, getString(R.string.file_name_skin_temperature), 2);
+                            bhSkinTemperatureValues = new String[1025][2];
                         }
                         break;
 
@@ -1810,10 +1734,11 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         bhPostureValues[bhPostureValueCount][1] = PostureText;
                         bhPostureValueCount++;
                         System.out.println("Posture Info is " + PostureText);
-                        if(bhPostureValueCount >= maxVals) {
+                        if(bhPostureValueCount >= maxVals && !writingData) {
                             bhPostureValueCount = 0;
-                            writeData(bhPostureValues, getString(R.string.file_name_posture));
-                            bhPostureValues = new String[1000][2];
+                            writingData = true;
+                            writeData(bhPostureValues, getString(R.string.file_name_posture), 2);
+                            bhPostureValues = new String[1025][2];
                         }
                         break;
 
@@ -1831,34 +1756,20 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         bhPeakAccelerationValues[bhPeakAccelerationValueCount][1] = PeakAccText;
                         bhPeakAccelerationValueCount++;
                         System.out.println("PeakAcceleration Info is " + PeakAccText);
-                        if(bhPeakAccelerationValueCount >= maxVals) {
+                        if(bhPeakAccelerationValueCount >= maxVals && !writingData) {
                             bhPeakAccelerationValueCount = 0;
-                            writeData(bhPeakAccelerationValues, getString(R.string.file_name_peak_acceleration));
-                            bhPeakAccelerationValues = new String[1000][2];
+                            writingData = true;
+                            writeData(bhPeakAccelerationValues, getString(R.string.file_name_peak_acceleration), 2);
+                            bhPeakAccelerationValues = new String[1025][2];
                         }
                         break;
                 }
             }
         }
     }
-    void writeData (String[][] data, String filename) {
-        Log.d(TAG, "Write data in " + filename);
-        String[][] copies = new String[data.length][2];
-        System.arraycopy(data, 0, copies, 0, data.length - 1);
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, filename), true));
-
-            for (String[] copy : copies) {
-                if (copy[0] != null) {
-                    writer.write(copy[0] + "," + copy[1]);
-                    writer.newLine();
-                }
-            }
-            writer.flush();
-            writer.close();
-        } catch (IOException e) {
-            Log.e(TAG, "Error while writing in file", e);
-        }
+    void writeData (String[][] data, String filename, int fields) {
+        WriteDataTask task = new WriteDataTask();
+        task.execute(new WritingDataTaskParams(data, filename, this.root, fields));
     }
 
     void pauseAllSensors() {
@@ -1929,4 +1840,60 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             e.printStackTrace();
         }
     }
+
+    private static class WritingDataTaskParams {
+        String filename;
+        String[][] values;
+        File root;
+        int fields;
+
+        WritingDataTaskParams(String[][] values, String filename, File root, int fields) {
+            this.filename = filename;
+            this.values = values;
+            this.root = root;
+            this.fields = fields;
+        }
+    }
+    private class WriteDataTask extends AsyncTask<WritingDataTaskParams, Void, Void> {
+        protected Void doInBackground(WritingDataTaskParams... params) {
+            String[][] data = params[0].values;
+            String filename = params[0].filename;
+            File root = params[0].root;
+            int fields = params[0].fields;
+
+            Log.d(TAG, "Write data in " + filename);
+            String[][] copies = new String[data.length][fields];
+            System.arraycopy(data, 0, copies, 0, data.length - 1);
+            try {
+                BufferedWriter writer = new BufferedWriter(new FileWriter(new File(root, filename), true));
+
+                for (String[] copy : copies) {
+                    if (copy[0] != null) {
+                        String outputString = "";
+                        for (int k = 0; k < fields; k++) {
+                            if (fields - 1 != k) {
+                                outputString += copy[k] + ",";
+                            } else {
+                                outputString += copy[k];
+                            }
+                        }
+                        writer.write(outputString);
+                        writer.newLine();
+                    }
+                }
+                writer.flush();
+                writer.close();
+            } catch (IOException e) {
+                Log.e(TAG, "Error while writing in file", e);
+            }
+
+            return null;
+        }
+
+        protected void onPostExecute(Void v) {
+            writingData = false;
+        }
+    }
+
+
 }
