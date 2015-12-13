@@ -578,12 +578,12 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         bhPostureValueCount = 0;
         bhSkinTemperatureValueCount = 0;
         bhRRIntervalValueCount = 0;
-        bhHeartRateValues = new String[1025][2];
-        bhPostureValues = new String[1025][2];
-        bhPeakAccelerationValues = new String[1025][2];
-        bhSkinTemperatureValues = new String[1025][2];
-        bhRespirationtRateValues = new String[1025][2];
-        bhRRIntervalValues = new String[1025][2];
+        bhHeartRateValues = new String[1000 + DATA_ARRAY_BACKUP_LENGTH][2];
+        bhPostureValues = new String[1000 + DATA_ARRAY_BACKUP_LENGTH][2];
+        bhPeakAccelerationValues = new String[1000 + DATA_ARRAY_BACKUP_LENGTH][2];
+        bhSkinTemperatureValues = new String[1000 + DATA_ARRAY_BACKUP_LENGTH][2];
+        bhRespirationtRateValues = new String[1000 + DATA_ARRAY_BACKUP_LENGTH][2];
+        bhRRIntervalValues = new String[1000 + DATA_ARRAY_BACKUP_LENGTH][2];
 
         if(btAdapter == null)
             btAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -1654,7 +1654,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                             bhRRIntervalValueCount = 0;
                             writingData = true;
                             writeData(bhRRIntervalValues, getString(R.string.file_name_rr_interval), 2);
-                            bhRRIntervalValues = new String[1025][2];
+                            bhRRIntervalValues = new String[1000 + DATA_ARRAY_BACKUP_LENGTH][2];
                         }
 
                         Log.v(TAG, "Logge RR interval mit Timestamp: " + time);
@@ -1676,7 +1676,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                             bhHeartRateValueCount = 0;
                             writingData = true;
                             writeData(bhHeartRateValues, getString(R.string.file_name_heart_rate), 2);
-                            bhHeartRateValues = new String[1025][2];
+                            bhHeartRateValues = new String[1000 + DATA_ARRAY_BACKUP_LENGTH][2];
                         }
                         break;
 
@@ -1697,7 +1697,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                                 bhRespirationRateValueCount = 0;
                                 writingData = true;
                                 writeData(bhRespirationtRateValues, getString(R.string.file_name_respiration_rate), 2);
-                                bhRespirationtRateValues = new String[1025][2];
+                                bhRespirationtRateValues = new String[1000 + DATA_ARRAY_BACKUP_LENGTH][2];
                             }
                         }
                         break;
@@ -1718,7 +1718,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                             bhSkinTemperatureValueCount = 0;
                             writingData = true;
                             writeData(bhSkinTemperatureValues, getString(R.string.file_name_skin_temperature), 2);
-                            bhSkinTemperatureValues = new String[1025][2];
+                            bhSkinTemperatureValues = new String[1000 + DATA_ARRAY_BACKUP_LENGTH][2];
                         }
                         break;
 
@@ -1738,7 +1738,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                             bhPostureValueCount = 0;
                             writingData = true;
                             writeData(bhPostureValues, getString(R.string.file_name_posture), 2);
-                            bhPostureValues = new String[1025][2];
+                            bhPostureValues = new String[1000 + DATA_ARRAY_BACKUP_LENGTH][2];
                         }
                         break;
 
@@ -1760,7 +1760,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                             bhPeakAccelerationValueCount = 0;
                             writingData = true;
                             writeData(bhPeakAccelerationValues, getString(R.string.file_name_peak_acceleration), 2);
-                            bhPeakAccelerationValues = new String[1025][2];
+                            bhPeakAccelerationValues = new String[1000 + DATA_ARRAY_BACKUP_LENGTH][2];
                         }
                         break;
                 }
