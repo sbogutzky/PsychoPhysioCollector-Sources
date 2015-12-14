@@ -17,6 +17,7 @@ public class BioHarnessConnectedListener extends ConnectListenerImpl {
     private final int ACCEL_100mg_MSG_ID = 0x2A;
 //    private final int SUMMARY_MSG_ID = 0x2B;
 
+    private final int POSTURE = 0x103;
     private final int HEART_RATE = 0x100;
     private final int RESPIRATION_RATE = 0x101;
     private final int SKIN_TEMPERATURE = 0x102;
@@ -134,7 +135,6 @@ public class BioHarnessConnectedListener extends ConnectListenerImpl {
         }
 
         int PostureInt = generalPacketInfo.GetPosture(dataArray);
-        int POSTURE = 0x103;
         message = messageHandler.obtainMessage(POSTURE);
         bundle.putString("Posture", String.valueOf(PostureInt));
         bundle.putLong("Timestamp", timestamp);

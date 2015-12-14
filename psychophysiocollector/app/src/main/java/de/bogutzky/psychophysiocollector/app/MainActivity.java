@@ -159,12 +159,18 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
     //bth adapter
     private BluetoothAdapter btAdapter = null;
+    private final int BREATHING_MSG_ID = 0x21;
+    private final int ECG_MSG_ID = 0x22;
+    private final int RtoR_MSG_ID = 0x24;
+    private final int ACCEL_100mg_MSG_ID = 0x2A;
+
+    private final int POSTURE = 0x103;
     private final int HEART_RATE = 0x100;
     private final int RESPIRATION_RATE = 0x101;
     private final int SKIN_TEMPERATURE = 0x102;
-    private final int POSTURE = 0x103;
     private final int PEAK_ACCLERATION = 0x104;
-    private final int RR_INTERVAL = 0x105;
+
+
     private String BhMacID;
 
     public final static int REQUEST_MAIN_COMMAND_SHIMMER=3;
@@ -1638,7 +1644,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 double time = 0;
                 long timestamp = 0;
                 switch (msg.what) {
-                    case RR_INTERVAL:
+                    case RtoR_MSG_ID:
                         int rrInterval = msg.getData().getInt("rrInterval");
                         timestamp = msg.getData().getLong("Timestamp");
                         if(firstRRIntervalTimestamp == 0L) {
