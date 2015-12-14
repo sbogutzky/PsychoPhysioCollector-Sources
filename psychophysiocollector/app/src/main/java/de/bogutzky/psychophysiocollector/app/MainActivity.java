@@ -87,6 +87,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private static final int TIMER_END = 2;
     private static final int INTERNAL_SENSOR_CACHE_LENGTH = 100;
     private static final int DATA_ARRAY_BACKUP_LENGTH = 50;
+    private static final int DATA_ARRAY_SIZE = 1000;
     private boolean loggingEnabled = false;
     private ArrayAdapter adapter;
     private ArrayList<String> bluetoothAddresses;
@@ -584,12 +585,12 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         bhPostureValueCount = 0;
         bhSkinTemperatureValueCount = 0;
         bhRRIntervalValueCount = 0;
-        bhHeartRateValues = new String[1000 + DATA_ARRAY_BACKUP_LENGTH][2];
-        bhPostureValues = new String[1000 + DATA_ARRAY_BACKUP_LENGTH][2];
-        bhPeakAccelerationValues = new String[1000 + DATA_ARRAY_BACKUP_LENGTH][2];
-        bhSkinTemperatureValues = new String[1000 + DATA_ARRAY_BACKUP_LENGTH][2];
-        bhRespirationtRateValues = new String[1000 + DATA_ARRAY_BACKUP_LENGTH][2];
-        bhRRIntervalValues = new String[1000 + DATA_ARRAY_BACKUP_LENGTH][2];
+        bhHeartRateValues = new String[DATA_ARRAY_SIZE + DATA_ARRAY_BACKUP_LENGTH][2];
+        bhPostureValues = new String[DATA_ARRAY_SIZE + DATA_ARRAY_BACKUP_LENGTH][2];
+        bhPeakAccelerationValues = new String[DATA_ARRAY_SIZE + DATA_ARRAY_BACKUP_LENGTH][2];
+        bhSkinTemperatureValues = new String[DATA_ARRAY_SIZE + DATA_ARRAY_BACKUP_LENGTH][2];
+        bhRespirationtRateValues = new String[DATA_ARRAY_SIZE + DATA_ARRAY_BACKUP_LENGTH][2];
+        bhRRIntervalValues = new String[DATA_ARRAY_SIZE + DATA_ARRAY_BACKUP_LENGTH][2];
 
         if(btAdapter == null)
             btAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -1627,7 +1628,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     }
 
     class HarnessHandler extends Handler {
-        int maxVals = 5;
         double rrTime = 0;
         boolean filesCreated = false;
 
@@ -1656,11 +1656,11 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         bhRRIntervalValues[bhRRIntervalValueCount][0] = String.valueOf(rrTime);
                         bhRRIntervalValues[bhRRIntervalValueCount][1] = String.valueOf(rrInterval);
                         bhRRIntervalValueCount++;
-                        if(bhRRIntervalValueCount >= maxVals && !writingData) {
+                        if(bhRRIntervalValueCount >= DATA_ARRAY_SIZE && !writingData) {
                             bhRRIntervalValueCount = 0;
                             writingData = true;
                             writeData(bhRRIntervalValues, getString(R.string.file_name_rr_interval), 2);
-                            bhRRIntervalValues = new String[1000 + DATA_ARRAY_BACKUP_LENGTH][2];
+                            bhRRIntervalValues = new String[DATA_ARRAY_SIZE + DATA_ARRAY_BACKUP_LENGTH][2];
                         }
 
                         Log.v(TAG, "Logge RR interval mit Timestamp: " + time);
@@ -1678,11 +1678,11 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         bhHeartRateValues[bhHeartRateValueCount][1] = HeartRatetext;
                         bhHeartRateValueCount++;
                         System.out.println("Heart Rate Info is " + HeartRatetext);
-                        if(bhHeartRateValueCount >= maxVals && !writingData) {
+                        if(bhHeartRateValueCount >= DATA_ARRAY_SIZE && !writingData) {
                             bhHeartRateValueCount = 0;
                             writingData = true;
                             writeData(bhHeartRateValues, getString(R.string.file_name_heart_rate), 2);
-                            bhHeartRateValues = new String[1000 + DATA_ARRAY_BACKUP_LENGTH][2];
+                            bhHeartRateValues = new String[DATA_ARRAY_SIZE + DATA_ARRAY_BACKUP_LENGTH][2];
                         }
                         break;
 
@@ -1699,11 +1699,11 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                             bhRespirationtRateValues[bhRespirationRateValueCount][1] = RespirationRatetext;
                             bhRespirationRateValueCount++;
                             System.out.println("RespirationRate Info is " + RespirationRatetext);
-                            if(bhRespirationRateValueCount >= maxVals && !writingData) {
+                            if(bhRespirationRateValueCount >= DATA_ARRAY_SIZE && !writingData) {
                                 bhRespirationRateValueCount = 0;
                                 writingData = true;
                                 writeData(bhRespirationtRateValues, getString(R.string.file_name_respiration_rate), 2);
-                                bhRespirationtRateValues = new String[1000 + DATA_ARRAY_BACKUP_LENGTH][2];
+                                bhRespirationtRateValues = new String[DATA_ARRAY_SIZE + DATA_ARRAY_BACKUP_LENGTH][2];
                             }
                         }
                         break;
@@ -1720,11 +1720,11 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         bhSkinTemperatureValues[bhSkinTemperatureValueCount][1] = SkinTemperaturetext;
                         bhSkinTemperatureValueCount++;
                         System.out.println("SkinTemperature Info is " + SkinTemperaturetext);
-                        if(bhSkinTemperatureValueCount >= maxVals && !writingData) {
+                        if(bhSkinTemperatureValueCount >= DATA_ARRAY_SIZE && !writingData) {
                             bhSkinTemperatureValueCount = 0;
                             writingData = true;
                             writeData(bhSkinTemperatureValues, getString(R.string.file_name_skin_temperature), 2);
-                            bhSkinTemperatureValues = new String[1000 + DATA_ARRAY_BACKUP_LENGTH][2];
+                            bhSkinTemperatureValues = new String[DATA_ARRAY_SIZE + DATA_ARRAY_BACKUP_LENGTH][2];
                         }
                         break;
 
@@ -1740,11 +1740,11 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         bhPostureValues[bhPostureValueCount][1] = PostureText;
                         bhPostureValueCount++;
                         System.out.println("Posture Info is " + PostureText);
-                        if(bhPostureValueCount >= maxVals && !writingData) {
+                        if(bhPostureValueCount >= DATA_ARRAY_SIZE && !writingData) {
                             bhPostureValueCount = 0;
                             writingData = true;
                             writeData(bhPostureValues, getString(R.string.file_name_posture), 2);
-                            bhPostureValues = new String[1000 + DATA_ARRAY_BACKUP_LENGTH][2];
+                            bhPostureValues = new String[DATA_ARRAY_SIZE + DATA_ARRAY_BACKUP_LENGTH][2];
                         }
                         break;
 
@@ -1762,11 +1762,11 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         bhPeakAccelerationValues[bhPeakAccelerationValueCount][1] = PeakAccText;
                         bhPeakAccelerationValueCount++;
                         System.out.println("PeakAcceleration Info is " + PeakAccText);
-                        if(bhPeakAccelerationValueCount >= maxVals && !writingData) {
+                        if(bhPeakAccelerationValueCount >= DATA_ARRAY_SIZE && !writingData) {
                             bhPeakAccelerationValueCount = 0;
                             writingData = true;
                             writeData(bhPeakAccelerationValues, getString(R.string.file_name_peak_acceleration), 2);
-                            bhPeakAccelerationValues = new String[1000 + DATA_ARRAY_BACKUP_LENGTH][2];
+                            bhPeakAccelerationValues = new String[DATA_ARRAY_SIZE + DATA_ARRAY_BACKUP_LENGTH][2];
                         }
                         break;
                 }
