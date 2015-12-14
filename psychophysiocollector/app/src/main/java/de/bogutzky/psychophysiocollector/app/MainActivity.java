@@ -1162,6 +1162,10 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         } catch (IOException e) {
             Log.e(TAG, "Error while writing in file", e);
         }
+        if(!loggingEnabled) {
+            String footer = getLoggingFooterString();
+            writeFoooter(footer, getString(R.string.file_name_self_report));
+        }
     }
 
     private void startStreamingInternalSensorData() {
@@ -1419,7 +1423,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
                 i++;
                 if (i > maxValueCount - 1 && !writingData) {
-                    Log.d(TAG, "Write data in " + this.filename);
                     i = 0;
                     writeGpsValues();
                     values = new String[maxValueCount + DATA_ARRAY_BACKUP_LENGTH][4];
@@ -1554,7 +1557,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         }
                         i++;
                         if (i > maxValueCount - 1 && !writingData) {
-                            Log.d(TAG, "Write data in " + this.filename);
                             i = 0;
                             writingData = true;
                             writeShimmerValues();
