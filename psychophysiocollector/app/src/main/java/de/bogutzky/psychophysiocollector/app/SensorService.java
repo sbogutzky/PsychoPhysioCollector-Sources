@@ -123,9 +123,9 @@ public class SensorService extends Service {
 
     }
 
-    public void connectBioHarness(MainActivity.HarnessHandler harnessHandler, String bhMacID) {
+    public void connectBioHarness(MainActivity.BioHarnessHandler bioHarnessHandler, String bhMacID) {
         _bt = new BTClient(BluetoothAdapter.getDefaultAdapter(), bhMacID);
-        bioHarnessConnectedListener = new BioHarnessConnectedListener(harnessHandler, harnessHandler);
+        bioHarnessConnectedListener = new BioHarnessConnectedListener(bioHarnessHandler, bioHarnessHandler);
         _bt.addConnectedEventListener(bioHarnessConnectedListener);
         if(_bt.IsConnected()) {
             _bt.start();

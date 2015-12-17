@@ -171,8 +171,19 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private final int SKIN_TEMPERATURE = 0x102;
     private final int PEAK_ACCLERATION = 0x104;
 
-
-    private String BhMacID;
+    public String getBioHarnessBtDeviceAdress(BluetoothAdapter bluetoothAdapter) {
+        Set<BluetoothDevice> bondedDevices = bluetoothAdapter.getBondedDevices();
+        if (bondedDevices.size() > 0) {
+            for (BluetoothDevice bluetoothDevice : bondedDevices) {
+                if (bluetoothDevice.getName().startsWith("BH")) {
+                    if(getBluetoothAddresses().contains(bluetoothDevice.getAddress())) {
+                        return bluetoothDevice.getAddress();
+                    }
+                }
+            }
+        }
+        return null;
+    }
 
     public final static int REQUEST_MAIN_COMMAND_SHIMMER=3;
     public final static int REQUEST_COMMANDS_SHIMMER=4;
@@ -185,7 +196,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private MenuItem stopStreamMenuItem;
 
     private boolean connected = false;
-    private boolean hasBHSensor = false;
+    private boolean bioHarnessConnected = false;
     private boolean hasShimmerSensor = false;
 
     private ArrayList<String> scaleTypes;
@@ -205,6 +216,8 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private boolean startedStreaming = false;
 
     private boolean writingData = false;
+
+    private BioHarnessHandler bioHarnessHandler;
 
 
     @Override
@@ -388,6 +401,9 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             if (this.directoryName == null) {
                 createRootDirectory();
             }
+            if(bioHarnessConnected) {
+                resetBioharnessStorage();
+            }
             startAllStreaming();
             startTimerThread();
             startStreamingInternalSensorData();
@@ -442,7 +458,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
     private void writeFooters() {
         String footer = getLoggingFooterString();
-        if(hasBHSensor) {
+        if(bioHarnessConnected) {
             writeFoooter(footer, getString(R.string.file_name_rr_interval));
             writeFoooter(footer, getString(R.string.file_name_respiration_rate));
             writeFoooter(footer, getString(R.string.file_name_posture));
@@ -471,7 +487,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 ((ShimmerHandler)stemp.mHandler).writeShimmerFooter();
             }
 
-            if(hasBHSensor) {
+            if(bioHarnessConnected) {
                 //bh data
                 writeData(bhRRIntervalValues, getString(R.string.file_name_rr_interval), 1);
                 //writeData(bhHeartRateValues, getString(R.string.file_name_heart_rate));
@@ -484,7 +500,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     }
 
     private void disconnectBioHarness() {
-        if(mService != null && hasBHSensor)
+        if(mService != null && bioHarnessConnected)
             mService.disconnectBioHarness();
     }
 
@@ -578,7 +594,21 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     }
 
     private void connectBioHarness() {
+        if (btAdapter != null) {
+            String bioHarnessBtDeviceAdress = getBioHarnessBtDeviceAdress(btAdapter);
 
+            if(bioHarnessBtDeviceAdress != null) {
+                if(mService != null) {
+                    bioHarnessHandler = new BioHarnessHandler();
+                    mService.connectBioHarness(bioHarnessHandler, bioHarnessBtDeviceAdress);
+                }
+            }
+        }
+
+    }
+
+    private void resetBioharnessStorage() {
+        bioHarnessHandler.setFileStorageCreated(false);
         bhPeakAccelerationValueCount = 0;
         bhRespirationRateValueCount = 0;
         bhHeartRateValueCount = 0;
@@ -591,31 +621,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         bhSkinTemperatureValues = new String[DATA_ARRAY_SIZE + DATA_ARRAY_BACKUP_LENGTH][2];
         bhRespirationtRateValues = new String[DATA_ARRAY_SIZE + DATA_ARRAY_BACKUP_LENGTH][2];
         bhRRIntervalValues = new String[DATA_ARRAY_SIZE + DATA_ARRAY_BACKUP_LENGTH][2];
-
-        if(btAdapter == null)
-            btAdapter = BluetoothAdapter.getDefaultAdapter();
-
-        Set<BluetoothDevice> pairedDevices = btAdapter.getBondedDevices();
-        String deviceName = "";
-
-        if (pairedDevices.size() > 0) {
-            for (BluetoothDevice device : pairedDevices) {
-                if (device.getName().startsWith("BH")) {
-                    if(bluetoothAddresses.contains(device.getAddress())) {
-                        BluetoothDevice btDevice = device;
-                        deviceName = device.getName();
-                        BhMacID = btDevice.getAddress();
-                        break;
-                    }
-                }
-            }
-        }
-        if(BhMacID != null) {
-            if(mService != null) {
-                HarnessHandler harnessHandler = new HarnessHandler();
-                mService.connectBioHarness(harnessHandler, BhMacID);
-            }
-        }
     }
 
     private void createBioHarnessFiles() {
@@ -729,7 +734,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 if (resultCode == Activity.RESULT_OK) {
                     String bluetoothAddress = data.getExtras().getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
                     Log.d(TAG, "Bluetooth Address: " + bluetoothAddress);
-                    //BhMacID = bluetoothAddress;
 
                     // Check if the bluetooth address has been previously selected
                     boolean isNewAddress = !getBluetoothAddresses().contains(bluetoothAddress);
@@ -1629,15 +1633,20 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         }
     }
 
-    class HarnessHandler extends Handler {
-        double rrTime = 0;
-        boolean filesCreated = false;
+    class BioHarnessHandler extends Handler {
+        private double rrTime = 0;
 
-        HarnessHandler() {}
+        private boolean fileStorageCreated = false;
+
+        public void setFileStorageCreated(boolean fileStorageCreated) {
+            this.fileStorageCreated = fileStorageCreated;
+        }
+
+        BioHarnessHandler() {}
         public void handleMessage(Message msg) {
-            if(!filesCreated && loggingEnabled) {
+            if(!fileStorageCreated && loggingEnabled) {
                 createBioHarnessFiles();
-                filesCreated = true;
+                fileStorageCreated = true;
             }
             if(msg.what == 101) {
                 notifyBHReady();
@@ -1801,7 +1810,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
     private void notifyBHReady() {
         Toast.makeText(this, "BioHarness " + getString(R.string.is_ready), Toast.LENGTH_LONG).show();
-        hasBHSensor = true;
+        bioHarnessConnected = true;
     }
 
     private ServiceConnection mTestServiceConnection = new ServiceConnection() {
