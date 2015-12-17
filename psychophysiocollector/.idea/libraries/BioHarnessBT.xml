@@ -1,7 +1,7 @@
 <component name="libraryTable">
   <library name="BioHarnessBT">
     <CLASSES>
-      <root url="jar://$PROJECT_DIR$/app/lib/BioHarnessBT.jar!/" />
+      <root url="jar://$PROJECT_DIR$/app/libs/BioHarnessBT.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />
