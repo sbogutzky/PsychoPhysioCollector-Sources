@@ -88,14 +88,24 @@ public class MainCommandsActivity extends Activity {
                     while (iterator.hasNext()) {
                         Shimmer stemp = (Shimmer) iterator.next();
                         int enabledSensors = stemp.getEnabledSensors();
+                        String sensorName = "";
                         if ((enabledSensors & Shimmer.SENSOR_ACCEL) != 0) {
-                            spinnerArray.add(getString(R.string.accel_name));
+                            sensorName = getString(R.string.accel_name);
+                            if(!spinnerArray.contains(sensorName)) {
+                                spinnerArray.add(sensorName);
+                            }
                         }
                         if ((enabledSensors & Shimmer.SENSOR_GYRO) != 0) {
-                            spinnerArray.add(getString(R.string.gyro_name));
+                            sensorName = getString(R.string.gyro_name);
+                            if(!spinnerArray.contains(sensorName)) {
+                                spinnerArray.add(sensorName);
+                            }
                         }
                         if ((enabledSensors & Shimmer.SENSOR_ECG) != 0) {
-                            spinnerArray.add(getString(R.string.ecg_name));
+                            sensorName = getString(R.string.ecg_name);
+                            if(!spinnerArray.contains(sensorName)) {
+                                spinnerArray.add(sensorName);
+                            }
                         }
                     }
                     AlertDialog.Builder builder = new AlertDialog.Builder(MainCommandsActivity.this);
