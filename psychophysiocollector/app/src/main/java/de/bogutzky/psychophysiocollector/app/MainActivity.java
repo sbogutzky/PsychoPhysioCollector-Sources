@@ -1509,7 +1509,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         }
 
         public void setFields(String[] fields) {
-            dataArray = new float[fields.length-2];
+            dataArray = new float[fields.length - 1];
             enabledSensor = mService.getEnabledSensorForMac(graphAdress);
             this.fields = fields;
             this.values = new String[maxValueCount + DATA_ARRAY_BACKUP_LENGTH][fields.length];
@@ -1544,7 +1544,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                                     FormatCluster formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
                                     values[i][j] = Double.toString(formatCluster.mData);
                                     if(graphShowing && graphAdress.equals(this.bluetoothAdress)) {
-                                        if(j != 0 && j != fields.length - 1) {
+                                        if(j != 0 && j != fields.length) {
                                             dataArray[graphDataCounter] = Float.valueOf(values[i][j]);
                                             graphDataCounter++;
                                         }
@@ -1557,7 +1557,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
 
                         if(graphShowing && graphAdress.equals(this.bluetoothAdress)) {
-                            graphView.setDataWithAdjustment(dataArray,graphAdress, "i8");
+                            graphView.setDataWithAdjustment(dataArray, graphAdress, "i8");
                         }
                         i++;
                         if (i > maxValueCount - 1 && !writingData) {
