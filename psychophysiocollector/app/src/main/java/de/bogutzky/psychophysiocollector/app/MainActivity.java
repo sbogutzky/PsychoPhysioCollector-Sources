@@ -474,10 +474,10 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
             if(bioHarnessConnected) {
                 //bh data
-                writeData(bhRRIntervalValues, getString(R.string.file_name_rr_interval), 1, true, getLoggingFooterString());
-                writeData(bhRespirationtRateValues, getString(R.string.file_name_respiration_rate), 1, true, getLoggingFooterString());
-                writeData(bhPostureValues, getString(R.string.file_name_posture), 1, true, getLoggingFooterString());
-                writeData(bhPeakAccelerationValues, getString(R.string.file_name_peak_acceleration), 1, true, getLoggingFooterString());
+                writeData(bhRRIntervalValues, getString(R.string.file_name_rr_interval), 2, true, getLoggingFooterString());
+                writeData(bhRespirationtRateValues, getString(R.string.file_name_respiration_rate), 2, true, getLoggingFooterString());
+                writeData(bhPostureValues, getString(R.string.file_name_posture), 2, true, getLoggingFooterString());
+                writeData(bhPeakAccelerationValues, getString(R.string.file_name_peak_acceleration), 2, true, getLoggingFooterString());
             }
         }
     }
