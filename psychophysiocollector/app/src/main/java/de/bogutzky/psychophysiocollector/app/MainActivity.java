@@ -85,7 +85,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private static final int TIMER_UPDATE = 1;
     private static final int TIMER_END = 2;
     private static final int INTERNAL_SENSOR_CACHE_LENGTH = 1000;
-    private static final int DATA_ARRAY_BACKUP_LENGTH = 250;
     private static final int DATA_ARRAY_SIZE = 1000;
     private boolean loggingEnabled = false;
     private ArrayAdapter adapter;
@@ -1521,7 +1520,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             dataArray = new float[fields.length - 1];
             enabledSensor = mService.getEnabledSensorForMac(graphAdress);
             this.fields = fields;
-            this.values = new String[maxValueCount + DATA_ARRAY_BACKUP_LENGTH][fields.length];
+            this.values = new String[maxValueCount][fields.length];
         }
 
         public void setDirectoryName(String directoryName) {
