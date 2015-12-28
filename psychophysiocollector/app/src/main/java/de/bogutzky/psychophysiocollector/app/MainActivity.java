@@ -26,7 +26,6 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.media.MediaPlayer;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -155,7 +154,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private Long firstRRIntervalTimestamp;
     private Long bhStartTimestamp;
 
-
     private DecimalFormat decimalFormat;
 
     //bth adapter
@@ -170,20 +168,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private final int RESPIRATION_RATE = 0x101;
     private final int SKIN_TEMPERATURE = 0x102;
     private final int PEAK_ACCLERATION = 0x104;
-
-    public String getBioHarnessBtDeviceAdress(BluetoothAdapter bluetoothAdapter) {
-        Set<BluetoothDevice> bondedDevices = bluetoothAdapter.getBondedDevices();
-        if (bondedDevices.size() > 0) {
-            for (BluetoothDevice bluetoothDevice : bondedDevices) {
-                if (bluetoothDevice.getName().startsWith("BH")) {
-                    if(getBluetoothAddresses().contains(bluetoothDevice.getAddress())) {
-                        return bluetoothDevice.getAddress();
-                    }
-                }
-            }
-        }
-        return null;
-    }
 
     public final static int REQUEST_MAIN_COMMAND_SHIMMER=3;
     public final static int REQUEST_COMMANDS_SHIMMER=4;
@@ -837,12 +821,10 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             mService.disconnectAllDevices();
     }
 
-
     private void startAllStreaming() {
         if(mService != null)
             mService.startStreamingAllDevicesGetSensorNames(this.root, this.directoryName);
     }
-
 
     private void stopAllStreaming() {
         if(mService != null)
@@ -1660,6 +1642,20 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         }
     }
 
+    public String getBioHarnessBtDeviceAdress(BluetoothAdapter bluetoothAdapter) {
+        Set<BluetoothDevice> bondedDevices = bluetoothAdapter.getBondedDevices();
+        if (bondedDevices.size() > 0) {
+            for (BluetoothDevice bluetoothDevice : bondedDevices) {
+                if (bluetoothDevice.getName().startsWith("BH")) {
+                    if(getBluetoothAddresses().contains(bluetoothDevice.getAddress())) {
+                        return bluetoothDevice.getAddress();
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
     class BioHarnessHandler extends Handler {
         private double rrTime = 0;
 
@@ -1876,29 +1872,11 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             }
         }
     }
+
     void writeData (String[][] data, String filename, int fields, boolean footer, String footerString, int slot) {
         WriteDataTask task = new WriteDataTask();
-        task.execute(new WritingDataTaskParams(data, filename, this.root, fields, footer, footerString, slot));
-        //task.execute(new WritingDataTaskParams(data, filename, this.root, fields, footer, footerString, slot));
-    }
-
-    void pauseAllSensors() {
-        //internal sensors
-        sensorManager.unregisterListener(this);
-        locationManager.removeUpdates(locationListener);
-        stopAllStreaming();
-    }
-
-    void resumeAllSensors() {
-        //internal
-        sensorManager.registerListener(this, accelerometer, sensorDataDelay);
-        sensorManager.registerListener(this, gyroscope, sensorDataDelay);
-        sensorManager.registerListener(this, linearAccelerationSensor, sensorDataDelay);
-        //shimmer
-        startAllStreaming();
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
-        //bioharness
-        connectBioHarness();
+        task.execute(new WriteDataTaskParams(data, filename, this.root, fields, footer, footerString, slot, this));
+        //task.execute(new WriteDataTaskParams(data, filename, this.root, fields, footer, footerString, slot));
     }
 
     private void notifyBHReady() {
@@ -1948,82 +1926,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             method.invoke(device, (Object[]) null);
         } catch (Exception e) {
             e.printStackTrace();
-        }
-    }
-
-    private static class WritingDataTaskParams {
-        String filename;
-        String[][] values;
-        File root;
-        int fields;
-        boolean footer;
-        String footerString;
-        int writingSlot;
-
-        WritingDataTaskParams(String[][] values, String filename, File root, int fields, boolean footer, String footerString, int writingSlot) {
-            this.filename = filename;
-            this.values = values;
-            this.root = root;
-            this.fields = fields;
-            this.footer = footer;
-            this.footerString = footerString;
-            this.writingSlot = writingSlot;
-        }
-    }
-    private class WriteDataTask extends AsyncTask<WritingDataTaskParams, Void, Integer> {
-        @Override
-        protected Integer doInBackground(WritingDataTaskParams... params) {
-            String[][] data = params[0].values;
-            String filename = params[0].filename;
-            File root = params[0].root;
-            int fields = params[0].fields;
-            boolean footer = params[0].footer;
-            String footerString = params[0].footerString;
-            int writingSlot = params[0].writingSlot;
-
-            Log.d(TAG, "Write data in " + filename);
-            writeToFileMethod(data, filename, root, fields, footer, footerString);
-            return writingSlot;
-        }
-
-        @Override
-        protected void onPostExecute(Integer integer) {
-            //Log.v(TAG, "post execute: " + integer);
-            if(integer == 1) {
-                setWritingData(false);
-            } else {
-                setSecondWritingData(false);
-            }
-        }
-    }
-
-    private void writeToFileMethod(String[][] data, String filename, File root, int fields, boolean footer, String footerString) {
-        String[][] copies = new String[data.length][fields];
-        System.arraycopy(data, 0, copies, 0, data.length - 1);
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(root, filename), true));
-
-            for (String[] copy : copies) {
-                if (copy[0] != null) {
-                    String outputString = "";
-                    for (int k = 0; k < fields; k++) {
-                        if (fields - 1 != k) {
-                            outputString += copy[k] + ",";
-                        } else {
-                            outputString += copy[k];
-                        }
-                    }
-                    writer.write(outputString);
-                    writer.newLine();
-                }
-            }
-            if(footer) {
-                writer.write(footerString);
-            }
-            writer.flush();
-            writer.close();
-        } catch (IOException e) {
-            Log.e(TAG, "Error while writing in file", e);
         }
     }
 
