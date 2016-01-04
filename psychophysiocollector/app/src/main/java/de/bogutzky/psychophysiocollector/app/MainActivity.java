@@ -189,7 +189,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
     private boolean connected = false;
     private boolean bioHarnessConnected = false;
-    private boolean hasShimmerSensor = false;
 
     private ArrayList<String> scaleTypes;
     private ArrayList<Integer> scaleViewIds;
@@ -1668,7 +1667,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                             String btRadioID = bluetoothAddress.replace(":", "").substring(8).toUpperCase();
                             Toast.makeText(MainActivity.this, btRadioID + " " + getString(R.string.is_ready), Toast.LENGTH_LONG).show();
                             connected = true;
-                            hasShimmerSensor = true;
 
                             break;
                         case Shimmer.MSG_STATE_STREAMING:
