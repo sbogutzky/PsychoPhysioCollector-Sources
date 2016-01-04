@@ -77,6 +77,9 @@
 
     <!-- File names -->
     <string name="file_name_acceleration">acceleration.csv</string>
+    <string name="file_name_axis_acceleration">axisacceleration.csv</string> <!--TODO: RENAME-->
+    <string name="file_name_breathing">breathing.csv</string>
+    <string name="file_name_ecg">ecg.csv</string>
     <string name="file_name_linear_acceleration">linear-acceleration.csv</string>
     <string name="file_name_angular_velocity">angular-velocity.csv</string>
     <string name="file_name_gps_position">gps-position.csv</string>
@@ -111,6 +114,8 @@
     <string name="file_header_gps_altitude">"altitude"</string>
     <string name="file_header_ecg_ra_ll">"ecg.ra.ll"</string>
     <string name="file_header_ecg_la_ll">"ecg.la.ll"</string>
+    <string name="file_header_interval">"breathing.interval.s"</string>
+    <string name="file_header_voltage">"voltage"</string>
 
 
     <string name="shimmer_config_enable_sensors">Sensoren aktivieren</string>

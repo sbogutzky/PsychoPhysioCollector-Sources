@@ -130,6 +130,12 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private int bhPeakAccelerationValueCount;
     private String[][] bhRRIntervalValues;
     private int bhRRIntervalValueCount;
+    private String[][] bhAxisAccelerationValues;
+    private int bhAxisAccelerationValueCount;
+    private String[][] bhBreathingValues;
+    private int bhBreathingValueCount;
+    private String[][] bhEcgValues;
+    private int bhEcgValueCount;
 
     private String questionnaireFileName = "questionnaires/fks.json";
     private JSONObject questionnaire;
@@ -151,6 +157,9 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private Long firstbhPostureTimestamp;
     private Long firstPeakAccelerationTimestamp;
     private Long firstRRIntervalTimestamp;
+    private Long firstAxisAccelerationTimestamp;
+    private Long firstBreathingTimestamp;
+    private Long firstEcgTimestamp;
     private Long bhStartTimestamp;
 
     private DecimalFormat decimalFormat;
@@ -305,6 +314,9 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         this.firstbhPostureTimestamp = 0L;
         this.firstPeakAccelerationTimestamp = 0L;
         this.firstRRIntervalTimestamp = 0L;
+        this.firstAxisAccelerationTimestamp = 0L;
+        this.firstBreathingTimestamp = 0L;
+        this.firstEcgTimestamp = 0L;
         this.bhStartTimestamp = 0L;
     }
 
@@ -463,6 +475,9 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 writeData(bhRespirationRateValues, getString(R.string.file_name_respiration_rate), 2, true, getLoggingFooterString(), 1);
                 writeData(bhPostureValues, getString(R.string.file_name_posture), 2, true, getLoggingFooterString(), 1);
                 writeData(bhPeakAccelerationValues, getString(R.string.file_name_peak_acceleration), 2, true, getLoggingFooterString(), 1);
+                writeData(bhAxisAccelerationValues, getString(R.string.file_name_axis_acceleration), 2, true, getLoggingFooterString(), 1);
+                writeData(bhBreathingValues, getString(R.string.file_name_breathing), 2, true, getLoggingFooterString(), 1);
+                writeData(bhEcgValues, getString(R.string.file_name_ecg), 2, true, getLoggingFooterString(), 1);
             }
         }
     }
@@ -583,12 +598,18 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         bhPostureValueCount = 0;
         bhSkinTemperatureValueCount = 0;
         bhRRIntervalValueCount = 0;
+        bhAxisAccelerationValueCount = 0;
+        bhBreathingValueCount = 0;
+        bhEcgValueCount = 0;
         bhHeartRateValues = new String[DATA_ARRAY_SIZE][2];
         bhPostureValues = new String[DATA_ARRAY_SIZE][2];
         bhPeakAccelerationValues = new String[DATA_ARRAY_SIZE][2];
         bhSkinTemperatureValues = new String[DATA_ARRAY_SIZE][2];
         bhRespirationRateValues = new String[DATA_ARRAY_SIZE][2];
         bhRRIntervalValues = new String[DATA_ARRAY_SIZE][2];
+        bhAxisAccelerationValues = new String[DATA_ARRAY_SIZE][4];
+        bhBreathingValues = new String[DATA_ARRAY_SIZE][2];
+        bhEcgValues = new String[DATA_ARRAY_SIZE][2];
     }
 
     private void createBioHarnessFiles() {
@@ -656,6 +677,40 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_peak_acceleration)), true));
             String outputString = getLoggingHeaderString();
             outputString += "" + getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_peakacceleration) + "";
+            writer.write(outputString);
+            writer.newLine();
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            Log.e(TAG, "Error while writing in file", e);
+        }
+////////////////
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_axis_acceleration)), true)); //TODO: RENAME
+            String outputString = getLoggingHeaderString();
+            outputString += "" + getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_acceleration_x) + "," + getString(R.string.file_header_acceleration_y) + "," + getString(R.string.file_header_acceleration_z) + "";
+            writer.write(outputString);
+            writer.newLine();
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            Log.e(TAG, "Error while writing in file", e);
+        }
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_breathing)), true));
+            String outputString = getLoggingHeaderString();
+            outputString += "" + getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_interval) + "";
+            writer.write(outputString);
+            writer.newLine();
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            Log.e(TAG, "Error while writing in file", e);
+        }
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_ecg)), true));
+            String outputString = getLoggingHeaderString();
+            outputString += "" + getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_voltage) + "";
             writer.write(outputString);
             writer.newLine();
             writer.flush();
@@ -1858,13 +1913,86 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         break;
                     ////////////////////////////////
                     case BREATHING_MSG_ID:
-
+                        timestamp = msg.getData().getLong("Timestamp");
+                        short interval = msg.getData().getShort("Interval");
+                        if(firstBreathingTimestamp == 0L) {
+                            firstBreathingTimestamp = timestamp;
+                            bhStartTimestamp = System.currentTimeMillis() - startTimestamp;
+                        }
+                        time = bhStartTimestamp + (timestamp - firstBreathingTimestamp);
+                        bhBreathingValues[bhBreathingValueCount][0] = String.valueOf(time);
+                        bhBreathingValues[bhBreathingValueCount][1] = String.valueOf(interval);
+                        if(bhBreathingValueCount >= bhBreathingValues.length) {
+                            if(!writingData) {
+                                bhBreathingValueCount = 0;
+                                setWritingData(true);
+                                writeData(bhBreathingValues, getString(R.string.file_name_breathing), 2, false, "", 1);
+                                bhBreathingValues = new String[DATA_ARRAY_SIZE][2];
+                            } else if(!secondWritingData) {
+                                bhBreathingValueCount = 0;
+                                setSecondWritingData(true);
+                                writeData(bhBreathingValues, getString(R.string.file_name_breathing), 2, false, "", 2);
+                                bhBreathingValues = new String[DATA_ARRAY_SIZE][2];
+                            } else {
+                                bhBreathingValues = resizeArray(bhBreathingValues);
+                            }
+                        }
                         break;
                     case ECG_MSG_ID:
-
+                        timestamp = msg.getData().getLong("Timestamp");
+                        short voltage = msg.getData().getShort("Voltage");
+                        if(firstEcgTimestamp == 0L) {
+                            firstEcgTimestamp = timestamp;
+                            bhStartTimestamp = System.currentTimeMillis() - startTimestamp;
+                        }
+                        time = bhStartTimestamp + (timestamp - firstEcgTimestamp);
+                        bhEcgValues[bhEcgValueCount][0] = String.valueOf(time);
+                        bhEcgValues[bhEcgValueCount][1] = String.valueOf(voltage);
+                        if(bhEcgValueCount >= bhEcgValues.length) {
+                            if(!writingData) {
+                                bhEcgValueCount = 0;
+                                setWritingData(true);
+                                writeData(bhEcgValues, getString(R.string.file_name_ecg), 2, false, "", 1);
+                                bhEcgValues = new String[DATA_ARRAY_SIZE][2];
+                            } else if(!secondWritingData) {
+                                bhEcgValueCount = 0;
+                                setSecondWritingData(true);
+                                writeData(bhEcgValues, getString(R.string.file_name_ecg), 2, false, "", 2);
+                                bhEcgValues = new String[DATA_ARRAY_SIZE][2];
+                            } else {
+                                bhEcgValues = resizeArray(bhEcgValues);
+                            }
+                        }
                         break;
                     case ACCEL_100mg_MSG_ID:
-
+                        timestamp = msg.getData().getLong("Timestamp");
+                        double acc_x = msg.getData().getDouble("AccelerationX");
+                        double acc_y = msg.getData().getDouble("AccelerationY");
+                        double acc_z = msg.getData().getDouble("AccelerationZ");
+                        if(firstAxisAccelerationTimestamp == 0L) {
+                            firstAxisAccelerationTimestamp = timestamp;
+                            bhStartTimestamp = System.currentTimeMillis() - startTimestamp;
+                        }
+                        time = bhStartTimestamp + (timestamp - firstAxisAccelerationTimestamp);
+                        bhAxisAccelerationValues[bhAxisAccelerationValueCount][0] = String.valueOf(time);
+                        bhAxisAccelerationValues[bhAxisAccelerationValueCount][0] = String.valueOf(acc_x);
+                        bhAxisAccelerationValues[bhAxisAccelerationValueCount][0] = String.valueOf(acc_y);
+                        bhAxisAccelerationValues[bhAxisAccelerationValueCount][0] = String.valueOf(acc_z);
+                        if(bhAxisAccelerationValueCount >= bhAxisAccelerationValues.length) {
+                            if(!writingData) {
+                                bhAxisAccelerationValueCount = 0;
+                                setWritingData(true);
+                                writeData(bhAxisAccelerationValues, getString(R.string.file_name_axis_acceleration), 2, false, "", 1);
+                                bhAxisAccelerationValues = new String[DATA_ARRAY_SIZE][4];
+                            } else if(!secondWritingData) {
+                                bhAxisAccelerationValueCount = 0;
+                                setSecondWritingData(true);
+                                writeData(bhAxisAccelerationValues, getString(R.string.file_name_axis_acceleration), 2, false, "", 2);
+                                bhAxisAccelerationValues = new String[DATA_ARRAY_SIZE][4];
+                            } else {
+                                bhAxisAccelerationValues = resizeArray(bhAxisAccelerationValues);
+                            }
+                        }
                         break;
                     ////////////////////////////////
                 }
