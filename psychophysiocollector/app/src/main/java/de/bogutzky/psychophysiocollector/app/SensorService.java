@@ -13,8 +13,6 @@ import android.widget.Toast;
 
 import com.shimmerresearch.android.Shimmer;
 
-import org.apache.commons.math.stat.descriptive.DescriptiveStatistics;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,17 +23,13 @@ import java.util.Iterator;
 import zephyr.android.BioHarnessBT.BTClient;
 
 public class SensorService extends Service {
-    private static final String TAG = "MyService";
-    public Shimmer shimmerDevice1 = null;
-    private BluetoothAdapter mBluetoothAdapter = null;
+    private static final String TAG = "Service";
     private final IBinder mBinder = new LocalBinder();
     public HashMap<String, Object> mMultiShimmer = new HashMap<String, Object>(7);
-    private String[][] mActivatedSensorNamesArray = new String[7][3];
     private boolean[][] mTriggerResting = new boolean[7][3];
     private boolean[][] mTriggerHitDetected = new boolean[7][3];
     private double[][] mMaxData = new double[7][3];
-    DescriptiveStatistics mDataBuffer = new DescriptiveStatistics(5);
-    private NotificationManager mNM;
+    private NotificationManager notificationManager;
     private BTClient _bt;
 
     public boolean hasBioHarnessConnected() {
@@ -66,7 +60,7 @@ public class SensorService extends Service {
         for (double[] row : mMaxData)
             Arrays.fill(row, 0);
         Log.d(TAG, "onCreate");
-        mNM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         showNotification();
     }
 
@@ -86,7 +80,7 @@ public class SensorService extends Service {
 
     @Override
     public void onDestroy() {
-        Toast.makeText(this, "My Service Stopped", Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "Service Stopped", Toast.LENGTH_LONG).show();
         Log.d(TAG, "onDestroy");
         Collection<Object> colS = mMultiShimmer.values();
         Iterator<Object> iterator = colS.iterator();
@@ -110,15 +104,12 @@ public class SensorService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d("LocalService", "Received start id " + startId + ": " + intent);
-        // We want this service to continue running until it is explicitly
-        // stopped, so return sticky.
         return START_STICKY;
     }
 
     @Override
     public void onStart(Intent intent, int startid) {
-        Toast.makeText(this, "My Service Started", Toast.LENGTH_LONG).show();
-
+        Toast.makeText(this, "Service Started", Toast.LENGTH_LONG).show();
         Log.d(TAG, "onStart");
 
     }
@@ -143,28 +134,6 @@ public class SensorService extends Service {
         }
     }
 
-    public void onStop() {
-        Toast.makeText(this, "My Service Stopped", Toast.LENGTH_LONG).show();
-        Log.d(TAG, "onDestroy");
-        Collection<Object> colS = mMultiShimmer.values();
-        Iterator<Object> iterator = colS.iterator();
-        while (iterator.hasNext()) {
-            Shimmer stemp = (Shimmer) iterator.next();
-            stemp.stop();
-        }
-    }
-
-    public void toggleAllLEDS() {
-        Collection<Object> colS = mMultiShimmer.values();
-        Iterator<Object> iterator = colS.iterator();
-        while (iterator.hasNext()) {
-            Shimmer stemp = (Shimmer) iterator.next();
-            if (stemp.getShimmerState() == Shimmer.STATE_CONNECTED) {
-                stemp.toggleLed();
-            }
-        }
-    }
-
     public void stopStreamingAllDevices() {
         Collection<Object> colS = mMultiShimmer.values();
         Iterator<Object> iterator = colS.iterator();
@@ -177,17 +146,6 @@ public class SensorService extends Service {
         }
         if(_bt != null && bioHarnessConnectedListener != null)
             _bt.removeConnectedEventListener(bioHarnessConnectedListener);
-    }
-
-    public void startStreamingAllDevices() {
-        Collection<Object> colS = mMultiShimmer.values();
-        Iterator<Object> iterator = colS.iterator();
-        while (iterator.hasNext()) {
-            Shimmer stemp = (Shimmer) iterator.next();
-            if (stemp.getShimmerState() == Shimmer.STATE_CONNECTED) {
-                stemp.startStreaming();
-            }
-        }
     }
 
     public void startStreamingAllDevicesGetSensorNames(File root, String directoryName) {
@@ -255,51 +213,6 @@ public class SensorService extends Service {
             }
         }
     }
-
-    public void setAllSampingRate(double samplingRate) {
-        Collection<Object> colS = mMultiShimmer.values();
-        Iterator<Object> iterator = colS.iterator();
-        while (iterator.hasNext()) {
-            Shimmer stemp = (Shimmer) iterator.next();
-            if (stemp.getShimmerState() == Shimmer.STATE_CONNECTED) {
-                stemp.writeSamplingRate(samplingRate);
-            }
-        }
-    }
-
-    public void setAllAccelRange(int accelRange) {
-        Collection<Object> colS = mMultiShimmer.values();
-        Iterator<Object> iterator = colS.iterator();
-        while (iterator.hasNext()) {
-            Shimmer stemp = (Shimmer) iterator.next();
-            if (stemp.getShimmerState() == Shimmer.STATE_CONNECTED) {
-                stemp.writeAccelRange(accelRange);
-            }
-        }
-    }
-
-    public void setAllGSRRange(int gsrRange) {
-        Collection<Object> colS = mMultiShimmer.values();
-        Iterator<Object> iterator = colS.iterator();
-        while (iterator.hasNext()) {
-            Shimmer stemp = (Shimmer) iterator.next();
-            if (stemp.getShimmerState() == Shimmer.STATE_CONNECTED) {
-                stemp.writeGSRRange(gsrRange);
-            }
-        }
-    }
-
-    public void setAllEnabledSensors(int enabledSensors) {
-        Collection<Object> colS = mMultiShimmer.values();
-        Iterator<Object> iterator = colS.iterator();
-        while (iterator.hasNext()) {
-            Shimmer stemp = (Shimmer) iterator.next();
-            if (stemp.getShimmerState() == Shimmer.STATE_CONNECTED) {
-                stemp.writeEnabledSensors(enabledSensors);
-            }
-        }
-    }
-
 
     public void setEnabledSensors(int enabledSensors, String bluetoothAddress) {
         Collection<Object> colS = mMultiShimmer.values();
@@ -397,21 +310,6 @@ public class SensorService extends Service {
         return aRange;
     }
 
-    public int getShimmerState(String bluetoothAddress) {
-        Collection<Object> colS = mMultiShimmer.values();
-        Iterator<Object> iterator = colS.iterator();
-        int status = -1;
-        while (iterator.hasNext()) {
-            Shimmer stemp = (Shimmer) iterator.next();
-            if (stemp.getBluetoothAddress().equals(bluetoothAddress)) {
-                status = stemp.getShimmerState();
-                Log.d("ShimmerState", Integer.toString(status));
-            }
-        }
-        return status;
-
-    }
-
     public int getGSRRange(String bluetoothAddress) {
         Collection<Object> colS = mMultiShimmer.values();
         Iterator<Object> iterator = colS.iterator();
@@ -438,125 +336,6 @@ public class SensorService extends Service {
         return sensor;
     }
 
-    public void startStreaming(String bluetoothAddress) {
-        Collection<Object> colS = mMultiShimmer.values();
-        Iterator<Object> iterator = colS.iterator();
-        while (iterator.hasNext()) {
-            Shimmer stemp = (Shimmer) iterator.next();
-            if (stemp.getShimmerState() == Shimmer.STATE_CONNECTED && stemp.getBluetoothAddress().equals(bluetoothAddress)) {
-                stemp.startStreaming();
-                int mPosition = Integer.parseInt(stemp.getDeviceName());
-                long mEnabledSensors = stemp.getEnabledSensors();
-                if ((mEnabledSensors & Shimmer.SENSOR_ACCEL) != 0) {
-                    mActivatedSensorNamesArray[mPosition][0] = "Accelerometer X";
-                    mActivatedSensorNamesArray[mPosition][1] = "Accelerometer Y";
-                    mActivatedSensorNamesArray[mPosition][2] = "Accelerometer Z";
-                } else if ((mEnabledSensors & Shimmer.SENSOR_GYRO) != 0) {
-                    mActivatedSensorNamesArray[mPosition][0] = "Gyroscope X";
-                    mActivatedSensorNamesArray[mPosition][1] = "Gyroscope Y";
-                    mActivatedSensorNamesArray[mPosition][2] = "Gyroscope Z";
-                } else if ((mEnabledSensors & Shimmer.SENSOR_MAG) != 0) {
-                    mActivatedSensorNamesArray[mPosition][0] = "Magnetometer X";
-                    mActivatedSensorNamesArray[mPosition][1] = "Magnetometer Y";
-                    mActivatedSensorNamesArray[mPosition][2] = "Magnetometer Z";
-                } else if ((mEnabledSensors & Shimmer.SENSOR_GSR) != 0) {
-                    mActivatedSensorNamesArray[mPosition][0] = "GSR";
-                    mActivatedSensorNamesArray[mPosition][1] = "";
-                    mActivatedSensorNamesArray[mPosition][2] = "";
-                } else if ((mEnabledSensors & Shimmer.SENSOR_EMG) != 0) {
-                    mActivatedSensorNamesArray[mPosition][0] = "EMG";
-                    mActivatedSensorNamesArray[mPosition][1] = "";
-                    mActivatedSensorNamesArray[mPosition][2] = "";
-                } else if ((mEnabledSensors & Shimmer.SENSOR_ECG) != 0) {
-                    mActivatedSensorNamesArray[mPosition][0] = "ECG RA-LL";
-                    mActivatedSensorNamesArray[mPosition][1] = "ECG LA-LL";
-                    mActivatedSensorNamesArray[mPosition][2] = "";
-                } else if ((mEnabledSensors & Shimmer.SENSOR_HEART) != 0) {
-                    mActivatedSensorNamesArray[mPosition][0] = "Heart Rate";
-                    mActivatedSensorNamesArray[mPosition][1] = "";
-                    mActivatedSensorNamesArray[mPosition][2] = "";
-                } else if ((mEnabledSensors & Shimmer.SENSOR_EXP_BOARD_A0) != 0) {
-                    mActivatedSensorNamesArray[mPosition][0] = "ExpBoard A0";
-                    mActivatedSensorNamesArray[mPosition][1] = "";
-                    mActivatedSensorNamesArray[mPosition][2] = "";
-                } else if ((mEnabledSensors & Shimmer.SENSOR_EXP_BOARD_A7) != 0) {
-                    mActivatedSensorNamesArray[mPosition][0] = "ExpBoard A7";
-                    mActivatedSensorNamesArray[mPosition][1] = "";
-                    mActivatedSensorNamesArray[mPosition][2] = "";
-                }
-
-
-            }
-        }
-    }
-
-    public void stopStreaming(String bluetoothAddress) {
-        Collection<Object> colS = mMultiShimmer.values();
-        Iterator<Object> iterator = colS.iterator();
-        while (iterator.hasNext()) {
-            Shimmer stemp = (Shimmer) iterator.next();
-            if (stemp.getShimmerState() == Shimmer.STATE_CONNECTED && stemp.getBluetoothAddress().equals(bluetoothAddress)) {
-                if (stemp.getShimmerState() == Shimmer.STATE_CONNECTED) {
-                    stemp.stopStreaming();
-                }
-            }
-        }
-    }
-
-    public void disconnectShimmer(String bluetoothAddress) {
-        Collection<Object> colS = mMultiShimmer.values();
-        Iterator<Object> iterator = colS.iterator();
-        while (iterator.hasNext()) {
-            Shimmer stemp = (Shimmer) iterator.next();
-            if (stemp.getShimmerState() == Shimmer.STATE_CONNECTED && stemp.getBluetoothAddress().equals(bluetoothAddress)) {
-                stemp.stop();
-
-            }
-        }
-
-        mMultiShimmer.remove(bluetoothAddress);
-
-    }
-
-    public boolean DevicesConnected(String bluetoothAddress) {
-        boolean deviceConnected = false;
-        Collection<Object> colS = mMultiShimmer.values();
-        Iterator<Object> iterator = colS.iterator();
-        while (iterator.hasNext()) {
-            Shimmer stemp = (Shimmer) iterator.next();
-            if (stemp.getShimmerState() == Shimmer.STATE_CONNECTED && stemp.getBluetoothAddress().equals(bluetoothAddress)) {
-                deviceConnected = true;
-            }
-        }
-        return deviceConnected;
-    }
-
-    public boolean DeviceIsStreaming(String bluetoothAddress) {
-        boolean deviceStreaming = false;
-        Collection<Object> colS = mMultiShimmer.values();
-        Iterator<Object> iterator = colS.iterator();
-        while (iterator.hasNext()) {
-            Shimmer stemp = (Shimmer) iterator.next();
-            if (stemp.getStreamingStatus() == true && stemp.getBluetoothAddress().equals(bluetoothAddress)) {
-                deviceStreaming = true;
-            }
-        }
-        return deviceStreaming;
-    }
-
-    public boolean GetInstructionStatus(String bluetoothAddress) {
-        boolean instructionStatus = false;
-        Collection<Object> colS = mMultiShimmer.values();
-        Iterator<Object> iterator = colS.iterator();
-        while (iterator.hasNext()) {
-            Shimmer stemp = (Shimmer) iterator.next();
-            if (stemp.getBluetoothAddress().equals(bluetoothAddress)) {
-                instructionStatus = stemp.getInstructionStatus();
-            }
-        }
-        return instructionStatus;
-    }
-
     private void showNotification() {
         // In this sample, we'll use the same text for the ticker and the expanded notification
         CharSequence text = getString(R.string.service_running);
@@ -574,7 +353,7 @@ public class SensorService extends Service {
                 text, contentIntent);
 
         // Send the notification.
-        mNM.notify(1233, notification);
+        notificationManager.notify(1233, notification);
     }
 
 

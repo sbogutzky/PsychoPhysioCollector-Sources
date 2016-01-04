@@ -566,7 +566,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     protected void onListItemClick(ListView l, View v, int position, long id) {
         if(connected && deviceNames.get(position).contains("RN42")) {
             Object o = l.getItemAtPosition(position);
-            Intent mainCommandIntent=new Intent(MainActivity.this, MainCommandsActivity.class);
+            Intent mainCommandIntent=new Intent(MainActivity.this, ShimmerMainConfigurationActivity.class);
             mainCommandIntent.putExtra("LocalDeviceID", o.toString());
             String mac = getBluetoothAddresses().get(position);
             mainCommandIntent.putExtra("mac", mac);

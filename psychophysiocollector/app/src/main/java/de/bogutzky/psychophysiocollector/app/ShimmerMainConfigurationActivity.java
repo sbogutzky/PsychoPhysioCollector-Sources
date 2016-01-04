@@ -23,12 +23,11 @@ import java.util.Collection;
 import java.util.Iterator;
 
 
-public class MainCommandsActivity extends Activity {
+public class ShimmerMainConfigurationActivity extends Activity {
     String mCurrentDevice = null;
     String currentDeviceName;
     int mCurrentSlot = -1;
     private SensorService mService;
-    private boolean mServiceBind = false;
     private String[] commands;
     private double mSamplingRate = -1;
     private int mAccelRange = -1;
@@ -69,7 +68,7 @@ public class MainCommandsActivity extends Activity {
                     mSamplingRate = mService.getSamplingRate(mCurrentDevice);
                     mAccelRange = mService.getAccelRange(mCurrentDevice);
                     mGSRRange = mService.getGSRRange(mCurrentDevice);
-                    Intent mainCommandIntent = new Intent(MainCommandsActivity.this, CommandsSub.class);
+                    Intent mainCommandIntent = new Intent(ShimmerMainConfigurationActivity.this, ShimmerSensorConfigurationActivity.class);
                     mainCommandIntent.putExtra("BluetoothAddress", mCurrentDevice);
                     mainCommandIntent.putExtra("SamplingRate", mSamplingRate);
                     mainCommandIntent.putExtra("AccelerometerRange", mAccelRange);
@@ -77,7 +76,7 @@ public class MainCommandsActivity extends Activity {
 
                     startActivityForResult(mainCommandIntent, MainActivity.REQUEST_COMMANDS_SHIMMER);
                 } else if (position == 0) {
-                    Intent mainCommandIntent = new Intent(MainCommandsActivity.this, ConfigureActivity.class);
+                    Intent mainCommandIntent = new Intent(ShimmerMainConfigurationActivity.this, ShimmerSensorActivationActivity.class);
                     Long enabledSensors = mService.getEnabledSensors(mCurrentDevice);
                     mainCommandIntent.putExtra("enabledSensors", enabledSensors);
                     startActivityForResult(mainCommandIntent, MainActivity.REQUEST_CONFIGURE_SHIMMER);
@@ -108,7 +107,7 @@ public class MainCommandsActivity extends Activity {
                             }
                         }
                     }
-                    AlertDialog.Builder builder = new AlertDialog.Builder(MainCommandsActivity.this);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(ShimmerMainConfigurationActivity.this);
                     CharSequence[] cs = spinnerArray.toArray(new CharSequence[spinnerArray.size()]);
                     builder.setTitle(getString(R.string.select_graph_gata))
                             .setItems(cs, new DialogInterface.OnClickListener() {
@@ -159,8 +158,8 @@ public class MainCommandsActivity extends Activity {
                 break;
             case MainActivity.REQUEST_CONFIGURE_SHIMMER:
                 if (resultCode == Activity.RESULT_OK) {
-                    Log.v("TAG", "current device set sensors: " + mCurrentDevice + ", " + data.getExtras().getInt(ConfigureActivity.mDone));
-                    mService.setEnabledSensors(data.getExtras().getInt(ConfigureActivity.mDone), mCurrentDevice);
+                    Log.v("TAG", "current device set sensors: " + mCurrentDevice + ", " + data.getExtras().getInt(ShimmerSensorActivationActivity.mDone));
+                    mService.setEnabledSensors(data.getExtras().getInt(ShimmerSensorActivationActivity.mDone), mCurrentDevice);
                 }
                 break;
         }
@@ -175,7 +174,7 @@ public class MainCommandsActivity extends Activity {
     public void onResume() {
         super.onResume();
 
-        Intent intent = new Intent(MainCommandsActivity.this, MainActivity.class);
+        Intent intent = new Intent(ShimmerMainConfigurationActivity.this, MainActivity.class);
         Log.d("ShimmerH", "MCA on Resume");
     }
 
@@ -186,14 +185,12 @@ public class MainCommandsActivity extends Activity {
             SensorService.LocalBinder binder = (SensorService.LocalBinder) service;
             Log.v("TAG", "service bekommen");
             mService = binder.getService();
-            mServiceBind = true;
             mSamplingRate = mService.getSamplingRate(mCurrentDevice);
             mAccelRange = mService.getAccelRange(mCurrentDevice);
             mGSRRange = mService.getGSRRange(mCurrentDevice);
         }
 
         public void onServiceDisconnected(ComponentName arg0) {
-            mServiceBind = false;
         }
     };
 }

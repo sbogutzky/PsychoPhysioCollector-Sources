@@ -12,7 +12,7 @@ import com.shimmerresearch.android.Shimmer;
 /**
  * Created by epix on 04.08.2015.
  */
-public class ConfigureActivity extends Activity {
+public class ShimmerSensorActivationActivity extends Activity {
     // Return Intent extra
     public static String mDone = "Done";
     private int mReturnEnabledSensors = 0;
