@@ -19,6 +19,12 @@
       {
         "type": "rating",
         "stars": 7,
+        "question": "Ich fühle mich optimal beansprucht.",
+        "ratings": ["Trifft nicht zu.", "Trifft zu"]
+      },
+      {
+        "type": "rating",
+        "stars": 7,
         "question": "Meine Gedanken bzw. Aktivitäten laufen flüssig und glatt.",
         "ratings": ["Trifft nicht zu.", "Trifft zu"]
       },
@@ -70,6 +76,24 @@
         "question": "Ich bin völlig selbstvergessen.",
         "ratings": ["Trifft nicht zu.", "Trifft zu"]
       },
+      /*{
+        "type": "rating",
+        "stars": 7,
+        "question": "Es steht etwas für mich Wichtiges auf dem Spiel.",
+        "ratings": ["Trifft nicht zu.", "Trifft zu"]
+      },
+      {
+        "type": "rating",
+        "stars": 7,
+        "question": "Ich darf jetzt keine Fehler machen.",
+        "ratings": ["Trifft nicht zu.", "Trifft zu"]
+      },
+      {
+        "type": "rating",
+        "stars": 7,
+        "question": "Ich mache mir Sorgen über einen Misserfolg.",
+        "ratings": ["Trifft nicht zu.", "Trifft zu"]
+      },*/
       {
         "type": "rating",
         "stars": 9,
