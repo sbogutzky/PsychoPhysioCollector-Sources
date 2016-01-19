@@ -1,5 +1,6 @@
 package de.bogutzky.psychophysiocollector.app;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -73,7 +74,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.Random;
 import java.util.Set;
 
@@ -401,14 +401,14 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             }
             startAllStreaming();
             startTimerThread();
-            startStreamingInternalSensorData();
+            //startStreamingInternalSensorData();
         }
 
         if (id == R.id.action_stop_streaming) {
             stopLoggingDate = new Date();
             stopAllStreaming();
             stopTimerThread();
-            stopStreamingInternalSensorData();
+            //stopStreamingInternalSensorData();
             writeLeftOverData();
             startTimestamp = 0L;
             loggingEnabled = false;
@@ -451,7 +451,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     }
 
     private void writeLeftOverData() {
-        writingData = false;
+        /*writingData = false;
         secondWritingData = false;
         //internal sensor data
         writeAccelerometerValues(true,1);
@@ -478,7 +478,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 writeData(bhBreathingValues, getString(R.string.file_name_breathing), 2, true, getLoggingFooterString(), 1);
                 writeData(bhEcgValues, getString(R.string.file_name_ecg), 2, true, getLoggingFooterString(), 1);
             }
-        }
+        }*/
     }
 
     private void disconnectBioHarness() {
@@ -860,7 +860,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                         BluetoothDevice btDevice = device;
 
                         String bluetoothAddress = btDevice.getAddress();
-                        mService.connectShimmer(bluetoothAddress, Integer.toString(count), new ShimmerHandler("sensor-" + btDevice.getName().toLowerCase() + ".csv", 250, bluetoothAddress));
+                        mService.connectShimmer(bluetoothAddress, Integer.toString(count), new ShimmerHandler("imu-" + btDevice.getName().toLowerCase() + ".csv", 250));
                         count++;
                     }
                 }
@@ -1530,6 +1530,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         }
     }
 
+    @SuppressLint("HandlerLeak")
     public class ShimmerHandler extends Handler {
 
         private static final String TAG = "ShimmerHandler";
@@ -1539,10 +1540,11 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         private File root;
         private int i = 0;
         private int maxValueCount;
-        private String[][] values;
+        private Double[][] values;
+        private Double[][] values0;
+        private Double[][] values1;
         private String[] fields;
-        private String bluetoothAdress;
-        float[] dataArray;
+        //float[] dataArray;
         int enabledSensor;
 
         public void setRoot(File root) {
@@ -1571,10 +1573,12 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         }
 
         public void setFields(String[] fields) {
-            dataArray = new float[fields.length - 1];
+            //dataArray = new float[fields.length - 1];
             enabledSensor = mService.getEnabledSensorForMac(graphAdress);
             this.fields = fields;
-            this.values = new String[maxValueCount][fields.length];
+            this.values0 = new Double[maxValueCount][fields.length];
+            this.values1 = new Double[maxValueCount][fields.length];
+            this.values = values0;
         }
 
         public void setDirectoryName(String directoryName) {
@@ -1582,12 +1586,9 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             this.root = getStorageDir(this.directoryName);
         }
 
-        ShimmerHandler(String filename, int maxValueCount, String bluetoothAdress) {
+        ShimmerHandler(String filename, int maxValueCount) {
             this.filename = filename;
-
             this.maxValueCount = maxValueCount;
-
-            this.bluetoothAdress = bluetoothAdress;
         }
 
         @Override
@@ -1598,43 +1599,37 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
                     if (msg.obj instanceof ObjectCluster) {
                         ObjectCluster objectCluster = (ObjectCluster) msg.obj;
-                        int graphDataCounter = 0;
+
+                        //int graphDataCounter = 0;
                         for (int j = 0; j < fields.length; j++) {
                             Collection<FormatCluster> clusterCollection = objectCluster.mPropertyCluster.get(fields[j]);
                             if (j < fields.length) {
                                 if (!clusterCollection.isEmpty()) {
                                     FormatCluster formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
-                                    values[i][j] = Double.toString(formatCluster.mData);
-                                    if(graphShowing && graphAdress.equals(this.bluetoothAdress)) {
-                                        if(j != 0 && j != fields.length) {
-                                            dataArray[graphDataCounter] = Float.valueOf(values[i][j]);
-                                            graphDataCounter++;
-                                        }
-                                    }
+                                    this.values[i][j] = formatCluster.mData;
+
+                                    //if(graphShowing && graphAdress.equals(this.bluetoothAdress)) {
+                                        //if(j != 0 && j != fields.length) {
+                                            //dataArray[graphDataCounter] = Float.valueOf(values[i][j]);
+                                            //graphDataCounter++;
+                                        //}
+                                    //}
                                 }
                             }
                         }
 
-                        values[i][0] = decimalFormat.format(Double.valueOf(values[i][0]));
-
-
-                        if(graphShowing && graphAdress.equals(this.bluetoothAdress)) {
-                            graphView.setDataWithAdjustment(dataArray, graphAdress, "i8");
-                        }
+                        //values[i][0] = decimalFormat.format(Double.valueOf(values[i][0]));
+                        //if(graphShowing && graphAdress.equals(this.bluetoothAdress)) {
+                            //graphView.setDataWithAdjustment(dataArray, graphAdress, "i8");
+                        //}
                         i++;
-                        if(i > maxValueCount - 1) {
-                            if(!writingData) {
-                                i = 0;
-                                setWritingData(true);
-                                writeShimmerValues(false, 1);
-                                values = new String[maxValueCount][fields.length];
-                            } else if(!secondWritingData) {
-                                i = 0;
-                                setSecondWritingData(true);
-                                writeShimmerValues(false, 2);
-                                values = new String[maxValueCount][fields.length];
-                            } else {
-                                values = resizeArray(values);
+                        if(i == maxValueCount) {
+                            i = 0;
+                            writeValues(this.values);
+                            if(this.values == this.values0) {
+                                this.values = this.values1;
+                            } else  {
+                                this.values = this.values0;
                             }
                         }
                     }
@@ -1686,11 +1681,15 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             }
         }
 
-        public void writeShimmerValues(boolean footer, int slot) {
-            if(footer)
-                writeData(values,this.filename, fields.length, true, getLoggingFooterString(), slot);
-            else
-                writeData(values,this.filename, fields.length, false, "", slot);
+        public void writeValues(Double[][] values) {
+            WriteDataTask task = new WriteDataTask();
+            task.execute(new WriteDataTaskParams(values, this.filename, this.root, this.fields.length, false, ""));
+
+
+            //if(footer)
+                //writeData(values,this.filename, fields.length, true, getLoggingFooterString(), slot);
+            //else
+                //writeData(values,this.filename, fields.length, false, "", slot);
         }
     }
 
@@ -1999,8 +1998,8 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     }
 
     void writeData (String[][] data, String filename, int fields, boolean footer, String footerString, int slot) {
-        WriteDataTask task = new WriteDataTask();
-        task.execute(new WriteDataTaskParams(data, filename, this.root, fields, footer, footerString, slot, this));
+        //WriteDataTask task = new WriteDataTask();
+        //task.execute(new WriteDataTaskParams(data, filename, this.root, fields, footer, footerString, slot, this));
         //task.execute(new WriteDataTaskParams(data, filename, this.root, fields, footer, footerString, slot));
     }
 

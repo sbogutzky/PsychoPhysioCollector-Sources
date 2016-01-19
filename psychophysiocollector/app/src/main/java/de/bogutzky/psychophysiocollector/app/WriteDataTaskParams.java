@@ -7,22 +7,18 @@ import java.io.File;
  */
 public class WriteDataTaskParams {
     String filename;
-    String[][] values;
+    Double[][] values;
     File root;
-    int fields;
-    boolean footer;
-    String footerString;
-    int writingSlot;
-    MainActivity activity;
+    int numberOfFields;
+    boolean writeFooter;
+    String footer;
 
-    WriteDataTaskParams(String[][] values, String filename, File root, int fields, boolean footer, String footerString, int writingSlot, MainActivity activity) {
+    WriteDataTaskParams(Double[][] values, String filename, File root, int numberOfFields, boolean writeFooter, String footer) {
         this.filename = filename;
         this.values = values;
         this.root = root;
-        this.fields = fields;
+        this.numberOfFields = numberOfFields;
+        this.writeFooter = writeFooter;
         this.footer = footer;
-        this.footerString = footerString;
-        this.writingSlot = writingSlot;
-        this.activity = activity;
     }
 }
