@@ -140,7 +140,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private Sensor linearAccelerationSensor;
 
     private long startTimestamp;
-    private long questionnaireTimestamp;
     private long gyroscopeEventStartTimestamp;
     private long gyroscopeStartTimestamp;
     private long accelerometerEventStartTimestamp;
@@ -382,7 +381,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
         if (id == R.id.action_start_streaming) {
             startLoggingDate = new Date();
-            questionnaireTimestamp = System.currentTimeMillis();
             resetTime();
             wroteQuestionnaireHeader = false;
             loggingEnabled = true;
@@ -1150,7 +1148,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
                 }
             }
         }
-        outputString += Long.toString((showTimestamp-questionnaireTimestamp)) + "," + Long.toString((startTimestamp-questionnaireTimestamp)) + "," + Long.toString((System.currentTimeMillis()-questionnaireTimestamp)) + ",";
+        outputString += Long.toString((showTimestamp- this.startTimestamp)) + "," + Long.toString((startTimestamp- this.startTimestamp)) + "," + Long.toString((System.currentTimeMillis()- this.startTimestamp)) + ",";
         for (int i = 0; i < scaleTypes.size(); i++) {
             String value = "";
             if(scaleTypes.get(i).equals("rating")) {
