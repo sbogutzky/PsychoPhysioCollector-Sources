@@ -149,13 +149,14 @@ public class SensorService extends Service {
             _bt.removeConnectedEventListener(bioHarnessConnectedListener);
     }
 
-    public void startStreamingAllDevicesGetSensorNames(File root, String directoryName) {
+    public void startStreamingAllDevicesGetSensorNames(File root, String directoryName, long startTimestamp) {
         Collection<Object> colS = mMultiShimmer.values();
         Iterator<Object> iterator = colS.iterator();
         while (iterator.hasNext()) {
             Shimmer stemp = (Shimmer) iterator.next();
             ((ShimmerImuHandler)stemp.mHandler).setRoot(root);
             ((ShimmerImuHandler)stemp.mHandler).setDirectoryName(directoryName);
+            ((ShimmerImuHandler)stemp.mHandler).setStartTimestamp(startTimestamp);
             if (stemp.getShimmerState() == Shimmer.STATE_CONNECTED) {
                 stemp.startStreaming();
 

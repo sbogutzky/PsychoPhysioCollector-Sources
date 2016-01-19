@@ -872,7 +872,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
     private void startAllStreaming() {
         if(mService != null)
-            mService.startStreamingAllDevicesGetSensorNames(this.root, this.directoryName);
+            mService.startStreamingAllDevicesGetSensorNames(this.root, this.directoryName, this.startTimestamp);
     }
 
     private void stopAllStreaming() {

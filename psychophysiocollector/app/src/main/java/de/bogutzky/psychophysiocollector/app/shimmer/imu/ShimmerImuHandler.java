@@ -38,6 +38,9 @@ public class ShimmerImuHandler extends Handler {
     private Double[][] values1;
     private String[] fields;
     private long[] vibratorPatternConnectionLost = {0, 100, 100, 100, 100, 100, 100, 100};
+    private long startTimestamp;
+    private long timeDifference;
+    private Double imuStartTimestamp;
     private boolean isFirstDataRow = true;
     //float[] dataArray;
 
@@ -85,6 +88,10 @@ public class ShimmerImuHandler extends Handler {
         this.root = mainActivity.getStorageDir(directoryName);
     }
 
+    public void setStartTimestamp(long startTimestamp) {
+        this.startTimestamp = startTimestamp;
+    }
+
     @Override
     public void handleMessage(Message msg) {
 
@@ -112,9 +119,15 @@ public class ShimmerImuHandler extends Handler {
                         }
                     }
                     if(this.isFirstDataRow) {
-                        Log.d(TAG, "Sensor Start: " + this.values[i][0] + " ms");
+                        // Time difference between start the evaluation and here
+                        this.timeDifference = System.currentTimeMillis() - this.startTimestamp;
+                        Log.d(TAG, "Time difference: " + this.timeDifference + " ms");
+                        this.imuStartTimestamp = this.values[i][0];
+                        Log.d(TAG, "IMU start timestamp: " + this.imuStartTimestamp + " ms");
                         this.isFirstDataRow = false;
                     }
+
+                    this.values[i][0] = (this.values[i][0] - this.imuStartTimestamp) + this.timeDifference;
 
                     //values[i][0] = decimalFormat.format(Double.valueOf(values[i][0]));
                     //if(graphShowing && graphAdress.equals(this.bluetoothAdress)) {
