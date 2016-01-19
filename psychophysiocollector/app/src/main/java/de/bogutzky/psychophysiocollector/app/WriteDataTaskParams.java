@@ -13,7 +13,7 @@ public class WriteDataTaskParams {
     boolean writeFooter;
     String footer;
 
-    WriteDataTaskParams(Double[][] values, String filename, File root, int numberOfFields, boolean writeFooter, String footer) {
+    public WriteDataTaskParams(Double[][] values, String filename, File root, int numberOfFields, boolean writeFooter, String footer) {
         this.filename = filename;
         this.values = values;
         this.root = root;

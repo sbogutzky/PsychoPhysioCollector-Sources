@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import de.bogutzky.psychophysiocollector.app.shimmer.imu.ShimmerImuHandler;
 import zephyr.android.BioHarnessBT.BTClient;
 
 public class SensorService extends Service {
@@ -124,7 +125,7 @@ public class SensorService extends Service {
         }
     }
 
-    public void connectShimmer(String bluetoothAddress, String selectedDevice, MainActivity.ShimmerHandler handler) {
+    public void connectShimmer(String bluetoothAddress, String selectedDevice, ShimmerImuHandler handler) {
         Log.d("Shimmer", "net Connection");
         Shimmer shimmerDevice = new Shimmer(this, handler, selectedDevice, false);
         mMultiShimmer.remove(bluetoothAddress);
@@ -153,14 +154,14 @@ public class SensorService extends Service {
         Iterator<Object> iterator = colS.iterator();
         while (iterator.hasNext()) {
             Shimmer stemp = (Shimmer) iterator.next();
-            ((MainActivity.ShimmerHandler)stemp.mHandler).setRoot(root);
-            ((MainActivity.ShimmerHandler)stemp.mHandler).setDirectoryName(directoryName);
+            ((ShimmerImuHandler)stemp.mHandler).setRoot(root);
+            ((ShimmerImuHandler)stemp.mHandler).setDirectoryName(directoryName);
             if (stemp.getShimmerState() == Shimmer.STATE_CONNECTED) {
                 stemp.startStreaming();
-                int mPosition = Integer.parseInt(stemp.getDeviceName());
+
                 long mEnabledSensors = stemp.getEnabledSensors();
-                ArrayList<String> fields = new ArrayList<String>();
-                ArrayList<String> header = new ArrayList<String>();
+                ArrayList<String> fields = new ArrayList<>();
+                ArrayList<String> header = new ArrayList<>();
                 fields.add("Timestamp");
                 header.add(getApplicationContext().getString(R.string.file_header_timestamp));
                 if ((mEnabledSensors & Shimmer.SENSOR_ACCEL) != 0) {
@@ -207,9 +208,9 @@ public class SensorService extends Service {
                 }
 
                 String[] handlerFields = fields.toArray(new String[fields.size()]);
-                ((MainActivity.ShimmerHandler) stemp.mHandler).setFields(handlerFields);
+                ((ShimmerImuHandler) stemp.mHandler).setFields(handlerFields);
                 String[] handlerHeaders = header.toArray(new String[header.size()]);
-                ((MainActivity.ShimmerHandler) stemp.mHandler).setHeader(handlerHeaders);
+                ((ShimmerImuHandler) stemp.mHandler).setHeader(handlerHeaders);
             }
         }
     }
