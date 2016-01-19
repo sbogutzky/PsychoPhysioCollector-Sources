@@ -1480,7 +1480,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         @Override
         public void onLocationChanged(Location location) {
             if (loggingEnabled) {
-                double time = (location.getTime() - startTimestamp) / 1000.0;
+                double time = location.getTime() - startTimestamp;
                 values[i][0] = Double.toString(time);
                 values[i][1] = Float.toString((float) location.getLatitude());
                 values[i][2] = Float.toString((float) location.getLongitude());
