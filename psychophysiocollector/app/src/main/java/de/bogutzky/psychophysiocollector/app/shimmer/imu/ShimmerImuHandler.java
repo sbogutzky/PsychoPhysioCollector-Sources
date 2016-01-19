@@ -26,8 +26,8 @@ import de.bogutzky.psychophysiocollector.app.WriteDataTaskParams;
 @SuppressLint("HandlerLeak")
 public class ShimmerImuHandler extends Handler {
 
-    private static final String TAG = "ShimmerHandler";
-    Vibrator vibrator;
+    private static final String TAG = "ShimmerImuHandler";
+    private Vibrator vibrator;
     private MainActivity mainActivity;
     private String filename;
     private File root;
@@ -38,8 +38,8 @@ public class ShimmerImuHandler extends Handler {
     private Double[][] values1;
     private String[] fields;
     private long[] vibratorPatternConnectionLost = {0, 100, 100, 100, 100, 100, 100, 100};
+    private boolean isFirstDataRow = true;
     //float[] dataArray;
-    //int enabledSensor;
 
     public ShimmerImuHandler(MainActivity mainActivity, String filename, int maxValueCount) {
         this.mainActivity = mainActivity;
@@ -75,7 +75,6 @@ public class ShimmerImuHandler extends Handler {
 
     public void setFields(String[] fields) {
         //dataArray = new float[fields.length - 1];
-        // enabledSensor = mService.getEnabledSensorForMac(graphAdress);
         this.fields = fields;
         this.values0 = new Double[maxValueCount][fields.length];
         this.values1 = new Double[maxValueCount][fields.length];
@@ -112,6 +111,10 @@ public class ShimmerImuHandler extends Handler {
                             }
                         }
                     }
+                    if(this.isFirstDataRow) {
+                        Log.d(TAG, "Sensor Start: " + this.values[i][0] + " ms");
+                        this.isFirstDataRow = false;
+                    }
 
                     //values[i][0] = decimalFormat.format(Double.valueOf(values[i][0]));
                     //if(graphShowing && graphAdress.equals(this.bluetoothAdress)) {
@@ -130,12 +133,14 @@ public class ShimmerImuHandler extends Handler {
                 }
 
                 break;
+
             case Shimmer.MESSAGE_TOAST:
                 Log.d(TAG, msg.getData().getString(Shimmer.TOAST));
                 if ("Device connection was lost".equals(msg.getData().getString(Shimmer.TOAST))) {
                     this.vibrator.vibrate(vibratorPatternConnectionLost, -1);
                 }
                 break;
+
             case Shimmer.MESSAGE_STATE_CHANGE:
                 String bluetoothAddress = "None";
                 if ((msg.obj instanceof ObjectCluster)) {
@@ -156,20 +161,20 @@ public class ShimmerImuHandler extends Handler {
                         Log.d(TAG, "Fully initialized: " + bluetoothAddress);
                         String btRadioID = bluetoothAddress.replace(":", "").substring(8).toUpperCase();
                         Toast.makeText(mainActivity, btRadioID + " " + mainActivity.getString(R.string.is_ready), Toast.LENGTH_LONG).show();
-                        //connected = true;
-
                         break;
                     case Shimmer.MSG_STATE_STREAMING:
                         Log.d(TAG, "Streaming: " + bluetoothAddress);
                         break;
                     case Shimmer.MSG_STATE_STOP_STREAMING:
                         Log.d(TAG, "Stop streaming: " + bluetoothAddress);
+                        this.isFirstDataRow = true;
                         break;
                     case Shimmer.MESSAGE_STOP_STREAMING_COMPLETE:
                         Log.d(TAG, "Stop streaming complete:" + bluetoothAddress);
                         break;
                 }
                 break;
+
             case Shimmer.MESSAGE_PACKET_LOSS_DETECTED:
                 Log.d(TAG, "Packet loss detected");
                 break;
