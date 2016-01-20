@@ -17,32 +17,32 @@ public class WriteDataTask extends AsyncTask<WriteDataTaskParams, Void, Void> {
 
     @Override
     protected Void doInBackground(WriteDataTaskParams... params) {
-        Double[][] values = params[0].values;
-        String filename = params[0].filename;
         File root = params[0].root;
-        int numberOfFields = params[0].numberOfFields;
+        String filename = params[0].filename;
+        Double[][] data = params[0].data;
+        int numberOfCols = params[0].numberOfCols;
+        int numberOfRows = params[0].numberOfRows;
         String batchComments = params[0].batchComments;
 
-        writeToFile(values, filename, root, numberOfFields, batchComments);
+        writeToFile(root, filename, data, numberOfCols, numberOfRows, batchComments);
 
         return null;
     }
 
-    private void writeToFile(Double[][] values, String filename, File root, int numberOfFields, String batchComments) {
-
-        Log.d(TAG, "Write data in " + filename);
+    private void writeToFile(File root, String filename, Double[][] data, int numberOfCols, int numberOfRows, String batchComments) {
 
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(new File(root, filename), true));
 
-            for (Double[] value : values) {
-                if (value[0] != null) {
+            for (int i = 0; i < numberOfRows; i++) {
+                Double[] row = data[i];
+                if (row[0] != null) {
                     String outputString = "";
-                    for (int k = 0; k < numberOfFields; k++) {
-                        if (numberOfFields - 1 != k) {
-                            outputString += Double.toString(value[k]) + ",";
+                    for (int j = 0; j < numberOfCols; j++) {
+                        if (numberOfCols - 1 != j) {
+                            outputString += Double.toString(row[j]) + ",";
                         } else {
-                            outputString += Double.toString(value[k]);
+                            outputString += Double.toString(row[j]);
                         }
                     }
                     writer.write(outputString);
@@ -56,6 +56,8 @@ public class WriteDataTask extends AsyncTask<WriteDataTaskParams, Void, Void> {
             }
             writer.flush();
             writer.close();
+
+            Log.d(TAG, "Wrote data in " + filename);
         } catch (IOException e) {
             Log.e(TAG, "Error while writing in file", e);
         }

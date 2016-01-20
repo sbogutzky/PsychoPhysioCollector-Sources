@@ -6,6 +6,7 @@ public interface ShimmerImuHandlerInterface {
 
     void connectionResetted();
     String getHeaderComments();
+    String getFooterComments();
     File getStorageDirectory(String directoryName);
 
 }

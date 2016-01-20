@@ -6,17 +6,19 @@ import java.io.File;
  * Created by on 28.12.2015.
  */
 public class WriteDataTaskParams {
-    String filename;
-    Double[][] values;
     File root;
-    int numberOfFields;
+    String filename;
+    Double[][] data;
+    int numberOfCols;
+    int numberOfRows;
     String batchComments;
 
-    public WriteDataTaskParams(Double[][] values, String filename, File root, int numberOfFields, String batchComments) {
-        this.filename = filename;
-        this.values = values;
+    public WriteDataTaskParams(File root, String filename, Double[][] data, int numberOfCols, int numberOfRows, String batchComments) {
         this.root = root;
-        this.numberOfFields = numberOfFields;
+        this.filename = filename;
+        this.data = data;
+        this.numberOfCols = numberOfCols;
+        this.numberOfRows = numberOfRows;
         this.batchComments = batchComments;
     }
 }

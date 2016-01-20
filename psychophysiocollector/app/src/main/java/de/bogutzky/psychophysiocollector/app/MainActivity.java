@@ -62,7 +62,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Method;
-import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.SimpleDateFormat;
@@ -142,6 +141,7 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
     private Sensor linearAccelerationSensor;
 
     private long startTimestamp;
+    private long stopTimestamp;
     private long gyroscopeEventStartTimestamp;
     private long gyroscopeStartTimestamp;
     private long accelerometerEventStartTimestamp;
@@ -196,8 +196,6 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
     private GraphView graphView;
     private boolean graphShowing = false;
     private String graphAdress = "";
-
-    private Date stopLoggingDate = null;
 
     private int sensorDataDelay = 20000; // ca. 50 Hz
     private boolean startedStreaming = false;
@@ -403,7 +401,7 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
         }
 
         if (id == R.id.action_stop_streaming) {
-            stopLoggingDate = new Date();
+            this.stopTimestamp = System.currentTimeMillis();
             stopAllStreaming();
             stopTimerThread();
             //stopStreamingInternalSensorData();
@@ -430,7 +428,7 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
             int shimmerCount = 0;
             int bhCount = 0;
             if(mService != null) {
-                shimmerCount = mService.mMultiShimmer.values().size();
+                shimmerCount = mService.shimmerImuMap.values().size();
                 if(mService.hasBioHarnessConnected())
                     bhCount = 1;
             }
@@ -456,26 +454,19 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
         writeLinearAccelerationValues(true,1);
         ((GPSListener)locationListener).writeGpsValues(true,1);
 
-        //all shimmer data
         if(mService != null) {
-            Collection<Object> colS = mService.mMultiShimmer.values();
-            Iterator<Object> iterator = colS.iterator();
-            while (iterator.hasNext()) {
-                Shimmer stemp = (Shimmer) iterator.next();
-                ((ShimmerHandler)stemp.mHandler).writeShimmerValues(true, 1);
-            }
-
             if(bioHarnessConnected) {
                 //bh data
-                writeData(bhRRIntervalValues, getString(R.string.file_name_rr_interval), 2, true, getLoggingFooterString(), 1);
-                writeData(bhRespirationRateValues, getString(R.string.file_name_respiration_rate), 2, true, getLoggingFooterString(), 1);
-                writeData(bhPostureValues, getString(R.string.file_name_posture), 2, true, getLoggingFooterString(), 1);
-                writeData(bhPeakAccelerationValues, getString(R.string.file_name_peak_acceleration), 2, true, getLoggingFooterString(), 1);
-                writeData(bhAxisAccelerationValues, getString(R.string.file_name_axis_acceleration), 2, true, getLoggingFooterString(), 1);
-                writeData(bhBreathingValues, getString(R.string.file_name_breathing), 2, true, getLoggingFooterString(), 1);
-                writeData(bhEcgValues, getString(R.string.file_name_ecg), 2, true, getLoggingFooterString(), 1);
+                writeData(bhRRIntervalValues, getString(R.string.file_name_rr_interval), 2, true, getFooterComments(), 1);
+                writeData(bhRespirationRateValues, getString(R.string.file_name_respiration_rate), 2, true, getFooterComments(), 1);
+                writeData(bhPostureValues, getString(R.string.file_name_posture), 2, true, getFooterComments(), 1);
+                writeData(bhPeakAccelerationValues, getString(R.string.file_name_peak_acceleration), 2, true, getFooterComments(), 1);
+                writeData(bhAxisAccelerationValues, getString(R.string.file_name_axis_acceleration), 2, true, getFooterComments(), 1);
+                writeData(bhBreathingValues, getString(R.string.file_name_breathing), 2, true, getFooterComments(), 1);
+                writeData(bhEcgValues, getString(R.string.file_name_ecg), 2, true, getFooterComments(), 1);
             }
-        }*/
+        }
+        */
     }
 
     private void disconnectBioHarness() {
@@ -507,17 +498,12 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
     }
 
     public String getHeaderComments() {
-        String headerComments = "";
-        DateFormat dateFormat = new SimpleDateFormat();
-        headerComments += "# StartTime: " + getDate(this.startTimestamp, "yyyy/MM/dd HH:mm:ss") + "\n";
-        return headerComments;
+        return "# StartTime: " + getDate(this.startTimestamp, "yyyy/MM/dd HH:mm:ss") + "\n";
+
     }
 
-    private String getLoggingFooterString() {
-        String outputString = "";
-        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-        outputString += "# StopTime: " + dateFormat.format(stopLoggingDate) + "\n";
-        return outputString;
+    public String getFooterComments() {
+        return "# StopTime: " + getDate(this.stopTimestamp, "yyyy/MM/dd HH:mm:ss");
     }
 
     private void showSettings() {
@@ -1207,7 +1193,7 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
             Log.e(TAG, "Error while writing in file", e);
         }
         if(!loggingEnabled) {
-            String footer = getLoggingFooterString();
+            String footer = getFooterComments();
             writeFoooter(footer, getString(R.string.file_name_self_report));
         }
     }
@@ -1396,21 +1382,21 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
 
     private void writeLinearAccelerationValues(boolean footer, int slot) {
         if(footer)
-            writeData(linearAccelerationValues, getString(R.string.file_name_linear_acceleration), 4, true, getLoggingFooterString(), slot);
+            writeData(linearAccelerationValues, getString(R.string.file_name_linear_acceleration), 4, true, getFooterComments(), slot);
         else
             writeData(linearAccelerationValues, getString(R.string.file_name_linear_acceleration), 4, false, "", slot);
     }
 
     private void writeGyroscopeValues(boolean footer, int slot) {
         if(footer)
-            writeData(gyroscopeValues, getString(R.string.file_name_angular_velocity), 4, true, getLoggingFooterString(), slot);
+            writeData(gyroscopeValues, getString(R.string.file_name_angular_velocity), 4, true, getFooterComments(), slot);
         else
             writeData(gyroscopeValues, getString(R.string.file_name_angular_velocity), 4, false, "", slot);
     }
 
     private void writeAccelerometerValues(boolean footer, int slot) {
         if(footer)
-            writeData(accelerometerValues, getString(R.string.file_name_acceleration), 4, true, getLoggingFooterString(), slot);
+            writeData(accelerometerValues, getString(R.string.file_name_acceleration), 4, true, getFooterComments(), slot);
         else
             writeData(accelerometerValues, getString(R.string.file_name_acceleration), 4, false, "", slot);
     }
@@ -1532,7 +1518,7 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
 
         public void writeGpsValues(boolean footer, int slot) {
             if(footer)
-                writeData(values,this.filename,4, true, getLoggingFooterString(), slot);
+                writeData(values,this.filename,4, true, getFooterComments(), slot);
             else
                 writeData(values,this.filename,4, false, "", slot);
         }

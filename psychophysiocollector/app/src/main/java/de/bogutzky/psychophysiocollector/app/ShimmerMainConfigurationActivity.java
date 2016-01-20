@@ -82,7 +82,7 @@ public class ShimmerMainConfigurationActivity extends Activity {
                     startActivityForResult(mainCommandIntent, MainActivity.REQUEST_CONFIGURE_SHIMMER);
                 } else if (position == 2) {
                     ArrayList<String> spinnerArray = new ArrayList<String>();
-                    Collection<Object> colS = mService.mMultiShimmer.values();
+                    Collection<Object> colS = mService.shimmerImuMap.values();
                     Iterator<Object> iterator = colS.iterator();
                     while (iterator.hasNext()) {
                         Shimmer stemp = (Shimmer) iterator.next();

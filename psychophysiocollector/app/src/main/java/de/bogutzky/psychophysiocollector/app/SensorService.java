@@ -26,7 +26,7 @@ import zephyr.android.BioHarnessBT.BTClient;
 public class SensorService extends Service {
     private static final String TAG = "Service";
     private final IBinder mBinder = new LocalBinder();
-    public HashMap<String, Object> mMultiShimmer = new HashMap<String, Object>(7);
+    public HashMap<String, Object> shimmerImuMap = new HashMap<String, Object>(7);
     private boolean[][] mTriggerResting = new boolean[7][3];
     private boolean[][] mTriggerHitDetected = new boolean[7][3];
     private double[][] mMaxData = new double[7][3];
@@ -83,7 +83,7 @@ public class SensorService extends Service {
     public void onDestroy() {
         Toast.makeText(this, "Service Stopped", Toast.LENGTH_LONG).show();
         Log.d(TAG, "onDestroy");
-        Collection<Object> colS = mMultiShimmer.values();
+        Collection<Object> colS = shimmerImuMap.values();
         Iterator<Object> iterator = colS.iterator();
         while (iterator.hasNext()) {
             Shimmer stemp = (Shimmer) iterator.next();
@@ -93,13 +93,13 @@ public class SensorService extends Service {
     }
 
     public void disconnectAllDevices() {
-        Collection<Object> colS = mMultiShimmer.values();
+        Collection<Object> colS = shimmerImuMap.values();
         Iterator<Object> iterator = colS.iterator();
         while (iterator.hasNext()) {
             Shimmer stemp = (Shimmer) iterator.next();
             stemp.stop();
         }
-        mMultiShimmer.clear();
+        shimmerImuMap.clear();
     }
 
     @Override
@@ -128,15 +128,15 @@ public class SensorService extends Service {
     public void connectShimmer(String bluetoothAddress, String selectedDevice, ShimmerImuHandler handler) {
         Log.d("Shimmer", "net Connection");
         Shimmer shimmerDevice = new Shimmer(this, handler, selectedDevice, false);
-        mMultiShimmer.remove(bluetoothAddress);
-        if (mMultiShimmer.get(bluetoothAddress) == null) {
-            mMultiShimmer.put(bluetoothAddress, shimmerDevice);
-            ((Shimmer) mMultiShimmer.get(bluetoothAddress)).connect(bluetoothAddress, "default");
+        shimmerImuMap.remove(bluetoothAddress);
+        if (shimmerImuMap.get(bluetoothAddress) == null) {
+            shimmerImuMap.put(bluetoothAddress, shimmerDevice);
+            ((Shimmer) shimmerImuMap.get(bluetoothAddress)).connect(bluetoothAddress, "default");
         }
     }
 
     public void stopStreamingAllDevices() {
-        Collection<Object> colS = mMultiShimmer.values();
+        Collection<Object> colS = shimmerImuMap.values();
         Iterator<Object> iterator = colS.iterator();
         while (iterator.hasNext()) {
             Shimmer stemp = (Shimmer) iterator.next();
@@ -150,7 +150,7 @@ public class SensorService extends Service {
     }
 
     public void startStreamingAllDevicesGetSensorNames(File root, String directoryName, long startTimestamp) {
-        Collection<Object> colS = mMultiShimmer.values();
+        Collection<Object> colS = shimmerImuMap.values();
         Iterator<Object> iterator = colS.iterator();
         while (iterator.hasNext()) {
             Shimmer stemp = (Shimmer) iterator.next();
@@ -211,13 +211,13 @@ public class SensorService extends Service {
                 String[] handlerFields = fields.toArray(new String[fields.size()]);
                 ((ShimmerImuHandler) stemp.mHandler).setFields(handlerFields);
                 String[] handlerHeaders = header.toArray(new String[header.size()]);
-                ((ShimmerImuHandler) stemp.mHandler).setHeader(handlerHeaders);
+                ((ShimmerImuHandler) stemp.mHandler).writeHeader(handlerHeaders);
             }
         }
     }
 
     public void setEnabledSensors(int enabledSensors, String bluetoothAddress) {
-        Collection<Object> colS = mMultiShimmer.values();
+        Collection<Object> colS = shimmerImuMap.values();
         Iterator<Object> iterator = colS.iterator();
         while (iterator.hasNext()) {
             Shimmer stemp = (Shimmer) iterator.next();
@@ -228,7 +228,7 @@ public class SensorService extends Service {
     }
 
     public void toggleLED(String bluetoothAddress) {
-        Collection<Object> colS = mMultiShimmer.values();
+        Collection<Object> colS = shimmerImuMap.values();
         Iterator<Object> iterator = colS.iterator();
         while (iterator.hasNext()) {
             Shimmer stemp = (Shimmer) iterator.next();
@@ -239,7 +239,7 @@ public class SensorService extends Service {
     }
 
     public long getEnabledSensors(String bluetoothAddress) {
-        Collection<Object> colS = mMultiShimmer.values();
+        Collection<Object> colS = shimmerImuMap.values();
         Iterator<Object> iterator = colS.iterator();
         long enabledSensors = 0;
         while (iterator.hasNext()) {
@@ -253,7 +253,7 @@ public class SensorService extends Service {
 
 
     public void writeSamplingRate(String bluetoothAddress, double samplingRate) {
-        Collection<Object> colS = mMultiShimmer.values();
+        Collection<Object> colS = shimmerImuMap.values();
         Iterator<Object> iterator = colS.iterator();
         while (iterator.hasNext()) {
             Shimmer stemp = (Shimmer) iterator.next();
@@ -264,7 +264,7 @@ public class SensorService extends Service {
     }
 
     public void writeAccelRange(String bluetoothAddress, int accelRange) {
-        Collection<Object> colS = mMultiShimmer.values();
+        Collection<Object> colS = shimmerImuMap.values();
         Iterator<Object> iterator = colS.iterator();
         while (iterator.hasNext()) {
             Shimmer stemp = (Shimmer) iterator.next();
@@ -275,7 +275,7 @@ public class SensorService extends Service {
     }
 
     public void writeGSRRange(String bluetoothAddress, int gsrRange) {
-        Collection<Object> colS = mMultiShimmer.values();
+        Collection<Object> colS = shimmerImuMap.values();
         Iterator<Object> iterator = colS.iterator();
         while (iterator.hasNext()) {
             Shimmer stemp = (Shimmer) iterator.next();
@@ -287,7 +287,7 @@ public class SensorService extends Service {
 
 
     public double getSamplingRate(String bluetoothAddress) {
-        Collection<Object> colS = mMultiShimmer.values();
+        Collection<Object> colS = shimmerImuMap.values();
         Iterator<Object> iterator = colS.iterator();
         double SRate = -1;
         while (iterator.hasNext()) {
@@ -300,7 +300,7 @@ public class SensorService extends Service {
     }
 
     public int getAccelRange(String bluetoothAddress) {
-        Collection<Object> colS = mMultiShimmer.values();
+        Collection<Object> colS = shimmerImuMap.values();
         Iterator<Object> iterator = colS.iterator();
         int aRange = -1;
         while (iterator.hasNext()) {
@@ -313,7 +313,7 @@ public class SensorService extends Service {
     }
 
     public int getGSRRange(String bluetoothAddress) {
-        Collection<Object> colS = mMultiShimmer.values();
+        Collection<Object> colS = shimmerImuMap.values();
         Iterator<Object> iterator = colS.iterator();
         int gRange = -1;
         while (iterator.hasNext()) {
@@ -326,7 +326,7 @@ public class SensorService extends Service {
     }
 
     public int getEnabledSensorForMac(String adress) {
-        Collection<Object> colS = mMultiShimmer.values();
+        Collection<Object> colS = shimmerImuMap.values();
         Iterator<Object> iterator = colS.iterator();
         int sensor = 0;
         while (iterator.hasNext()) {

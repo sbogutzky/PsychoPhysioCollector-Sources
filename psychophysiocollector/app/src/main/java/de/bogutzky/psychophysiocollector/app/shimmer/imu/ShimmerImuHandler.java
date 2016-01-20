@@ -28,15 +28,15 @@ import de.bogutzky.psychophysiocollector.app.WriteDataTaskParams;
 public class ShimmerImuHandler extends Handler {
 
     private static final String TAG = "ShimmerImuHandler";
-    private Vibrator vibrator;
     private Activity activity;
-    private String filename;
     private File root;
-    private int i = 0;
-    private int maxValueCount;
-    private Double[][] values;
-    private Double[][] values0;
-    private Double[][] values1;
+    private String filename;
+    private Vibrator vibrator;
+    private int batchRowCount = 0;
+    private int maxBatchCount;
+    private Double[][] buffer;
+    private Double[][] buffer0;
+    private Double[][] buffer1;
     private String[] fields;
     private long[] vibratorPatternConnectionLost = {0, 100, 100, 100, 100, 100, 100, 100};
     private long startTimestamp;
@@ -45,29 +45,29 @@ public class ShimmerImuHandler extends Handler {
     private boolean isFirstDataRow = true;
     //float[] dataArray;
 
-    public ShimmerImuHandler(MainActivity activity, String filename, int maxValueCount) {
+    public ShimmerImuHandler(MainActivity activity, String filename, int maxBatchCount) {
         this.activity = activity;
-        this.vibrator = (Vibrator) activity.getSystemService(Context.VIBRATOR_SERVICE);
         this.filename = filename;
-        this.maxValueCount = maxValueCount;
+        this.vibrator = (Vibrator) activity.getSystemService(Context.VIBRATOR_SERVICE);
+        this.maxBatchCount = maxBatchCount;
     }
 
     public void setRoot(File root) {
         this.root = root;
     }
 
-    public void setHeader(String[] header) {
+    public void writeHeader(String[] header) {
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, this.filename), true));
             String outputString = "";
             if(activity instanceof ShimmerImuHandlerInterface) {
                 outputString += ((ShimmerImuHandlerInterface) activity).getHeaderComments();
             }
-            for (int k = 0; k < header.length; k++) {
-                if (header.length - 1 != k) {
-                    outputString += header[k] + ",";
+            for (int i = 0; i < header.length; i++) {
+                if (header.length - 1 != i) {
+                    outputString += header[i] + ",";
                 } else {
-                    outputString += header[k] + "";
+                    outputString += header[i] + "";
                 }
             }
             writer.write(outputString);
@@ -82,9 +82,9 @@ public class ShimmerImuHandler extends Handler {
     public void setFields(String[] fields) {
         //dataArray = new float[fields.length - 1];
         this.fields = fields;
-        this.values0 = new Double[maxValueCount][fields.length];
-        this.values1 = new Double[maxValueCount][fields.length];
-        this.values = values0;
+        this.buffer0 = new Double[maxBatchCount][fields.length];
+        this.buffer1 = new Double[maxBatchCount][fields.length];
+        this.buffer = buffer0;
     }
 
     public void setDirectoryName(String directoryName) {
@@ -109,16 +109,16 @@ public class ShimmerImuHandler extends Handler {
                     ObjectCluster objectCluster = (ObjectCluster) msg.obj;
 
                     //int graphDataCounter = 0;
-                    for (int j = 0; j < fields.length; j++) {
-                        Collection<FormatCluster> clusterCollection = objectCluster.mPropertyCluster.get(fields[j]);
-                        if (j < fields.length) {
+                    for (int i = 0; i < fields.length; i++) {
+                        Collection<FormatCluster> clusterCollection = objectCluster.mPropertyCluster.get(fields[i]);
+                        if (i < fields.length) {
                             if (!clusterCollection.isEmpty()) {
                                 FormatCluster formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
-                                this.values[i][j] = formatCluster.mData;
+                                this.buffer[batchRowCount][i] = formatCluster.mData;
 
                                 //if(graphShowing && graphAdress.equals(this.bluetoothAdress)) {
                                 //if(j != 0 && j != fields.length) {
-                                //dataArray[graphDataCounter] = Float.valueOf(values[i][j]);
+                                //dataArray[graphDataCounter] = Float.valueOf(buffer[batchRowCount][j]);
                                 //graphDataCounter++;
                                 //}
                                 //}
@@ -129,25 +129,25 @@ public class ShimmerImuHandler extends Handler {
                         // Time difference between start the evaluation and here
                         this.timeDifference = System.currentTimeMillis() - this.startTimestamp;
                         Log.d(TAG, "Time difference: " + this.timeDifference + " ms");
-                        this.imuStartTimestamp = this.values[i][0];
+                        this.imuStartTimestamp = this.buffer[batchRowCount][0];
                         Log.d(TAG, "IMU start timestamp: " + this.imuStartTimestamp + " ms");
                         this.isFirstDataRow = false;
                     }
 
-                    this.values[i][0] = (this.values[i][0] - this.imuStartTimestamp) + this.timeDifference;
+                    this.buffer[batchRowCount][0] = (this.buffer[batchRowCount][0] - this.imuStartTimestamp) + this.timeDifference;
 
-                    //values[i][0] = decimalFormat.format(Double.valueOf(values[i][0]));
+                    //buffer[batchRowCount][0] = decimalFormat.format(Double.valueOf(buffer[batchRowCount][0]));
                     //if(graphShowing && graphAdress.equals(this.bluetoothAdress)) {
                     //graphView.setDataWithAdjustment(dataArray, graphAdress, "i8");
                     //}
-                    i++;
-                    if (i == maxValueCount) {
-                        i = 0;
-                        writeValues(this.values, null);
-                        if (this.values == this.values0) {
-                            this.values = this.values1;
+                    batchRowCount++;
+                    if (batchRowCount == maxBatchCount) {
+                        writeValues(null); // "# BatchRowCount: " + batchRowCount
+                        batchRowCount = 0;
+                        if (this.buffer == this.buffer0) {
+                            this.buffer = this.buffer1;
                         } else {
-                            this.values = this.values0;
+                            this.buffer = this.buffer0;
                         }
                     }
                 }
@@ -190,6 +190,11 @@ public class ShimmerImuHandler extends Handler {
                         break;
                     case Shimmer.MSG_STATE_STOP_STREAMING:
                         Log.d(TAG, "Stop streaming: " + bluetoothAddress);
+                        String footerComments = null;
+                        if(activity instanceof ShimmerImuHandlerInterface) {
+                            footerComments = ((ShimmerImuHandlerInterface) activity).getFooterComments();
+                        }
+                        writeValues(footerComments);
                         this.isFirstDataRow = true;
                         break;
                     case Shimmer.MESSAGE_STOP_STREAMING_COMPLETE:
@@ -204,7 +209,7 @@ public class ShimmerImuHandler extends Handler {
         }
     }
 
-    public void writeValues(Double[][] values, String batchComments) {
-        new WriteDataTask().execute(new WriteDataTaskParams(values, this.filename, this.root, this.fields.length, batchComments));
+    private void writeValues(String batchComments) {
+        new WriteDataTask().execute(new WriteDataTaskParams(this.root, this.filename, this.buffer, this.fields.length, this.batchRowCount, batchComments));
     }
 }
