@@ -67,13 +67,15 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Random;
 import java.util.Set;
 
 import de.bogutzky.psychophysiocollector.app.shimmer.imu.ShimmerImuHandler;
+import de.bogutzky.psychophysiocollector.app.shimmer.imu.ShimmerImuHandlerInterface;
 
-public class MainActivity extends ListActivity implements SensorEventListener {
+public class MainActivity extends ListActivity implements SensorEventListener,ShimmerImuHandlerInterface {
 
     private static final String TAG = "MainActivity";
     private static final int MSG_BLUETOOTH_ADDRESS = 1;
@@ -195,7 +197,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
     private boolean graphShowing = false;
     private String graphAdress = "";
 
-    private Date startLoggingDate = null;
     private Date stopLoggingDate = null;
 
     private int sensorDataDelay = 20000; // ca. 50 Hz
@@ -348,6 +349,15 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         return true;
     }
 
+    void disconnectDevices() {
+        disconnectedAllShimmers();
+        disconnectBioHarness();
+        this.directoryName = null;
+        connectMenuItem.setEnabled(true);
+        disconnectMenuItem.setEnabled(false);
+        connected = false;
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -367,12 +377,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         }
 
         if (id == R.id.action_disconnect) {
-            disconnectedAllShimmers();
-            disconnectBioHarness();
-            this.directoryName = null;
-            connectMenuItem.setEnabled(true);
-            disconnectMenuItem.setEnabled(false);
-            connected = false;
+            disconnectDevices();
         }
 
         if(id == R.id.action_settings) {
@@ -380,7 +385,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         }
 
         if (id == R.id.action_start_streaming) {
-            startLoggingDate = new Date();
             resetTime();
             wroteQuestionnaireHeader = false;
             loggingEnabled = true;
@@ -404,7 +408,6 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             stopTimerThread();
             //stopStreamingInternalSensorData();
             writeLeftOverData();
-            startTimestamp = 0L;
             loggingEnabled = false;
             startedStreaming = false;
             this.directoryName = null;
@@ -480,11 +483,34 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             mService.disconnectBioHarness();
     }
 
-    public String getLoggingHeaderString() {
-        String outputString = "";
-        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-        outputString += "# StartTime: " + dateFormat.format(startLoggingDate) + "\n";
-        return outputString;
+    /**
+     * Return date in specified format.
+     * @param millis Date in milliseconds
+     * @param dateFormat Date format
+     * @return String representing date in specified format
+     */
+    public static String getDate(long millis, String dateFormat)
+    {
+        // Create a DateFormatter object for displaying date in specified format.
+        SimpleDateFormat formatter = new SimpleDateFormat(dateFormat);
+
+        // Create a calendar object that will convert the date and time value in milliseconds to date.
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(millis);
+        return formatter.format(calendar.getTime());
+    }
+
+    @Override
+    public void connectionResetted() {
+        disconnectDevices();
+        Toast.makeText(this, getString(R.string.connection_to_shimmer_imu_resetted), Toast.LENGTH_LONG).show();
+    }
+
+    public String getHeaderComments() {
+        String headerComments = "";
+        DateFormat dateFormat = new SimpleDateFormat();
+        headerComments += "# StartTime: " + getDate(this.startTimestamp, "yyyy/MM/dd HH:mm:ss") + "\n";
+        return headerComments;
     }
 
     private String getLoggingFooterString() {
@@ -609,7 +635,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         if(mService.getBioHarnessConnectedListener().isHeartRateEnabled()) {
             try {
                 BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_heart_rate)), true));
-                String outputString = getLoggingHeaderString();
+                String outputString = getHeaderComments();
                 outputString += "" + getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_heartrate) + "";
                 writer.write(outputString);
                 writer.newLine();
@@ -621,7 +647,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         }
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_respiration_rate)), true));
-            String outputString = getLoggingHeaderString();
+            String outputString = getHeaderComments();
             outputString += "" + getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_respirationrate) + "";
             writer.write(outputString);
             writer.newLine();
@@ -632,7 +658,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         }
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_posture)), true));
-            String outputString = getLoggingHeaderString();
+            String outputString = getHeaderComments();
             outputString += "" + getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_posture) + "";
             writer.write(outputString);
             writer.newLine();
@@ -643,7 +669,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         }
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_rr_interval)), true));
-            String outputString = getLoggingHeaderString();
+            String outputString = getHeaderComments();
             outputString += "" + getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_rr_interval) + "";
             writer.write(outputString);
             writer.newLine();
@@ -655,7 +681,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         if(mService.getBioHarnessConnectedListener().isSkinTemperatureEnabled()) {
             try {
                 BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_skin_temperature)), true));
-                String outputString = getLoggingHeaderString();
+                String outputString = getHeaderComments();
                 outputString += "" + getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_skintemperature) + "";
                 writer.write(outputString);
                 writer.newLine();
@@ -668,7 +694,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_peak_acceleration)), true));
-            String outputString = getLoggingHeaderString();
+            String outputString = getHeaderComments();
             outputString += "" + getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_peakacceleration) + "";
             writer.write(outputString);
             writer.newLine();
@@ -680,7 +706,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 ////////////////
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_axis_acceleration)), true)); //TODO: RENAME
-            String outputString = getLoggingHeaderString();
+            String outputString = getHeaderComments();
             outputString += "" + getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_acceleration_x) + "," + getString(R.string.file_header_acceleration_y) + "," + getString(R.string.file_header_acceleration_z) + "";
             writer.write(outputString);
             writer.newLine();
@@ -691,7 +717,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         }
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_breathing)), true));
-            String outputString = getLoggingHeaderString();
+            String outputString = getHeaderComments();
             outputString += "" + getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_interval) + "";
             writer.write(outputString);
             writer.newLine();
@@ -702,7 +728,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         }
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_ecg)), true));
-            String outputString = getLoggingHeaderString();
+            String outputString = getHeaderComments();
             outputString += "" + getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_voltage) + "";
             writer.write(outputString);
             writer.newLine();
@@ -720,7 +746,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         String timeString = simpleTimeFormat.format(new Date());
         this.directoryName = "PsychoPhysioCollector/" + dateString + "_" + timeString;
 
-        this.root = getStorageDir(this.directoryName);
+        this.root = getStorageDirectory(this.directoryName);
     }
 
     @Override
@@ -1138,7 +1164,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         String outputString = "";
         if(!wroteQuestionnaireHeader) {
             wroteQuestionnaireHeader = true;
-            outputString = getLoggingHeaderString();
+            outputString = getHeaderComments();
             outputString += "" + getString(R.string.file_header_timestamp_show) + "," + getString(R.string.file_header_timestamp_start) + "," + getString(R.string.file_header_timestamp_stop) + ",";
             for (int i = 0; i < scaleTypes.size(); i++) {
                 if (i != scaleTypes.size() - 1) {
@@ -1197,7 +1223,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_acceleration)), true));
-            String outputString = getLoggingHeaderString();
+            String outputString = getHeaderComments();
             outputString += getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_acceleration_x) + "," + getString(R.string.file_header_acceleration_y) + "," + getString(R.string.file_header_acceleration_z);
             writer.write(outputString);
             writer.newLine();
@@ -1209,7 +1235,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_angular_velocity)), true));
-            String outputString = getLoggingHeaderString();
+            String outputString = getHeaderComments();
             outputString += getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_angular_velocity_x) + "," + getString(R.string.file_header_angular_velocity_y) + "," + getString(R.string.file_header_angular_velocity_z);
             writer.write(outputString);
             writer.newLine();
@@ -1221,7 +1247,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
 
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_linear_acceleration)), true));
-            String outputString = getLoggingHeaderString();
+            String outputString = getHeaderComments();
             outputString += getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_acceleration_x) + "," + getString(R.string.file_header_acceleration_y) + "," + getString(R.string.file_header_acceleration_z);
             writer.write(outputString);
             writer.newLine();
@@ -1240,7 +1266,7 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         locationManager.addGpsStatusListener(new GpsStatus.Listener() {
             @Override
             public void onGpsStatusChanged(int event) {
-                switch(event) {
+                switch (event) {
                     case GpsStatus.GPS_EVENT_STARTED:
                         gpsStatusText = getString(R.string.gps_connected);
                         break;
@@ -1421,21 +1447,22 @@ public class MainActivity extends ListActivity implements SensorEventListener {
         mediaPlayer.start();
     }
 
-    public File getStorageDir(String folderName) {
-        Log.d(TAG, "create: " + folderName);
+    public File getStorageDirectory(String directoryName) {
         try {
             File root = Environment.getExternalStorageDirectory();
             if (root.canWrite()) {
-                File file = new File(root, folderName);
+                File file = new File(root, directoryName);
                 if (!file.exists()) {
                     if (!file.mkdirs()) {
-                        Log.d(TAG, "could not create file");
+                        Log.d(TAG, "Could not write file: " + directoryName);
+                    } else {
+                        Log.d(TAG, "Created: " + directoryName);
                     }
                 }
                 return file;
             }
         } catch (Exception e) {
-            Log.e("DEBUG", "Could not write file " + e.getMessage());
+            Log.e(TAG, "Could not write file: " + directoryName + " " + e.getMessage());
         }
         return null;
     }
@@ -1453,14 +1480,14 @@ public class MainActivity extends ListActivity implements SensorEventListener {
             this.filename = filename;
             this.directoryName = directoryName;
 
-            this.root = getStorageDir(this.directoryName);
+            this.root = getStorageDirectory(this.directoryName);
 
             this.maxValueCount = maxValueCount;
             this.values = new String[maxValueCount][4];
 
             try {
                 BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, this.filename), true));
-                String outputString = getLoggingHeaderString();
+                String outputString = getHeaderComments();
                 outputString += "" + getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_gps_latitude) + "," + getString(R.string.file_header_gps_longitude) + "," + getString(R.string.file_header_gps_altitude);
                 writer.write(outputString);
                 writer.newLine();

@@ -135,4 +135,6 @@
 
     <string name="delete">Löschen?</string>
 
+    <string name="connection_to_shimmer_imu_resetted">Die Verbindung zu einem der Shimmer IMUs wurde zurückgesetzt.</string>
+
 </resources>

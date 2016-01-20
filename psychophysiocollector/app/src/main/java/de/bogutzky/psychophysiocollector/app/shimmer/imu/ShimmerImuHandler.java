@@ -1,6 +1,7 @@
 package de.bogutzky.psychophysiocollector.app.shimmer.imu;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
@@ -28,7 +29,7 @@ public class ShimmerImuHandler extends Handler {
 
     private static final String TAG = "ShimmerImuHandler";
     private Vibrator vibrator;
-    private MainActivity mainActivity;
+    private Activity activity;
     private String filename;
     private File root;
     private int i = 0;
@@ -44,9 +45,9 @@ public class ShimmerImuHandler extends Handler {
     private boolean isFirstDataRow = true;
     //float[] dataArray;
 
-    public ShimmerImuHandler(MainActivity mainActivity, String filename, int maxValueCount) {
-        this.mainActivity = mainActivity;
-        this.vibrator = (Vibrator) mainActivity.getSystemService(Context.VIBRATOR_SERVICE);
+    public ShimmerImuHandler(MainActivity activity, String filename, int maxValueCount) {
+        this.activity = activity;
+        this.vibrator = (Vibrator) activity.getSystemService(Context.VIBRATOR_SERVICE);
         this.filename = filename;
         this.maxValueCount = maxValueCount;
     }
@@ -58,8 +59,10 @@ public class ShimmerImuHandler extends Handler {
     public void setHeader(String[] header) {
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, this.filename), true));
-            String outputString = mainActivity.getLoggingHeaderString();
-            outputString += "";
+            String outputString = "";
+            if(activity instanceof ShimmerImuHandlerInterface) {
+                outputString += ((ShimmerImuHandlerInterface) activity).getHeaderComments();
+            }
             for (int k = 0; k < header.length; k++) {
                 if (header.length - 1 != k) {
                     outputString += header[k] + ",";
@@ -85,7 +88,11 @@ public class ShimmerImuHandler extends Handler {
     }
 
     public void setDirectoryName(String directoryName) {
-        this.root = mainActivity.getStorageDir(directoryName);
+        if(activity instanceof ShimmerImuHandlerInterface) {
+            this.root = ((ShimmerImuHandlerInterface) activity).getStorageDirectory(directoryName);
+        } else {
+            this.root = null;
+        }
     }
 
     public void setStartTimestamp(long startTimestamp) {
@@ -169,11 +176,14 @@ public class ShimmerImuHandler extends Handler {
                         break;
                     case Shimmer.STATE_NONE:
                         Log.d(TAG, "None State: " + bluetoothAddress);
+                        if(activity instanceof ShimmerImuHandlerInterface) {
+                            ((ShimmerImuHandlerInterface) activity).connectionResetted();
+                        }
                         break;
                     case Shimmer.MSG_STATE_FULLY_INITIALIZED:
                         Log.d(TAG, "Fully initialized: " + bluetoothAddress);
                         String btRadioID = bluetoothAddress.replace(":", "").substring(8).toUpperCase();
-                        Toast.makeText(mainActivity, btRadioID + " " + mainActivity.getString(R.string.is_ready), Toast.LENGTH_LONG).show();
+                        Toast.makeText(activity, btRadioID + " " + activity.getString(R.string.is_ready), Toast.LENGTH_LONG).show();
                         break;
                     case Shimmer.MSG_STATE_STREAMING:
                         Log.d(TAG, "Streaming: " + bluetoothAddress);
