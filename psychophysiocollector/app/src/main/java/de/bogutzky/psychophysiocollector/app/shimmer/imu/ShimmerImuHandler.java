@@ -143,7 +143,7 @@ public class ShimmerImuHandler extends Handler {
                     i++;
                     if (i == maxValueCount) {
                         i = 0;
-                        writeValues(this.values);
+                        writeValues(this.values, null);
                         if (this.values == this.values0) {
                             this.values = this.values1;
                         } else {
@@ -204,14 +204,7 @@ public class ShimmerImuHandler extends Handler {
         }
     }
 
-    public void writeValues(Double[][] values) {
-        WriteDataTask task = new WriteDataTask();
-        task.execute(new WriteDataTaskParams(values, this.filename, this.root, this.fields.length, false, ""));
-
-
-        //if(footer)
-        //writeData(values,this.filename, fields.length, true, getLoggingFooterString(), slot);
-        //else
-        //writeData(values,this.filename, fields.length, false, "", slot);
+    public void writeValues(Double[][] values, String batchComments) {
+        new WriteDataTask().execute(new WriteDataTaskParams(values, this.filename, this.root, this.fields.length, batchComments));
     }
 }

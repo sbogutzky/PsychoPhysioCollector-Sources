@@ -21,16 +21,14 @@ public class WriteDataTask extends AsyncTask<WriteDataTaskParams, Void, Void> {
         String filename = params[0].filename;
         File root = params[0].root;
         int numberOfFields = params[0].numberOfFields;
+        String batchComments = params[0].batchComments;
 
-        boolean writeFooter = params[0].writeFooter;
-        String footer = params[0].footer;
-
-        writeToFile(values, filename, root, numberOfFields, writeFooter, footer);
+        writeToFile(values, filename, root, numberOfFields, batchComments);
 
         return null;
     }
 
-    private void writeToFile(Double[][] values, String filename, File root, int numberOfFields, boolean writeFooter, String footer) {
+    private void writeToFile(Double[][] values, String filename, File root, int numberOfFields, String batchComments) {
 
         Log.d(TAG, "Write data in " + filename);
 
@@ -52,8 +50,9 @@ public class WriteDataTask extends AsyncTask<WriteDataTaskParams, Void, Void> {
                 }
             }
 
-            if(writeFooter) {
-                writer.write(footer);
+            if(batchComments != null) {
+                writer.write(batchComments);
+                writer.newLine();
             }
             writer.flush();
             writer.close();

@@ -10,15 +10,13 @@ public class WriteDataTaskParams {
     Double[][] values;
     File root;
     int numberOfFields;
-    boolean writeFooter;
-    String footer;
+    String batchComments;
 
-    public WriteDataTaskParams(Double[][] values, String filename, File root, int numberOfFields, boolean writeFooter, String footer) {
+    public WriteDataTaskParams(Double[][] values, String filename, File root, int numberOfFields, String batchComments) {
         this.filename = filename;
         this.values = values;
         this.root = root;
         this.numberOfFields = numberOfFields;
-        this.writeFooter = writeFooter;
-        this.footer = footer;
+        this.batchComments = batchComments;
     }
 }
