@@ -14,6 +14,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
@@ -198,7 +200,7 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
     private String graphAdress = "";
 
     private int sensorDataDelay = 20000; // ca. 50 Hz
-    private boolean startedStreaming = false;
+    private boolean isSessionStarted = false;
 
     private boolean writingData = false;
     private boolean secondWritingData = false;
@@ -386,7 +388,7 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
             resetTime();
             wroteQuestionnaireHeader = false;
             loggingEnabled = true;
-            startedStreaming = true;
+            isSessionStarted = true;
             this.startStreamMenuItem.setEnabled(false);
             this.stopStreamMenuItem.setEnabled(true);
             if (this.directoryName == null) {
@@ -407,7 +409,7 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
             //stopStreamingInternalSensorData();
             writeLeftOverData();
             loggingEnabled = false;
-            startedStreaming = false;
+            isSessionStarted = false;
             this.directoryName = null;
             this.startStreamMenuItem.setEnabled(true);
             this.stopStreamMenuItem.setEnabled(false);
@@ -417,28 +419,41 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
             Dialog dialog = new Dialog(this);
             dialog.setTitle(getString(R.string.action_info));
             dialog.setContentView(R.layout.info_popup);
-            TextView statusTV = (TextView) dialog.findViewById(R.id.info_statusTextView);
-            if(startedStreaming) {
-                statusTV.setText(getString(R.string.info_streaming));
-            } else {
-                statusTV.setText(getString(R.string.info_not_streaming));
-            }
-            TextView bhTV = (TextView) dialog.findViewById(R.id.info_bh_connectedTextView);
-            TextView shimmerTV = (TextView) dialog.findViewById(R.id.info_shimmer_connectedTextView);
-            int shimmerCount = 0;
-            int bhCount = 0;
-            if(mService != null) {
-                shimmerCount = mService.shimmerImuMap.values().size();
-                if(mService.hasBioHarnessConnected())
-                    bhCount = 1;
-            }
-            shimmerTV.setText(shimmerCount  + "" + getText(R.string.info_connected));
-            bhTV.setText(bhCount + "" + getText(R.string.info_connected));
-            TextView gpsStatusTV = (TextView) dialog.findViewById(R.id.info_gps_status);
-            if(gpsStatusText == null)
-                gpsStatusText = getString(R.string.gps_not_connected);
 
-            gpsStatusTV.setText(gpsStatusText);
+            TextView infoSessionStatus = (TextView) dialog.findViewById(R.id.textViewInfoSessionStatus);
+            if(isSessionStarted) {
+                infoSessionStatus.setText(getString(R.string.info_started));
+            }
+
+            if(mService != null) {
+                int shimmerImuCount = mService.shimmerImuMap.values().size();
+
+                if(shimmerImuCount > 0) {
+                    TextView infoShimmerImoConnectionStatus = (TextView) dialog.findViewById(R.id.textViewInfoShimmerImoConnectionStatus);
+                    infoShimmerImoConnectionStatus.setText(shimmerImuCount + " " + getText(R.string.info_connected));
+                }
+
+                if(mService.hasBioHarnessConnected()) {
+                    TextView infoBioHarnessConnectionStatus = (TextView) dialog.findViewById(R.id.textViewInfoBioHarnessConnectionStatus);
+                    infoBioHarnessConnectionStatus.setText(getText(R.string.info_connected));
+                }
+            }
+
+            TextView infoGpsConnectionStatus = (TextView) dialog.findViewById(R.id.textViewInfoGpsConnectionStatus);
+            if(gpsStatusText == null) {
+                gpsStatusText = getString(R.string.info_not_connected);
+            }
+            infoGpsConnectionStatus.setText(gpsStatusText);
+
+            TextView infoVersionName = (TextView) dialog.findViewById(R.id.textViewInfoVersionName);
+            try {
+                PackageInfo packageInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+                infoVersionName.setText(packageInfo.versionName);
+            } catch (PackageManager.NameNotFoundException e) {
+                Log.e(TAG, "Could not read package info", e);
+                infoVersionName.setText(R.string.info_could_not_read);
+            }
+
 
             dialog.show();
         }
@@ -1254,13 +1269,13 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
             public void onGpsStatusChanged(int event) {
                 switch (event) {
                     case GpsStatus.GPS_EVENT_STARTED:
-                        gpsStatusText = getString(R.string.gps_connected);
+                        gpsStatusText = "GPS " + getString(R.string.info_connected);
                         break;
                     case GpsStatus.GPS_EVENT_STOPPED:
-                        gpsStatusText = getString(R.string.gps_not_connected);
+                        gpsStatusText = "GPS " + getString(R.string.info_not_connected);
                         break;
                     case GpsStatus.GPS_EVENT_FIRST_FIX:
-                        gpsStatusText = getString(R.string.gps_connected_fix_received);
+                        gpsStatusText = "GPS " + getString(R.string.info_connected_fix_received);
                         break;
                 }
             }
@@ -1510,7 +1525,7 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
                     }
                 }
                 if(lastLocationAccuracy - location.getAccuracy() > 5.0) {
-                    gpsStatusText = getText(R.string.gps_connected_fix_received) + getString(R.string.accuracy) + location.getAccuracy();
+                    gpsStatusText = "GPS " + getText(R.string.info_connected_fix_received) + getString(R.string.accuracy) + location.getAccuracy();
                     lastLocationAccuracy = location.getAccuracy();
                 }
             }
