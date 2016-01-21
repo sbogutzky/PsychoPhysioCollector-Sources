@@ -186,7 +186,6 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
     private MenuItem startStreamMenuItem;
     private MenuItem stopStreamMenuItem;
 
-    private boolean connected = false;
     private boolean bioHarnessConnected = false;
 
     private ArrayList<String> scaleTypes;
@@ -355,7 +354,6 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
         this.directoryName = null;
         connectMenuItem.setEnabled(true);
         disconnectMenuItem.setEnabled(false);
-        connected = false;
     }
 
     @Override
@@ -584,15 +582,18 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
 
     @Override
     protected void onListItemClick(ListView l, View v, int position, long id) {
-        if(connected && deviceNames.get(position).contains("RN42")) {
-            Object o = l.getItemAtPosition(position);
-            Intent mainCommandIntent=new Intent(MainActivity.this, ShimmerMainConfigurationActivity.class);
-            mainCommandIntent.putExtra("LocalDeviceID", o.toString());
-            String mac = getBluetoothAddresses().get(position);
-            mainCommandIntent.putExtra("mac", mac);
-            mainCommandIntent.putExtra("CurrentSlot", position);
-            mainCommandIntent.putExtra("requestCode", REQUEST_MAIN_COMMAND_SHIMMER);
-            startActivityForResult(mainCommandIntent, REQUEST_MAIN_COMMAND_SHIMMER);
+        if(mService != null) {
+            int shimmerImuCount = mService.shimmerImuMap.values().size();
+            if(shimmerImuCount > 0 && deviceNames.get(position).contains("RN42")) {
+                Object o = l.getItemAtPosition(position);
+                Intent mainCommandIntent = new Intent(MainActivity.this, ShimmerMainConfigurationActivity.class);
+                mainCommandIntent.putExtra("LocalDeviceID", o.toString());
+                String mac = getBluetoothAddresses().get(position);
+                mainCommandIntent.putExtra("mac", mac);
+                mainCommandIntent.putExtra("CurrentSlot", position);
+                mainCommandIntent.putExtra("requestCode", REQUEST_MAIN_COMMAND_SHIMMER);
+                startActivityForResult(mainCommandIntent, REQUEST_MAIN_COMMAND_SHIMMER);
+            }
         }
     }
 
@@ -881,7 +882,7 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
                         BluetoothDevice btDevice = device;
 
                         String bluetoothAddress = btDevice.getAddress();
-                        mService.connectShimmer(bluetoothAddress, Integer.toString(count), new ShimmerImuHandler(this, "imu-" + btDevice.getName().toLowerCase() + ".csv", 250));
+                        mService.connectShimmer(bluetoothAddress, Integer.toString(count), new ShimmerImuHandler(this, "imu-" + btDevice.getName().toLowerCase() + ".csv", 2500));
                         count++;
                     }
                 }

@@ -31,7 +31,7 @@ public class ShimmerSensorConfigurationActivity extends Activity{
     	int mAccelerometerRangeV = extras.getInt("AccelerometerRange");
     	int mGSRRangeV = extras.getInt("GSRRange");
     	
-    	String[] samplingRate = new String [] {"10","51.2","102.4","128","170.7","204.8","256","512", "1024"};
+    	String[] samplingRate = new String [] {"10","51.2","102.4","128","170.7","204.8","256","512"};
     	String[] accelRange = new String [] {"+/- 1.5g","+/- 6g"};
     	String[] gsrRange = new String [] {"10kOhm to 56kOhm","56kOhm to 220kOhm","220kOhm to 680kOhm","680kOhm to 4.7MOhm","Auto Range"};
 
