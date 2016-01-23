@@ -746,7 +746,7 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
         SimpleDateFormat simpleTimeFormat = new SimpleDateFormat("HH-mm-ss");
         String dateString = simpleDateFormat.format(new Date());
         String timeString = simpleTimeFormat.format(new Date());
-        this.directoryName = "PsychoPhysioCollector/" + dateString + "_" + timeString;
+        this.directoryName = "PsychoPhysioCollector/" + dateString + "--" + timeString;
 
         this.root = getStorageDirectory(this.directoryName);
     }
