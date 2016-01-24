@@ -117,9 +117,10 @@
     <string name="file_header_voltage">"voltage"</string>
 
 
-    <string name="shimmer_config_enable_sensors">Sensoren aktivieren</string>
-    <string name="shimmer_config_calibrate_sensors">Sensor konfigurieren</string>
-    <string name="shimmer_config_show_graph">Graph anzeigen</string>
+    <string name="imu_config_enable_sensors">Sensoren aktivieren</string>
+    <string name="imu_config_configurate_sensors">Sensoren konfigurieren</string>
+    <string name="imu_config_show_sensor_data">Sensoren Daten anzeigen</string>
+    <string name="imu_config_imu_configuration">Shimmer IMU Konfiguration</string>
 
 
     <string name="bluetooth_activated">Bluetooth wurde aktiviert</string>
@@ -135,5 +136,11 @@
     <string name="delete">Löschen?</string>
 
     <string name="connection_to_shimmer_imu_resetted">Die Verbindung zu einem der Shimmer IMUs wurde zurückgesetzt.</string>
+    <string name="acceleration_range_1_5g">+/- 1,5g</string>
+    <string name="acceleration_range_6_0g">+/- 6g</string>
+    <string name="imu_settings_sampling_rate">Abstastrate (Hz)</string>
+    <string name="imu_settings_acceleration_range">Acceleration Range (g)</string>
+    <string name="imu_settings_gsr_range">GSR Range</string>
+    <string name="imu_settings_led_toggle">LED an/aus</string>
 
 </resources>

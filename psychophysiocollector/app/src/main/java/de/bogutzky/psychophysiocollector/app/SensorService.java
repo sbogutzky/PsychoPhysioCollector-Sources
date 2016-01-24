@@ -339,6 +339,7 @@ public class SensorService extends Service {
     }
 
     private void showNotification() {
+        /*
         // In this sample, we'll use the same text for the ticker and the expanded notification
         CharSequence text = getString(R.string.service_running);
 
@@ -356,7 +357,6 @@ public class SensorService extends Service {
 
         // Send the notification.
         notificationManager.notify(1233, notification);
+        */
     }
-
-
 }

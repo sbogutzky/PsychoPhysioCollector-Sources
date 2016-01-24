@@ -46,14 +46,14 @@ public class ShimmerMainConfigurationActivity extends Activity {
         Log.v("Tag", "mac: " + mac);
         currentDeviceName = extraData;
         mCurrentDevice = mac;
-        setTitle("CMD: " + currentDeviceName);
+        setTitle(getTitle() + ": " + currentDeviceName);
         mCurrentSlot = sender.getExtras().getInt("CurrentSlot");
         Log.d("Shimmer", "Create MC:  " + extraData);
 
 
-        final ListView listViewCommands = (ListView) findViewById(R.id.listView1);
+        final ListView listViewCommands = (ListView) findViewById(R.id.listViewSamplingRates);
 
-        commands = new String[]{getString(R.string.shimmer_config_enable_sensors), getString(R.string. shimmer_config_calibrate_sensors), getString(R.string.shimmer_config_show_graph)};
+        commands = new String[]{getString(R.string.imu_config_enable_sensors), getString(R.string.imu_config_configurate_sensors), getString(R.string.imu_config_show_sensor_data)};
 
         ArrayList<String> commandsList = new ArrayList<String>();
         commandsList.addAll(Arrays.asList(commands));

@@ -7,15 +7,17 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.ViewGroup.LayoutParams;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Locale;
 
 public class ShimmerSensorConfigurationActivity extends Activity{
 
@@ -24,43 +26,43 @@ public class ShimmerSensorConfigurationActivity extends Activity{
 		super.onCreate(savedInstanceState);
 	    setContentView(R.layout.shimmer_commands);
 
-	    getWindow().setLayout(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT);
 	    Bundle extras = getIntent().getExtras();
-        String bluetoothAddress = extras.getString("Enabled_Sensors");
+        //String bluetoothAddress = extras.getString("Enabled_Sensors");
     	double mSamplingRateV = extras.getDouble("SamplingRate");
     	int mAccelerometerRangeV = extras.getInt("AccelerometerRange");
-    	int mGSRRangeV = extras.getInt("GSRRange");
+    	//int mGSRRangeV = extras.getInt("GSRRange");
     	
-    	String[] samplingRate = new String [] {"10","51.2","102.4","128","170.7","204.8","256","512"};
-    	String[] accelRange = new String [] {"+/- 1.5g","+/- 6g"};
-    	String[] gsrRange = new String [] {"10kOhm to 56kOhm","56kOhm to 220kOhm","220kOhm to 680kOhm","680kOhm to 4.7MOhm","Auto Range"};
+    	String[] samplingRates = new String [] {"10","51,2","102,4","128","170,7","204,8","256","512"};
+    	String[] accelRange = new String [] {getString(R.string.acceleration_range_1_5g),getString(R.string.acceleration_range_6_0g)};
+    	//String[] gsrRange = new String [] {"10kOhm to 56kOhm","56kOhm to 220kOhm","220kOhm to 680kOhm","680kOhm to 4.7MOhm","Auto Range"};
 
-    	final ListView listViewSamplingRate = (ListView) findViewById(R.id.listView1);
-        final ListView listViewAccelRange = (ListView) findViewById(R.id.listView2);
-        final ListView listViewGsrRange = (ListView) findViewById(R.id.listView3);
+    	final ListView listViewSamplingRate = (ListView) findViewById(R.id.listViewSamplingRates);
+        final ListView listViewAccelRange = (ListView) findViewById(R.id.listViewAccelerationRanges);
+        //final ListView listViewGsrRange = (ListView) findViewById(R.id.listViewGsrRange);
         
-        final TextView textViewCurrentSamplingRate = (TextView) findViewById(R.id.TextView4);
-        final TextView textViewCurrentAccelRange = (TextView) findViewById(R.id.textView5);
-        final TextView textViewCurrentGsrRange = (TextView) findViewById(R.id.textView6);
+        final TextView textViewCurrentSamplingRate = (TextView) findViewById(R.id.textViewCurrentSamplingRate);
+        final TextView textViewCurrentAccelRange = (TextView) findViewById(R.id.textViewCurrentAccelerationRange);
+        //final TextView textViewCurrentGsrRange = (TextView) findViewById(R.id.textViewCurrentGsrRange);
         
         textViewCurrentSamplingRate.setTextColor(Color.rgb(0, 135, 202));
         textViewCurrentAccelRange.setTextColor(Color.rgb(0, 135, 202));
-        textViewCurrentGsrRange.setTextColor(Color.rgb(0, 135, 202));
+        //textViewCurrentGsrRange.setTextColor(Color.rgb(0, 135, 202));
         if (mSamplingRateV!=-1){
-        	textViewCurrentSamplingRate.setText(Double.toString(mSamplingRateV));
+        	textViewCurrentSamplingRate.setText(String.format("%3.1f", Math.round(mSamplingRateV * 10.0)/10.0));
         } else {
         	textViewCurrentSamplingRate.setText("");
         }
         
         if (mAccelerometerRangeV==0){
-        	textViewCurrentAccelRange.setText("+/- 1.5g");
+        	textViewCurrentAccelRange.setText(R.string.acceleration_range_1_5g);
         }
         else if (mAccelerometerRangeV==3){
-        	textViewCurrentAccelRange.setText("+/- 6g");
+        	textViewCurrentAccelRange.setText(R.string.acceleration_range_6_0g);
         } else {
         	textViewCurrentAccelRange.setText("");
         }
-        
+
+		/*
         if (mGSRRangeV==0) {
         	textViewCurrentGsrRange.setText("10kOhm to 56kOhm");
         } else if (mGSRRangeV==1) {
@@ -74,28 +76,26 @@ public class ShimmerSensorConfigurationActivity extends Activity{
         } else {
         	textViewCurrentGsrRange.setText("");
         }
+        */
         
-      
-        
-    	ArrayList<String> samplingRateList = new ArrayList<String>();  
-    	samplingRateList.addAll( Arrays.asList(samplingRate) );  
-        ArrayAdapter<String> sR = new ArrayAdapter<String>(this, R.layout.commands_name,samplingRateList);
+    	ArrayList<String> samplingRateList = new ArrayList<>();
+    	samplingRateList.addAll( Arrays.asList(samplingRates) );
+        ArrayAdapter<String> sR = new ArrayAdapter<>(this, R.layout.commands_name,samplingRateList);
     	listViewSamplingRate.setAdapter(sR);
     	
-    	ArrayList<String> accelRangeList = new ArrayList<String>();  
+    	ArrayList<String> accelRangeList = new ArrayList<>();
     	accelRangeList.addAll( Arrays.asList(accelRange) );  
-        ArrayAdapter<String> sR2 = new ArrayAdapter<String>(this, R.layout.commands_name,accelRangeList);
+        ArrayAdapter<String> sR2 = new ArrayAdapter<>(this, R.layout.commands_name,accelRangeList);
     	listViewAccelRange.setAdapter(sR2);
     	
-    	ArrayList<String> gsrRangeList = new ArrayList<String>();  
+    	/*
+    	ArrayList<String> gsrRangeList = new ArrayList<>();
     	gsrRangeList.addAll( Arrays.asList(gsrRange) );  
-        ArrayAdapter<String> sR3 = new ArrayAdapter<String>(this, R.layout.commands_name,gsrRangeList);
+        ArrayAdapter<String> sR3 = new ArrayAdapter<>(this, R.layout.commands_name,gsrRangeList);
     	listViewGsrRange.setAdapter(sR3);
+    	*/
     	
-    	
-    	
-    	
-    	Button buttonToggleLED = (Button) findViewById(R.id.button1);
+    	Button buttonToggleLED = (Button) findViewById(R.id.buttonToggleLed);
 	    
     	buttonToggleLED.setOnClickListener(new OnClickListener(){
 
@@ -112,15 +112,23 @@ public class ShimmerSensorConfigurationActivity extends Activity{
     	listViewSamplingRate.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
   		  public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
+			  Object o = listViewSamplingRate.getItemAtPosition(position);
+			  Intent intent = new Intent();
 
-  		    Object o = listViewSamplingRate.getItemAtPosition(position);
-  		    Log.d("Shimmer",o.toString());
-  		    Intent intent = new Intent();
-	            intent.putExtra("SamplingRate",Double.valueOf(o.toString()).doubleValue());
-	            // Set result and finish this Activity
-	            setResult(Activity.RESULT_OK, intent);
-	            finish();
-  		    
+			  Locale current = getResources().getConfiguration().locale;
+			  NumberFormat format = NumberFormat.getInstance(current);
+			  Number number = null;
+			  try {
+				  number = format.parse(o.toString());
+			  } catch (ParseException e) {
+				  e.printStackTrace();
+			  }
+
+			  intent.putExtra("SamplingRate", number.doubleValue());
+
+			  // Set result and finish this Activity
+			  setResult(Activity.RESULT_OK, intent);
+			  finish();
   		  }
   		});
   	
@@ -129,11 +137,10 @@ public class ShimmerSensorConfigurationActivity extends Activity{
 		  public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
 
 		    Object o = listViewAccelRange.getItemAtPosition(position);
-		    Log.d("Shimmer",o.toString());
 		    int accelRange=0;
-		    if (o.toString()=="+/- 1.5g"){
+		    if (o.toString().equals(getString(R.string.acceleration_range_1_5g))){
 		    	accelRange=0;
-		    } else if (o.toString()=="+/- 6g"){
+		    } else if (o.toString().equals(getString(R.string.acceleration_range_6_0g))){
 		    	accelRange=3;
 		    }
 		    Intent intent = new Intent();
@@ -144,8 +151,7 @@ public class ShimmerSensorConfigurationActivity extends Activity{
 		    
 		  }
 		});
-  	
-  	
+	/*
   	listViewGsrRange.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
   		  public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
@@ -169,11 +175,8 @@ public class ShimmerSensorConfigurationActivity extends Activity{
 	            // Set result and finish this Activity
 	            setResult(Activity.RESULT_OK, intent);
 	            finish();
-  		    
   		  }
   		});
-    	
-    	
+    	*/
 	}
-
 }
