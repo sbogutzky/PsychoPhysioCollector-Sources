@@ -20,177 +20,153 @@ import com.shimmerresearch.android.Shimmer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
 
 
 public class ShimmerMainConfigurationActivity extends Activity {
-    String mCurrentDevice = null;
-    String currentDeviceName;
-    int mCurrentSlot = -1;
-    private SensorService mService;
-    private String[] commands;
-    private double mSamplingRate = -1;
-    private int mAccelRange = -1;
-    private int mGSRRange = -1;
+    private static final String TAG = "ShimmerMConfigActivity";
 
+    private String mCurrentBluetoothDeviceAddress;
+
+    private SensorService mService;
+
+    private double mSamplingRate = -1;
+    private int mAccelerometerRange = -1;
+    private int mGyroscopeRange = -1;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_commands);
 
         Intent intent = new Intent(this, SensorService.class);
-        getApplicationContext().bindService(intent, mTestServiceConnection, Context.BIND_AUTO_CREATE);
-        Intent sender = getIntent();
-        String extraData = sender.getExtras().getString("LocalDeviceID");
-        String mac = sender.getExtras().getString("mac");
-        Log.v("Tag", "mac: " + mac);
-        currentDeviceName = extraData;
-        mCurrentDevice = mac;
-        setTitle(getTitle() + ": " + currentDeviceName);
-        mCurrentSlot = sender.getExtras().getInt("CurrentSlot");
-        Log.d("Shimmer", "Create MC:  " + extraData);
+        getApplicationContext().bindService(intent, mSensorServiceConnection, Context.BIND_AUTO_CREATE);
 
+        Intent sender = getIntent();
+        String currentDeviceName = sender.getExtras().getString("DeviceName");
+        mCurrentBluetoothDeviceAddress = sender.getExtras().getString("BluetoothDeviceAddress");
+        setTitle(getTitle() + ": " + currentDeviceName);
 
         final ListView listViewCommands = (ListView) findViewById(R.id.listViewSamplingRates);
 
-        commands = new String[]{getString(R.string.imu_config_enable_sensors), getString(R.string.imu_config_configurate_sensors), getString(R.string.imu_config_show_sensor_data)};
+        String[] commands = new String[]{getString(R.string.imu_config_enable_sensors), getString(R.string.imu_config_configurate_sensors), getString(R.string.imu_config_show_sensor_data)};
 
-        ArrayList<String> commandsList = new ArrayList<String>();
+        ArrayList<String> commandsList = new ArrayList<>();
         commandsList.addAll(Arrays.asList(commands));
-        ArrayAdapter<String> sR = new ArrayAdapter<String>(this, R.layout.commands_name, commandsList);
+        ArrayAdapter<String> sR = new ArrayAdapter<>(this, R.layout.commands_name, commandsList);
         listViewCommands.setAdapter(sR);
-
 
         listViewCommands.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
             public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
-                if (position == 1) {
-                    mSamplingRate = mService.getSamplingRate(mCurrentDevice);
-                    mAccelRange = mService.getAccelRange(mCurrentDevice);
-                    mGSRRange = mService.getGSRRange(mCurrentDevice);
-                    Intent mainCommandIntent = new Intent(ShimmerMainConfigurationActivity.this, ShimmerSensorConfigurationActivity.class);
-                    mainCommandIntent.putExtra("BluetoothAddress", mCurrentDevice);
-                    mainCommandIntent.putExtra("SamplingRate", mSamplingRate);
-                    mainCommandIntent.putExtra("AccelerometerRange", mAccelRange);
-                    mainCommandIntent.putExtra("GSRRange", mGSRRange);
+                switch (position) {
+                    case 0:
+                        Intent intent0 = new Intent(ShimmerMainConfigurationActivity.this, ShimmerSensorActivationActivity.class);
+                        intent0.putExtra("enabledSensors", mService.getEnabledSensors(mCurrentBluetoothDeviceAddress));
+                        startActivityForResult(intent0, MainActivity.REQUEST_CONFIGURE_SHIMMER);
+                        break;
 
-                    startActivityForResult(mainCommandIntent, MainActivity.REQUEST_COMMANDS_SHIMMER);
-                } else if (position == 0) {
-                    Intent mainCommandIntent = new Intent(ShimmerMainConfigurationActivity.this, ShimmerSensorActivationActivity.class);
-                    Long enabledSensors = mService.getEnabledSensors(mCurrentDevice);
-                    mainCommandIntent.putExtra("enabledSensors", enabledSensors);
-                    startActivityForResult(mainCommandIntent, MainActivity.REQUEST_CONFIGURE_SHIMMER);
-                } else if (position == 2) {
-                    ArrayList<String> spinnerArray = new ArrayList<String>();
-                    Collection<Object> colS = mService.shimmerImuMap.values();
-                    Iterator<Object> iterator = colS.iterator();
-                    while (iterator.hasNext()) {
-                        Shimmer stemp = (Shimmer) iterator.next();
-                        int enabledSensors = stemp.getEnabledSensors();
-                        String sensorName = "";
-                        if ((enabledSensors & Shimmer.SENSOR_ACCEL) != 0) {
-                            sensorName = getString(R.string.accel_name);
-                            if(!spinnerArray.contains(sensorName)) {
-                                spinnerArray.add(sensorName);
-                            }
-                        }
-                        if ((enabledSensors & Shimmer.SENSOR_GYRO) != 0) {
-                            sensorName = getString(R.string.gyro_name);
-                            if(!spinnerArray.contains(sensorName)) {
-                                spinnerArray.add(sensorName);
-                            }
-                        }
-                        if ((enabledSensors & Shimmer.SENSOR_ECG) != 0) {
-                            sensorName = getString(R.string.ecg_name);
-                            if(!spinnerArray.contains(sensorName)) {
-                                spinnerArray.add(sensorName);
-                            }
-                        }
-                    }
-                    AlertDialog.Builder builder = new AlertDialog.Builder(ShimmerMainConfigurationActivity.this);
-                    CharSequence[] cs = spinnerArray.toArray(new CharSequence[spinnerArray.size()]);
-                    builder.setTitle(getString(R.string.select_graph_gata))
-                            .setItems(cs, new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
-                                    Log.v("Commands Activity", "set result show graph");
-                                    Intent intent = new Intent();
-                                    intent.putExtra("mac", mCurrentDevice);
-                                    intent.putExtra("action", MainActivity.SHOW_GRAPH);
-                                    intent.putExtra("datastart", which);
-                                    setResult(Activity.RESULT_OK, intent);
-                                    finish();
+                    case 1:
+                        mSamplingRate = mService.getSamplingRate(mCurrentBluetoothDeviceAddress);
+                        mAccelerometerRange = mService.getAccelerometerRange(mCurrentBluetoothDeviceAddress);
+                        mGyroscopeRange = mService.getGyroscopeRange(mCurrentBluetoothDeviceAddress);
+
+                        Intent intent1 = new Intent(ShimmerMainConfigurationActivity.this, ShimmerSensorConfigurationActivity.class);
+                        intent1.putExtra("BluetoothAddress", mCurrentBluetoothDeviceAddress);
+                        intent1.putExtra("SamplingRate", mSamplingRate);
+                        intent1.putExtra("AccelerometerRange", mAccelerometerRange);
+                        intent1.putExtra("GyroscopeRange", mGyroscopeRange);
+
+                        startActivityForResult(intent1, MainActivity.REQUEST_COMMANDS_SHIMMER);
+                        break;
+
+                    case 2:
+                        ArrayList<String> spinnerArray = new ArrayList<>();
+                        Collection<Object> shimmerImus = mService.shimmerImuMap.values();
+                        for (Object shimmerImu1 : shimmerImus) {
+                            Shimmer shimmerImu = (Shimmer) shimmerImu1;
+                            int enabledSensors = shimmerImu.getEnabledSensors();
+                            String sensorName;
+                            if ((enabledSensors & Shimmer.SENSOR_ACCEL) != 0) {
+                                sensorName = getString(R.string.accel_name);
+                                if (!spinnerArray.contains(sensorName)) {
+                                    spinnerArray.add(sensorName);
                                 }
-                            });
-                    builder.show();
+                            }
+                            if ((enabledSensors & Shimmer.SENSOR_GYRO) != 0) {
+                                sensorName = getString(R.string.gyro_name);
+                                if (!spinnerArray.contains(sensorName)) {
+                                    spinnerArray.add(sensorName);
+                                }
+                            }
+                            if ((enabledSensors & Shimmer.SENSOR_ECG) != 0) {
+                                sensorName = getString(R.string.ecg_name);
+                                if (!spinnerArray.contains(sensorName)) {
+                                    spinnerArray.add(sensorName);
+                                }
+                            }
+                        }
+                        AlertDialog.Builder builder = new AlertDialog.Builder(ShimmerMainConfigurationActivity.this);
+                        CharSequence[] cs = spinnerArray.toArray(new CharSequence[spinnerArray.size()]);
+                        builder.setTitle(getString(R.string.select_graph_gata))
+                                .setItems(cs, new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        Log.v("Commands Activity", "set result show graph");
+                                        Intent intent = new Intent();
+                                        intent.putExtra("mac", mCurrentBluetoothDeviceAddress);
+                                        intent.putExtra("action", MainActivity.SHOW_GRAPH);
+                                        intent.putExtra("datastart", which);
+                                        setResult(Activity.RESULT_OK, intent);
+                                        finish();
+                                    }
+                                });
+                        builder.show();
+                        break;
                 }
             }
         });
-
-
     }
-
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
             case MainActivity.REQUEST_COMMANDS_SHIMMER:
+                Log.d(TAG, "Commands Received");
                 if (resultCode == Activity.RESULT_OK) {
-                    Log.d("Shimmer", "COmmands Received");
-                    Log.d("Shimmer", "iam");
-                    if (resultCode == Activity.RESULT_OK) {
-                        if (data.getExtras().getBoolean("ToggleLED", false) == true) {
-                            mService.toggleLED(mCurrentDevice);
-                        }
+                    if (data.getExtras().getBoolean("ToggleLED", false)) {
+                        mService.toggleLED(mCurrentBluetoothDeviceAddress);
+                    }
 
-                        if (data.getExtras().getDouble("SamplingRate", -1) != -1) {
-                            mService.writeSamplingRate(mCurrentDevice, (data.getExtras().getDouble("SamplingRate", -1)));
-                        }
+                    mSamplingRate = data.getExtras().getDouble("SamplingRate", -1);
+                    if (mSamplingRate != -1) {
+                        mService.writeSamplingRate(mCurrentBluetoothDeviceAddress, mSamplingRate);
+                    }
 
-                        if (data.getExtras().getInt("AccelRange", -1) != -1) {
-                            mService.writeAccelRange(mCurrentDevice, data.getExtras().getInt("AccelRange", -1));
-                        }
+                    mAccelerometerRange = data.getExtras().getInt("AccelerometerRange", -1);
+                    if (mAccelerometerRange != -1) {
+                        mService.writeAccelerometerRange(mCurrentBluetoothDeviceAddress, mAccelerometerRange);
+                    }
 
-                        if (data.getExtras().getInt("GSRRange", -1) != -1) {
-                            mService.writeGSRRange(mCurrentDevice, data.getExtras().getInt("GSRRange", -1));
-                        }
-
+                    mGyroscopeRange = data.getExtras().getInt("GyroscopeRange", -1);
+                    if (mGyroscopeRange != -1) {
+                        mService.writeGyroscopeRange(mCurrentBluetoothDeviceAddress, mGyroscopeRange);
                     }
                 }
                 break;
             case MainActivity.REQUEST_CONFIGURE_SHIMMER:
                 if (resultCode == Activity.RESULT_OK) {
-                    Log.v("TAG", "current device set sensors: " + mCurrentDevice + ", " + data.getExtras().getInt(ShimmerSensorActivationActivity.mDone));
-                    mService.setEnabledSensors(data.getExtras().getInt(ShimmerSensorActivationActivity.mDone), mCurrentDevice);
+                    Log.d(TAG, "Current device set sensors: " + mCurrentBluetoothDeviceAddress + ", " + data.getExtras().getInt(ShimmerSensorActivationActivity.mDone));
+                    mService.setEnabledSensors(data.getExtras().getInt(ShimmerSensorActivationActivity.mDone), mCurrentBluetoothDeviceAddress);
                 }
                 break;
         }
     }
 
-    public void onPause() {
-        super.onPause();
-
-        Log.d("ShimmerH", "MCA on Pause");
-    }
-
-    public void onResume() {
-        super.onResume();
-
-        Intent intent = new Intent(ShimmerMainConfigurationActivity.this, MainActivity.class);
-        Log.d("ShimmerH", "MCA on Resume");
-    }
-
-
-    private ServiceConnection mTestServiceConnection = new ServiceConnection() {
+    private ServiceConnection mSensorServiceConnection = new ServiceConnection() {
 
         public void onServiceConnected(ComponentName arg0, IBinder service) {
             SensorService.LocalBinder binder = (SensorService.LocalBinder) service;
-            Log.v("TAG", "service bekommen");
             mService = binder.getService();
-            mSamplingRate = mService.getSamplingRate(mCurrentDevice);
-            mAccelRange = mService.getAccelRange(mCurrentDevice);
-            mGSRRange = mService.getGSRRange(mCurrentDevice);
+            Log.d(TAG, "Service connected");
         }
 
-        public void onServiceDisconnected(ComponentName arg0) {
-        }
+        public void onServiceDisconnected(ComponentName arg0) {}
     };
 }

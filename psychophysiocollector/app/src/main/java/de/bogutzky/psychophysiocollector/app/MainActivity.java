@@ -586,13 +586,10 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
             int shimmerImuCount = mService.shimmerImuMap.values().size();
             if(shimmerImuCount > 0 && deviceNames.get(position).contains("RN42")) {
                 Object o = l.getItemAtPosition(position);
-                Intent mainCommandIntent = new Intent(MainActivity.this, ShimmerMainConfigurationActivity.class);
-                mainCommandIntent.putExtra("LocalDeviceID", o.toString());
-                String mac = getBluetoothAddresses().get(position);
-                mainCommandIntent.putExtra("mac", mac);
-                mainCommandIntent.putExtra("CurrentSlot", position);
-                mainCommandIntent.putExtra("requestCode", REQUEST_MAIN_COMMAND_SHIMMER);
-                startActivityForResult(mainCommandIntent, REQUEST_MAIN_COMMAND_SHIMMER);
+                Intent intent = new Intent(MainActivity.this, ShimmerMainConfigurationActivity.class);
+                intent.putExtra("DeviceName", o.toString());
+                intent.putExtra("BluetoothDeviceAddress", getBluetoothAddresses().get(position));
+                startActivityForResult(intent, REQUEST_MAIN_COMMAND_SHIMMER);
             }
         }
     }
