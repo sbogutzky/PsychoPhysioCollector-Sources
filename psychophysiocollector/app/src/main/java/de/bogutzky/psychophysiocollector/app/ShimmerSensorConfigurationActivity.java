@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -20,7 +19,10 @@ import java.util.Arrays;
 import java.util.Locale;
 
 public class ShimmerSensorConfigurationActivity extends Activity {
-    private static final String TAG = "ShimmerSConfigActivity";
+    //private static final String TAG = "ShimmerSConfigActivity";
+	public final static String[] samplingRates = {"10","51,2","102,4","128","170,7","204,8","256","512"};
+	public final static String[] accelerometerRanges = {"+/- 1,5g","+/- 6g"};
+	public final static String[] gyroscopeRanges = {"+/- 250 dps","+/- 500 dps","+/- 1000 dps","+/- 2000 dps"};
 
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,19 +33,18 @@ public class ShimmerSensorConfigurationActivity extends Activity {
     	double samplingRate = extras.getDouble("SamplingRate");
     	int accelerometerRange = extras.getInt("AccelerometerRange");
     	int gyroscopeRange = extras.getInt("GyroscopeRange");
-        Log.d(TAG, "Gyroscope Range: " + gyroscopeRange);
-    	
-    	String[] samplingRates = new String [] {"10","51,2","102,4","128","170,7","204,8","256","512"};
-    	String[] accelerometerRanges = new String [] {getString(R.string.acceleration_range_1_5g),getString(R.string.acceleration_range_6_0g)};
 
     	final ListView listViewSamplingRate = (ListView) findViewById(R.id.listViewSamplingRates);
-        final ListView listViewAccelRange = (ListView) findViewById(R.id.listViewAccelerationRanges);
+        final ListView listViewAccelerometerRange = (ListView) findViewById(R.id.listViewAccelerometerRanges);
+		final ListView listViewGyroscopeRange = (ListView) findViewById(R.id.listViewGyroscopeRange);
         
         final TextView textViewCurrentSamplingRate = (TextView) findViewById(R.id.textViewCurrentSamplingRate);
-        final TextView textViewCurrentAccelRange = (TextView) findViewById(R.id.textViewCurrentAccelerationRange);
+        final TextView textViewCurrentAccelerometerRange = (TextView) findViewById(R.id.textViewCurrentAccelerometerRange);
+		final TextView textViewCurrentGyroscopeRange = (TextView) findViewById(R.id.textViewCurrentGyroscopeRange);
         
         textViewCurrentSamplingRate.setTextColor(Color.rgb(0, 135, 202));
-        textViewCurrentAccelRange.setTextColor(Color.rgb(0, 135, 202));
+        textViewCurrentAccelerometerRange.setTextColor(Color.rgb(0, 135, 202));
+		textViewCurrentGyroscopeRange.setTextColor(Color.rgb(0, 135, 202));
 
         if (samplingRate != -1){
         	textViewCurrentSamplingRate.setText(String.format("%3.1f", Math.round(samplingRate * 10.0)/10.0));
@@ -52,23 +53,30 @@ public class ShimmerSensorConfigurationActivity extends Activity {
         }
         
         if (accelerometerRange == 0){
-        	textViewCurrentAccelRange.setText(R.string.acceleration_range_1_5g);
+        	textViewCurrentAccelerometerRange.setText(R.string.acceleration_range_1_5g);
         }
         else if (accelerometerRange == 3){
-        	textViewCurrentAccelRange.setText(R.string.acceleration_range_6_0g);
+        	textViewCurrentAccelerometerRange.setText(R.string.acceleration_range_6_0g);
         } else {
-        	textViewCurrentAccelRange.setText("");
+        	textViewCurrentAccelerometerRange.setText("");
         }
+
+		textViewCurrentGyroscopeRange.setText(gyroscopeRanges[gyroscopeRange]);
         
     	ArrayList<String> samplingRateList = new ArrayList<>();
-    	samplingRateList.addAll( Arrays.asList(samplingRates) );
-        ArrayAdapter<String> sR = new ArrayAdapter<>(this, R.layout.commands_name,samplingRateList);
-    	listViewSamplingRate.setAdapter(sR);
+    	samplingRateList.addAll(Arrays.asList(samplingRates));
+        ArrayAdapter<String> samplingRateArrayAdapter = new ArrayAdapter<>(this, R.layout.commands_name, samplingRateList);
+    	listViewSamplingRate.setAdapter(samplingRateArrayAdapter);
     	
-    	ArrayList<String> accelRangeList = new ArrayList<>();
-    	accelRangeList.addAll( Arrays.asList(accelerometerRanges) );
-        ArrayAdapter<String> sR2 = new ArrayAdapter<>(this, R.layout.commands_name,accelRangeList);
-    	listViewAccelRange.setAdapter(sR2);
+    	ArrayList<String> accelerometerRangeList = new ArrayList<>();
+    	accelerometerRangeList.addAll(Arrays.asList(accelerometerRanges));
+        ArrayAdapter<String> accelerometerRangeArrayAdapter = new ArrayAdapter<>(this, R.layout.commands_name, accelerometerRangeList);
+    	listViewAccelerometerRange.setAdapter(accelerometerRangeArrayAdapter);
+
+		ArrayList<String> gyroscopeRangeList = new ArrayList<>();
+		gyroscopeRangeList.addAll(Arrays.asList(gyroscopeRanges));
+		ArrayAdapter<String> gyroscopeRangeArrayAdapter = new ArrayAdapter<>(this, R.layout.commands_name, gyroscopeRangeList);
+		listViewGyroscopeRange.setAdapter(gyroscopeRangeArrayAdapter);
     	
     	Button buttonToggleLED = (Button) findViewById(R.id.buttonToggleLed);
 	    
@@ -86,44 +94,57 @@ public class ShimmerSensorConfigurationActivity extends Activity {
     	
     	listViewSamplingRate.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
-  		  public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
-			  Object o = listViewSamplingRate.getItemAtPosition(position);
-			  Intent intent = new Intent();
+			public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
+				Object o = listViewSamplingRate.getItemAtPosition(position);
+				Intent intent = new Intent();
 
-			  Locale current = getResources().getConfiguration().locale;
-			  NumberFormat format = NumberFormat.getInstance(current);
-			  try {
-                  Number number = format.parse(o.toString());
-                  intent.putExtra("SamplingRate", number.doubleValue());
+				Locale current = getResources().getConfiguration().locale;
+				NumberFormat format = NumberFormat.getInstance(current);
+				try {
+					Number number = format.parse(o.toString());
+					intent.putExtra("SamplingRate", number.doubleValue());
 
-                  // Set result and finish this Activity
-                  setResult(Activity.RESULT_OK, intent);
-                  finish();
-			  } catch (ParseException e) {
-				  e.printStackTrace();
-			  }
-  		  }
-  		});
-  	
-  	listViewAccelRange.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+					// Set result and finish this Activity
+					setResult(Activity.RESULT_OK, intent);
+					finish();
+				} catch (ParseException e) {
+					e.printStackTrace();
+				}
+			}
+		});
 
-		  public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
+		listViewAccelerometerRange.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
-		        Object o = listViewAccelRange.getItemAtPosition(position);
-		        int accelerometerRange = 0;
-		        if (o.toString().equals(getString(R.string.acceleration_range_1_5g))) {
-		    	    accelerometerRange = 0;
-		        } else if (o.toString().equals(getString(R.string.acceleration_range_6_0g))) {
-		    	    accelerometerRange = 3;
-		        }
-		        Intent intent = new Intent();
-                intent.putExtra("AccelerometerRange", accelerometerRange);
+			public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
 
-                // Set result and finish this Activity
-                setResult(Activity.RESULT_OK, intent);
-                finish();
-		  }
-    });
+				Object o = listViewAccelerometerRange.getItemAtPosition(position);
+				int accelerometerRange = 0;
+				if (o.toString().equals(getString(R.string.acceleration_range_1_5g))) {
+					accelerometerRange = 0;
+				} else if (o.toString().equals(getString(R.string.acceleration_range_6_0g))) {
+					accelerometerRange = 3;
+				}
+				Intent intent = new Intent();
+				intent.putExtra("AccelerometerRange", accelerometerRange);
 
+				// Set result and finish this Activity
+				setResult(Activity.RESULT_OK, intent);
+				finish();
+			}
+		});
+
+
+		listViewGyroscopeRange.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+			public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
+
+				Intent intent = new Intent();
+				intent.putExtra("GyroscopeRange", position);
+
+				// Set result and finish this Activity
+				setResult(Activity.RESULT_OK, intent);
+				finish();
+			}
+		});
 	}
 }

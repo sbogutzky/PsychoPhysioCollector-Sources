@@ -40,43 +40,39 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
-                android:text="@string/imu_settings_acceleration_range" />
+                android:text="@string/imu_settings_accelerometer_range" />
 
             <TextView
-                android:id="@+id/textViewCurrentAccelerationRange"
+                android:id="@+id/textViewCurrentAccelerometerRange"
                 android:layout_width="match_parent"
                 android:layout_height="40dp" />
 
             <ListView
-                android:id="@+id/listViewAccelerationRanges"
+                android:id="@+id/listViewAccelerometerRanges"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
         </LinearLayout>
 
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="120dp"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
             <TextView
-                android:visibility="invisible"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:text="@string/imu_settings_gsr_range" />
+                android:layout_height="40dp"
+                android:text="@string/imu_settings_gyroscope_range" />
 
             <TextView
-                android:id="@+id/textViewCurrentGsrRange"
-                android:visibility="invisible"
+                android:id="@+id/textViewCurrentGyroscopeRange"
                 android:layout_width="match_parent"
                 android:layout_height="40dp" />
 
             <ListView
-                android:id="@+id/listViewGsrRange"
+                android:id="@+id/listViewGyroscopeRange"
                 android:layout_width="match_parent"
-                android:layout_height="40dp"
-                android:visibility="invisible">
-            </ListView>
+                android:layout_height="wrap_content" />
 
         </LinearLayout>
     </LinearLayout>
