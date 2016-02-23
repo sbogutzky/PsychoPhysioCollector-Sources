@@ -1013,6 +1013,10 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
         Random rnd = new Random();
         try {
             JSONArray questions = questionnaire.getJSONObject("questionnaire").getJSONArray("questions");
+
+            // fragen zufällig sortieren
+            questions = Utils.shuffleJsonArray(questions);
+
             int tmpid = 0;
             int tmpid2 = 0;
             int tmpid3 = 0;
