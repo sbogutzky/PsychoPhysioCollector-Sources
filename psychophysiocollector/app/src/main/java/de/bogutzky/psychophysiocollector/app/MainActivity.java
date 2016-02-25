@@ -115,29 +115,29 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
     private Spinner questionnaireSpinner;
     private int scaleTimerValue;
     private int scaleTimerVarianceValue;
-    private String[][] accelerometerValues;
+    private Double[][] accelerometerValues;
     private int accelerometerValueCount;
-    private String[][] gyroscopeValues;
+    private Double[][] gyroscopeValues;
     private int gyroscopeValueCount;
-    private String[][] linearAccelerationValues;
+    private Double[][] linearAccelerationValues;
     private int linearAccelerationValueCount;
-    private String[][] bhHeartRateValues;
+    private Double[][] bhHeartRateValues;
     private int bhHeartRateValueCount;
-    private String[][] bhRespirationRateValues;
+    private Double[][] bhRespirationRateValues;
     private int bhRespirationRateValueCount;
-    private String[][] bhSkinTemperatureValues;
+    private Double[][] bhSkinTemperatureValues;
     private int bhSkinTemperatureValueCount;
-    private String[][] bhPostureValues;
+    private Double[][] bhPostureValues;
     private int bhPostureValueCount;
-    private String[][] bhPeakAccelerationValues;
+    private Double[][] bhPeakAccelerationValues;
     private int bhPeakAccelerationValueCount;
-    private String[][] bhRRIntervalValues;
+    private Double[][] bhRRIntervalValues;
     private int bhRRIntervalValueCount;
-    private String[][] bhAxisAccelerationValues;
+    private Double[][] bhAxisAccelerationValues;
     private int bhAxisAccelerationValueCount;
-    private String[][] bhBreathingValues;
+    private Double[][] bhBreathingValues;
     private int bhBreathingValueCount;
-    private String[][] bhEcgValues;
+    private Double[][] bhEcgValues;
     private int bhEcgValueCount;
 
     private String questionnaireFileName = "questionnaires/fks.json";
@@ -649,15 +649,15 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
         bhAxisAccelerationValueCount = 0;
         bhBreathingValueCount = 0;
         bhEcgValueCount = 0;
-        bhHeartRateValues = new String[DATA_ARRAY_SIZE][2];
-        bhPostureValues = new String[DATA_ARRAY_SIZE][2];
-        bhPeakAccelerationValues = new String[DATA_ARRAY_SIZE][2];
-        bhSkinTemperatureValues = new String[DATA_ARRAY_SIZE][2];
-        bhRespirationRateValues = new String[DATA_ARRAY_SIZE][2];
-        bhRRIntervalValues = new String[DATA_ARRAY_SIZE][2];
-        bhAxisAccelerationValues = new String[DATA_ARRAY_SIZE][4];
-        bhBreathingValues = new String[DATA_ARRAY_SIZE][2];
-        bhEcgValues = new String[DATA_ARRAY_SIZE][2];
+        bhHeartRateValues = new Double[DATA_ARRAY_SIZE][2];
+        bhPostureValues = new Double[DATA_ARRAY_SIZE][2];
+        bhPeakAccelerationValues = new Double[DATA_ARRAY_SIZE][2];
+        bhSkinTemperatureValues = new Double[DATA_ARRAY_SIZE][2];
+        bhRespirationRateValues = new Double[DATA_ARRAY_SIZE][2];
+        bhRRIntervalValues = new Double[DATA_ARRAY_SIZE][2];
+        bhAxisAccelerationValues = new Double[DATA_ARRAY_SIZE][4];
+        bhBreathingValues = new Double[DATA_ARRAY_SIZE][2];
+        bhEcgValues = new Double[DATA_ARRAY_SIZE][2];
     }
 
     private void createBioHarnessFiles() {
@@ -732,7 +732,6 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
         } catch (IOException e) {
             Log.e(TAG, "Error while writing in file", e);
         }
-////////////////
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_axis_acceleration)), true)); //TODO: RENAME
             String outputString = getHeaderComments();
@@ -1261,11 +1260,11 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
 
     private void startStreamingInternalSensorData() {
 
-        this.accelerometerValues = new String[INTERNAL_SENSOR_CACHE_LENGTH][4];
+        this.accelerometerValues = new Double[INTERNAL_SENSOR_CACHE_LENGTH][4];
         this.accelerometerValueCount = 0;
-        this.gyroscopeValues = new String[INTERNAL_SENSOR_CACHE_LENGTH][4];
+        this.gyroscopeValues = new Double[INTERNAL_SENSOR_CACHE_LENGTH][4];
         this.gyroscopeValueCount = 0;
-        this.linearAccelerationValues = new String[INTERNAL_SENSOR_CACHE_LENGTH][4];
+        this.linearAccelerationValues = new Double[INTERNAL_SENSOR_CACHE_LENGTH][4];
         this.linearAccelerationValueCount = 0;
 
         try {
@@ -1353,10 +1352,10 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
                 }
                 double relativeTimestamp = this.accelerometerStartTimestamp + (event.timestamp - this.accelerometerEventStartTimestamp) / 1000000.0;
 
-                accelerometerValues[accelerometerValueCount][0] = decimalFormat.format(relativeTimestamp);
-                accelerometerValues[accelerometerValueCount][1] = Float.toString(event.values[0]);
-                accelerometerValues[accelerometerValueCount][2] = Float.toString(event.values[1]);
-                accelerometerValues[accelerometerValueCount][3] = Float.toString(event.values[2]);
+                accelerometerValues[accelerometerValueCount][0] = Double.parseDouble(decimalFormat.format(relativeTimestamp));
+                accelerometerValues[accelerometerValueCount][1] = Double.parseDouble(Float.toString(event.values[0]));
+                accelerometerValues[accelerometerValueCount][2] = Double.parseDouble(Float.toString(event.values[1]));
+                accelerometerValues[accelerometerValueCount][3] = Double.parseDouble(Float.toString(event.values[2]));
 
                 accelerometerValueCount++;
                 if(accelerometerValueCount > accelerometerValues.length - 2) {
@@ -1364,12 +1363,12 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
                         accelerometerValueCount = 0;
                         setWritingData(true);
                         writeAccelerometerValues(false, 1);
-                        linearAccelerationValues = new String[INTERNAL_SENSOR_CACHE_LENGTH][4];
+                        linearAccelerationValues = new Double[INTERNAL_SENSOR_CACHE_LENGTH][4];
                     } else if(!secondWritingData) {
                         accelerometerValueCount = 0;
                         setSecondWritingData(true);
                         writeAccelerometerValues(false, 2);
-                        linearAccelerationValues = new String[INTERNAL_SENSOR_CACHE_LENGTH][4];
+                        linearAccelerationValues = new Double[INTERNAL_SENSOR_CACHE_LENGTH][4];
                     } else {
                         if(accelerometerValueCount > 5000) {
                             writeAccelerometerValues(false, 2);
@@ -1386,10 +1385,10 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
                 }
                 double relativeTimestamp = this.gyroscopeStartTimestamp + (event.timestamp - this.gyroscopeEventStartTimestamp) / 1000000.0;
 
-                gyroscopeValues[gyroscopeValueCount][0] = decimalFormat.format(relativeTimestamp);
-                gyroscopeValues[gyroscopeValueCount][1] = Float.toString((float) (event.values[0] * 180.0 / Math.PI));
-                gyroscopeValues[gyroscopeValueCount][2] = Float.toString((float) (event.values[1] * 180.0 / Math.PI));
-                gyroscopeValues[gyroscopeValueCount][3] = Float.toString((float) (event.values[2] * 180.0 / Math.PI));
+                gyroscopeValues[gyroscopeValueCount][0] = Double.parseDouble(decimalFormat.format(relativeTimestamp));
+                gyroscopeValues[gyroscopeValueCount][1] = Double.parseDouble(Float.toString((float) (event.values[0] * 180.0 / Math.PI)));
+                gyroscopeValues[gyroscopeValueCount][2] = Double.parseDouble(Float.toString((float) (event.values[1] * 180.0 / Math.PI)));
+                gyroscopeValues[gyroscopeValueCount][3] = Double.parseDouble(Float.toString((float) (event.values[2] * 180.0 / Math.PI)));
 
                 gyroscopeValueCount++;
                 if(gyroscopeValueCount > gyroscopeValues.length - 2) {
@@ -1397,12 +1396,12 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
                         gyroscopeValueCount = 0;
                         setWritingData(true);
                         writeGyroscopeValues(false, 1);
-                        gyroscopeValues = new String[INTERNAL_SENSOR_CACHE_LENGTH][4];
+                        gyroscopeValues = new Double[INTERNAL_SENSOR_CACHE_LENGTH][4];
                     } else if(!secondWritingData) {
                         gyroscopeValueCount = 0;
                         setSecondWritingData(true);
                         writeGyroscopeValues(false, 2);
-                        gyroscopeValues = new String[INTERNAL_SENSOR_CACHE_LENGTH][4];
+                        gyroscopeValues = new Double[INTERNAL_SENSOR_CACHE_LENGTH][4];
                     } else {
                         if(gyroscopeValueCount > 5000) {
                             writeGyroscopeValues(false, 2);
@@ -1420,10 +1419,10 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
                 }
                 double relativeTimestamp = this.linearAccelerationSensorStartTimestamp + (event.timestamp - this.linearAccelerationSensorEventStartTimestamp) / 1000000.0;
 
-                linearAccelerationValues[linearAccelerationValueCount][0] = decimalFormat.format(relativeTimestamp);
-                linearAccelerationValues[linearAccelerationValueCount][1] = Float.toString(event.values[0]);
-                linearAccelerationValues[linearAccelerationValueCount][2] = Float.toString(event.values[1]);
-                linearAccelerationValues[linearAccelerationValueCount][3] = Float.toString(event.values[2]);
+                linearAccelerationValues[linearAccelerationValueCount][0] = Double.parseDouble(decimalFormat.format(relativeTimestamp));
+                linearAccelerationValues[linearAccelerationValueCount][1] = Double.parseDouble(Float.toString(event.values[0]));
+                linearAccelerationValues[linearAccelerationValueCount][2] = Double.parseDouble(Float.toString(event.values[1]));
+                linearAccelerationValues[linearAccelerationValueCount][3] = Double.parseDouble(Float.toString(event.values[2]));
 
                 linearAccelerationValueCount++;
                 if(linearAccelerationValueCount > linearAccelerationValues.length - 2) {
@@ -1431,12 +1430,12 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
                         linearAccelerationValueCount = 0;
                         setWritingData(true);
                         writeLinearAccelerationValues(false, 1);
-                        accelerometerValues = new String[INTERNAL_SENSOR_CACHE_LENGTH][4];
+                        accelerometerValues = new Double[INTERNAL_SENSOR_CACHE_LENGTH][4];
                     } else if(!secondWritingData) {
                         linearAccelerationValueCount = 0;
                         setSecondWritingData(true);
                         writeLinearAccelerationValues(false, 2);
-                        accelerometerValues = new String[INTERNAL_SENSOR_CACHE_LENGTH][4];
+                        accelerometerValues = new Double[INTERNAL_SENSOR_CACHE_LENGTH][4];
                     } else {
                         if(linearAccelerationValueCount > 5000) {
                             writeLinearAccelerationValues(false, 2);
@@ -1451,23 +1450,23 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
 
     private void writeLinearAccelerationValues(boolean footer, int slot) {
         if(footer)
-            writeData(linearAccelerationValues, getString(R.string.file_name_linear_acceleration), 4, true, getFooterComments(), slot);
+            writeData(linearAccelerationValues, getString(R.string.file_name_linear_acceleration), 4, linearAccelerationValues.length, getFooterComments());
         else
-            writeData(linearAccelerationValues, getString(R.string.file_name_linear_acceleration), 4, false, "", slot);
+            writeData(linearAccelerationValues, getString(R.string.file_name_linear_acceleration), 4, linearAccelerationValues.length, "");
     }
 
     private void writeGyroscopeValues(boolean footer, int slot) {
         if(footer)
-            writeData(gyroscopeValues, getString(R.string.file_name_angular_velocity), 4, true, getFooterComments(), slot);
+            writeData(gyroscopeValues, getString(R.string.file_name_angular_velocity), 4, gyroscopeValues.length, getFooterComments());
         else
-            writeData(gyroscopeValues, getString(R.string.file_name_angular_velocity), 4, false, "", slot);
+            writeData(gyroscopeValues, getString(R.string.file_name_angular_velocity), 4, gyroscopeValues.length, "");
     }
 
     private void writeAccelerometerValues(boolean footer, int slot) {
         if(footer)
-            writeData(accelerometerValues, getString(R.string.file_name_acceleration), 4, true, getFooterComments(), slot);
+            writeData(accelerometerValues, getString(R.string.file_name_acceleration), 4, accelerometerValues.length, getFooterComments());
         else
-            writeData(accelerometerValues, getString(R.string.file_name_acceleration), 4, false, "", slot);
+            writeData(accelerometerValues, getString(R.string.file_name_acceleration), 4, accelerometerValues.length, "");
     }
 
     private void writeFoooter (String data, String filename) {
@@ -1529,7 +1528,7 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
         private File root;
         private int i = 0;
         private int maxValueCount;
-        private String[][] values;
+        private Double[][] values;
 
         public GPSListener(String filename, String directoryName, int maxValueCount) {
             this.filename = filename;
@@ -1538,7 +1537,7 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
             this.root = getStorageDirectory(this.directoryName);
 
             this.maxValueCount = maxValueCount;
-            this.values = new String[maxValueCount][4];
+            this.values = new Double[maxValueCount][4];
 
             try {
                 BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, this.filename), true));
@@ -1557,10 +1556,10 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
         public void onLocationChanged(Location location) {
             if (loggingEnabled) {
                 double time = location.getTime() - startTimestamp;
-                values[i][0] = Double.toString(time);
-                values[i][1] = Float.toString((float) location.getLatitude());
-                values[i][2] = Float.toString((float) location.getLongitude());
-                values[i][3] = Float.toString((float) location.getAltitude());
+                values[i][0] = time;
+                values[i][1] = location.getLatitude();
+                values[i][2] = location.getLongitude();
+                values[i][3] = location.getAltitude();
 
                 i++;
                 if(i > maxValueCount - 1) {
@@ -1568,12 +1567,12 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
                         i = 0;
                         setWritingData(true);
                         writeGpsValues(false, 1);
-                        values = new String[maxValueCount][4];
+                        values = new Double[maxValueCount][4];
                     } else if(!secondWritingData) {
                         i = 0;
                         setSecondWritingData(true);
                         writeGpsValues(false, 2);
-                        values = new String[maxValueCount][4];
+                        values = new Double[maxValueCount][4];
                     } else {
                         values = resizeArray(values);
                     }
@@ -1587,9 +1586,9 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
 
         public void writeGpsValues(boolean footer, int slot) {
             if(footer)
-                writeData(values,this.filename,4, true, getFooterComments(), slot);
+                writeData(values,this.filename,4, values.length, getFooterComments());
             else
-                writeData(values,this.filename,4, false, "", slot);
+                writeData(values,this.filename,4, values.length, "");
         }
 
         @Override
@@ -1651,20 +1650,20 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
                         }
                         rrTime += rrInterval;
 
-                        bhRRIntervalValues[bhRRIntervalValueCount][0] = String.valueOf(rrTime);
-                        bhRRIntervalValues[bhRRIntervalValueCount][1] = String.valueOf(rrInterval);
+                        bhRRIntervalValues[bhRRIntervalValueCount][0] = rrTime;
+                        bhRRIntervalValues[bhRRIntervalValueCount][1] = Double.parseDouble(String.valueOf(rrInterval));
                         bhRRIntervalValueCount++;
                         if(bhRRIntervalValueCount >= bhRRIntervalValues.length) {
                             if(!writingData) {
                                 bhRRIntervalValueCount = 0;
                                 setWritingData(true);
-                                writeData(bhRRIntervalValues, getString(R.string.file_name_rr_interval), 2, false, "", 1);
-                                bhRRIntervalValues = new String[DATA_ARRAY_SIZE][2];
+                                writeData(bhRRIntervalValues, getString(R.string.file_name_rr_interval), 2, bhRRIntervalValues.length, "");
+                                bhRRIntervalValues = new Double[DATA_ARRAY_SIZE][2];
                             } else if(!secondWritingData) {
                                 bhRRIntervalValueCount = 0;
                                 setSecondWritingData(true);
-                                writeData(bhRRIntervalValues, getString(R.string.file_name_rr_interval), 2, false, "", 2);
-                                bhRRIntervalValues = new String[DATA_ARRAY_SIZE][2];
+                                writeData(bhRRIntervalValues, getString(R.string.file_name_rr_interval), 2, bhRRIntervalValues.length, "");
+                                bhRRIntervalValues = new Double[DATA_ARRAY_SIZE][2];
                             } else {
                                 bhRRIntervalValues = resizeArray(bhRRIntervalValues);
                             }
@@ -1680,21 +1679,21 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
                             bhStartTimestamp = System.currentTimeMillis() - startTimestamp;
                         }
                         time = bhStartTimestamp + (timestamp - firstbhHeartRateTimestamp) / 1000.0;
-                        bhHeartRateValues[bhHeartRateValueCount][0] = String.valueOf(time);
-                        bhHeartRateValues[bhHeartRateValueCount][1] = HeartRatetext;
+                        bhHeartRateValues[bhHeartRateValueCount][0] = time;
+                        bhHeartRateValues[bhHeartRateValueCount][1] = Double.parseDouble(HeartRatetext);
                         bhHeartRateValueCount++;
                         System.out.println("Heart Rate Info is " + HeartRatetext);
                         if(bhHeartRateValueCount >= bhHeartRateValues.length) {
                             if(!writingData) {
                                 bhHeartRateValueCount = 0;
                                 setWritingData(true);
-                                writeData(bhHeartRateValues, getString(R.string.file_name_heart_rate), 2, false, "", 1);
-                                bhHeartRateValues = new String[DATA_ARRAY_SIZE][2];
+                                writeData(bhHeartRateValues, getString(R.string.file_name_heart_rate), 2, bhHeartRateValues.length, "");
+                                bhHeartRateValues = new Double[DATA_ARRAY_SIZE][2];
                             } else if(!secondWritingData) {
                                 bhHeartRateValueCount = 0;
                                 setSecondWritingData(true);
-                                writeData(bhHeartRateValues, getString(R.string.file_name_heart_rate), 2, false, "", 2);
-                                bhHeartRateValues = new String[DATA_ARRAY_SIZE][2];
+                                writeData(bhHeartRateValues, getString(R.string.file_name_heart_rate), 2, bhHeartRateValues.length, "");
+                                bhHeartRateValues = new Double[DATA_ARRAY_SIZE][2];
                             } else {
                                 bhHeartRateValues = resizeArray(bhHeartRateValues);
                             }
@@ -1710,21 +1709,21 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
                                 bhStartTimestamp = System.currentTimeMillis() - startTimestamp;
                             }
                             time = bhStartTimestamp + (timestamp - firstRespirationRateTimestamp);
-                            bhRespirationRateValues[bhRespirationRateValueCount][0] = String.valueOf(time);
-                            bhRespirationRateValues[bhRespirationRateValueCount][1] = RespirationRatetext;
+                            bhRespirationRateValues[bhRespirationRateValueCount][0] = time;
+                            bhRespirationRateValues[bhRespirationRateValueCount][1] = Double.parseDouble(RespirationRatetext);
                             bhRespirationRateValueCount++;
                             System.out.println("RespirationRate Info is " + RespirationRatetext);
                             if(bhRespirationRateValueCount >= bhRespirationRateValues.length) {
                                 if(!writingData) {
                                     bhRespirationRateValueCount = 0;
                                     setWritingData(true);
-                                    writeData(bhRespirationRateValues, getString(R.string.file_name_respiration_rate), 2, false, "", 1);
-                                    bhRespirationRateValues = new String[DATA_ARRAY_SIZE][2];
+                                    writeData(bhRespirationRateValues, getString(R.string.file_name_respiration_rate), 2, bhRespirationRateValues.length, "");
+                                    bhRespirationRateValues = new Double[DATA_ARRAY_SIZE][2];
                                 } else if(!secondWritingData) {
                                     bhRespirationRateValueCount = 0;
                                     setSecondWritingData(true);
-                                    writeData(bhRespirationRateValues, getString(R.string.file_name_respiration_rate), 2, false, "", 2);
-                                    bhRespirationRateValues = new String[DATA_ARRAY_SIZE][2];
+                                    writeData(bhRespirationRateValues, getString(R.string.file_name_respiration_rate), 2, bhRespirationRateValues.length, "");
+                                    bhRespirationRateValues = new Double[DATA_ARRAY_SIZE][2];
                                 } else {
                                     bhRespirationRateValues = resizeArray(bhRespirationRateValues);
                                 }
@@ -1740,21 +1739,21 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
                             bhStartTimestamp = System.currentTimeMillis() - startTimestamp;
                         }
                         time = bhStartTimestamp + (timestamp - firstSkinTemperatureTimestamp);
-                        bhSkinTemperatureValues[bhSkinTemperatureValueCount][0] = String.valueOf(time);
-                        bhSkinTemperatureValues[bhSkinTemperatureValueCount][1] = SkinTemperaturetext;
+                        bhSkinTemperatureValues[bhSkinTemperatureValueCount][0] = time;
+                        bhSkinTemperatureValues[bhSkinTemperatureValueCount][1] = Double.parseDouble(SkinTemperaturetext);
                         bhSkinTemperatureValueCount++;
                         System.out.println("SkinTemperature Info is " + SkinTemperaturetext);
                         if(bhSkinTemperatureValueCount >= bhSkinTemperatureValues.length) {
                             if(!writingData) {
                                 bhSkinTemperatureValueCount = 0;
                                 setWritingData(true);
-                                writeData(bhSkinTemperatureValues, getString(R.string.file_name_skin_temperature), 2, false, "", 1);
-                                bhSkinTemperatureValues = new String[DATA_ARRAY_SIZE][2];
+                                writeData(bhSkinTemperatureValues, getString(R.string.file_name_skin_temperature), 2, bhSkinTemperatureValues.length, "");
+                                bhSkinTemperatureValues = new Double[DATA_ARRAY_SIZE][2];
                             } else if(!secondWritingData) {
                                 bhSkinTemperatureValueCount = 0;
                                 setSecondWritingData(true);
-                                writeData(bhSkinTemperatureValues, getString(R.string.file_name_skin_temperature), 2, false, "", 2);
-                                bhSkinTemperatureValues = new String[DATA_ARRAY_SIZE][2];
+                                writeData(bhSkinTemperatureValues, getString(R.string.file_name_skin_temperature), 2, bhSkinTemperatureValues.length, "");
+                                bhSkinTemperatureValues = new Double[DATA_ARRAY_SIZE][2];
                             } else {
                                 bhSkinTemperatureValues = resizeArray(bhSkinTemperatureValues);
                             }
@@ -1769,21 +1768,21 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
                             bhStartTimestamp = System.currentTimeMillis() - startTimestamp;
                         }
                         time = bhStartTimestamp + (timestamp - firstbhPostureTimestamp);
-                        bhPostureValues[bhPostureValueCount][0] = String.valueOf(time);
-                        bhPostureValues[bhPostureValueCount][1] = PostureText;
+                        bhPostureValues[bhPostureValueCount][0] = time;
+                        bhPostureValues[bhPostureValueCount][1] = Double.parseDouble(PostureText);
                         bhPostureValueCount++;
                         System.out.println("Posture Info is " + PostureText);
                         if(bhPostureValueCount >= bhPostureValues.length) {
                             if(!writingData) {
                                 bhPostureValueCount = 0;
                                 setWritingData(true);
-                                writeData(bhPostureValues, getString(R.string.file_name_posture), 2, false, "", 1);
-                                bhPostureValues = new String[DATA_ARRAY_SIZE][2];
+                                writeData(bhPostureValues, getString(R.string.file_name_posture), 2, bhPostureValues.length, "");
+                                bhPostureValues = new Double[DATA_ARRAY_SIZE][2];
                             } else if(!secondWritingData) {
                                 bhPostureValueCount = 0;
                                 setSecondWritingData(true);
-                                writeData(bhPostureValues, getString(R.string.file_name_posture), 2, false, "", 2);
-                                bhPostureValues = new String[DATA_ARRAY_SIZE][2];
+                                writeData(bhPostureValues, getString(R.string.file_name_posture), 2, bhPostureValues.length, "");
+                                bhPostureValues = new Double[DATA_ARRAY_SIZE][2];
                             } else {
                                 bhPostureValues = resizeArray(bhPostureValues);
                             }
@@ -1800,8 +1799,8 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
                         }
                         time = bhStartTimestamp + (timestamp - firstPeakAccelerationTimestamp);
 
-                        bhPeakAccelerationValues[bhPeakAccelerationValueCount][0] = String.valueOf(time);
-                        bhPeakAccelerationValues[bhPeakAccelerationValueCount][1] = PeakAccText;
+                        bhPeakAccelerationValues[bhPeakAccelerationValueCount][0] = time;
+                        bhPeakAccelerationValues[bhPeakAccelerationValueCount][1] = Double.parseDouble(PeakAccText);
                         bhPeakAccelerationValueCount++;
                         System.out.println("PeakAcceleration Info is " + PeakAccText);
 
@@ -1809,13 +1808,13 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
                             if(!writingData) {
                                 bhPeakAccelerationValueCount = 0;
                                 setWritingData(true);
-                                writeData(bhPeakAccelerationValues, getString(R.string.file_name_peak_acceleration), 2, false, "", 1);
-                                bhPeakAccelerationValues = new String[DATA_ARRAY_SIZE][2];
+                                writeData(bhPeakAccelerationValues, getString(R.string.file_name_peak_acceleration), 2, bhPeakAccelerationValues.length, "");
+                                bhPeakAccelerationValues = new Double[DATA_ARRAY_SIZE][2];
                             } else if(!secondWritingData) {
                                 bhPeakAccelerationValueCount = 0;
                                 setSecondWritingData(true);
-                                writeData(bhPeakAccelerationValues, getString(R.string.file_name_peak_acceleration), 2, false, "", 2);
-                                bhPeakAccelerationValues = new String[DATA_ARRAY_SIZE][2];
+                                writeData(bhPeakAccelerationValues, getString(R.string.file_name_peak_acceleration), 2, bhPeakAccelerationValues.length, "");
+                                bhPeakAccelerationValues = new Double[DATA_ARRAY_SIZE][2];
                             } else {
                                 bhPeakAccelerationValues = resizeArray(bhPeakAccelerationValues);
                             }
@@ -1830,19 +1829,20 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
                             bhStartTimestamp = System.currentTimeMillis() - startTimestamp;
                         }
                         time = bhStartTimestamp + (timestamp - firstBreathingTimestamp);
-                        bhBreathingValues[bhBreathingValueCount][0] = String.valueOf(time);
-                        bhBreathingValues[bhBreathingValueCount][1] = String.valueOf(interval);
+                        bhBreathingValues[bhBreathingValueCount][0] = time;
+                        bhBreathingValues[bhBreathingValueCount][1] = Double.parseDouble(String.valueOf(interval));
+                        bhBreathingValueCount++;
                         if(bhBreathingValueCount >= bhBreathingValues.length) {
                             if(!writingData) {
                                 bhBreathingValueCount = 0;
                                 setWritingData(true);
-                                writeData(bhBreathingValues, getString(R.string.file_name_breathing), 2, false, "", 1);
-                                bhBreathingValues = new String[DATA_ARRAY_SIZE][2];
+                                writeData(bhBreathingValues, getString(R.string.file_name_breathing), 2, bhBreathingValues.length, "");
+                                bhBreathingValues = new Double[DATA_ARRAY_SIZE][2];
                             } else if(!secondWritingData) {
                                 bhBreathingValueCount = 0;
                                 setSecondWritingData(true);
-                                writeData(bhBreathingValues, getString(R.string.file_name_breathing), 2, false, "", 2);
-                                bhBreathingValues = new String[DATA_ARRAY_SIZE][2];
+                                writeData(bhBreathingValues, getString(R.string.file_name_breathing), 2, bhBreathingValues.length, "");
+                                bhBreathingValues = new Double[DATA_ARRAY_SIZE][2];
                             } else {
                                 bhBreathingValues = resizeArray(bhBreathingValues);
                             }
@@ -1856,19 +1856,20 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
                             bhStartTimestamp = System.currentTimeMillis() - startTimestamp;
                         }
                         time = bhStartTimestamp + (timestamp - firstEcgTimestamp);
-                        bhEcgValues[bhEcgValueCount][0] = String.valueOf(time);
-                        bhEcgValues[bhEcgValueCount][1] = String.valueOf(voltage);
+                        bhEcgValues[bhEcgValueCount][0] = time;
+                        bhEcgValues[bhEcgValueCount][1] = Double.parseDouble(String.valueOf(voltage));
+                        bhEcgValueCount++;
                         if(bhEcgValueCount >= bhEcgValues.length) {
                             if(!writingData) {
                                 bhEcgValueCount = 0;
                                 setWritingData(true);
-                                writeData(bhEcgValues, getString(R.string.file_name_ecg), 2, false, "", 1);
-                                bhEcgValues = new String[DATA_ARRAY_SIZE][2];
+                                writeData(bhEcgValues, getString(R.string.file_name_ecg), 2, bhEcgValues.length, "");
+                                bhEcgValues = new Double[DATA_ARRAY_SIZE][2];
                             } else if(!secondWritingData) {
                                 bhEcgValueCount = 0;
                                 setSecondWritingData(true);
-                                writeData(bhEcgValues, getString(R.string.file_name_ecg), 2, false, "", 2);
-                                bhEcgValues = new String[DATA_ARRAY_SIZE][2];
+                                writeData(bhEcgValues, getString(R.string.file_name_ecg), 2, bhEcgValues.length, "");
+                                bhEcgValues = new Double[DATA_ARRAY_SIZE][2];
                             } else {
                                 bhEcgValues = resizeArray(bhEcgValues);
                             }
@@ -1884,21 +1885,22 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
                             bhStartTimestamp = System.currentTimeMillis() - startTimestamp;
                         }
                         time = bhStartTimestamp + (timestamp - firstAxisAccelerationTimestamp);
-                        bhAxisAccelerationValues[bhAxisAccelerationValueCount][0] = String.valueOf(time);
-                        bhAxisAccelerationValues[bhAxisAccelerationValueCount][0] = String.valueOf(acc_x);
-                        bhAxisAccelerationValues[bhAxisAccelerationValueCount][0] = String.valueOf(acc_y);
-                        bhAxisAccelerationValues[bhAxisAccelerationValueCount][0] = String.valueOf(acc_z);
+                        bhAxisAccelerationValues[bhAxisAccelerationValueCount][0] = time;
+                        bhAxisAccelerationValues[bhAxisAccelerationValueCount][0] = acc_x;
+                        bhAxisAccelerationValues[bhAxisAccelerationValueCount][0] = acc_y;
+                        bhAxisAccelerationValues[bhAxisAccelerationValueCount][0] = acc_z;
+                        bhAxisAccelerationValueCount++;
                         if(bhAxisAccelerationValueCount >= bhAxisAccelerationValues.length) {
                             if(!writingData) {
                                 bhAxisAccelerationValueCount = 0;
                                 setWritingData(true);
-                                writeData(bhAxisAccelerationValues, getString(R.string.file_name_axis_acceleration), 2, false, "", 1);
-                                bhAxisAccelerationValues = new String[DATA_ARRAY_SIZE][4];
+                                writeData(bhAxisAccelerationValues, getString(R.string.file_name_axis_acceleration), 2, bhAxisAccelerationValues.length, "");
+                                bhAxisAccelerationValues = new Double[DATA_ARRAY_SIZE][4];
                             } else if(!secondWritingData) {
                                 bhAxisAccelerationValueCount = 0;
                                 setSecondWritingData(true);
-                                writeData(bhAxisAccelerationValues, getString(R.string.file_name_axis_acceleration), 2, false, "", 2);
-                                bhAxisAccelerationValues = new String[DATA_ARRAY_SIZE][4];
+                                writeData(bhAxisAccelerationValues, getString(R.string.file_name_axis_acceleration), 2, bhAxisAccelerationValues.length, "");
+                                bhAxisAccelerationValues = new Double[DATA_ARRAY_SIZE][4];
                             } else {
                                 bhAxisAccelerationValues = resizeArray(bhAxisAccelerationValues);
                             }
@@ -1910,10 +1912,10 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
         }
     }
 
-    void writeData (String[][] data, String filename, int fields, boolean footer, String footerString, int slot) {
-        //WriteDataTask task = new WriteDataTask();
+    void writeData (Double[][] data, String filename, int fields, int count, String footerString) {
+        WriteDataTask task = new WriteDataTask();
         //task.execute(new WriteDataTaskParams(data, filename, this.root, fields, footer, footerString, slot, this));
-        //task.execute(new WriteDataTaskParams(data, filename, this.root, fields, footer, footerString, slot));
+        task.execute(new WriteDataTaskParams(this.root, filename, data, fields, count, footerString));
     }
 
     private void notifyBHReady() {
@@ -1999,8 +2001,8 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
         }
     }
 
-    private String[][] resizeArray(String[][] original) {
-        String[][] copy = new String[original.length + INTERNAL_SENSOR_CACHE_LENGTH][original[0].length];
+    private Double[][] resizeArray(Double[][] original) {
+        Double[][] copy = new Double[original.length + INTERNAL_SENSOR_CACHE_LENGTH][original[0].length];
         System.arraycopy(original,0,copy,0,original.length);
         Log.v(TAG, "original length: " + original.length + ", copy length: " + copy.length);
         return copy;
