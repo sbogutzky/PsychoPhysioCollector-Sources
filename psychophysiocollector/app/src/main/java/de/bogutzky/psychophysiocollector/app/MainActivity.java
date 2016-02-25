@@ -84,7 +84,7 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
     private static final String TAG = "MainActivity";
     private static final int MSG_BLUETOOTH_ADDRESS = 1;
     private final static int REQUEST_ENABLE_BT = 707;
-    private final static int PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 900;
+    private final static int PERMISSIONS_REQUEST = 900;
     private static final int TIMER_UPDATE = 1;
     private static final int TIMER_END = 2;
     private static final int INTERNAL_SENSOR_CACHE_LENGTH = 1000;
@@ -281,10 +281,10 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
 
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED ) {
+                != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this,Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                    PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE);
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.BLUETOOTH_ADMIN},
+                    PERMISSIONS_REQUEST);
 
         }
     }
@@ -801,7 +801,7 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
                     Toast.makeText(MainActivity.this, getString(R.string.bluetooth_activated), Toast.LENGTH_LONG).show();
                 }
                 break;
-            case PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE:
+            case PERMISSIONS_REQUEST:
                 if(resultCode==RESULT_OK){
                     Toast.makeText(MainActivity.this, getString(R.string.permission_granted), Toast.LENGTH_LONG).show();
                 }
@@ -1309,29 +1309,37 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
         sensorManager.registerListener(this, linearAccelerationSensor, sensorDataDelay);
 
         locationListener = new GPSListener(getString(R.string.file_name_gps_position), this.directoryName, 100);
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
-        locationManager.addGpsStatusListener(new GpsStatus.Listener() {
-            @Override
-            public void onGpsStatusChanged(int event) {
-                switch (event) {
-                    case GpsStatus.GPS_EVENT_STARTED:
-                        gpsStatusText = "GPS " + getString(R.string.info_connected);
-                        break;
-                    case GpsStatus.GPS_EVENT_STOPPED:
-                        gpsStatusText = "GPS " + getString(R.string.info_not_connected);
-                        break;
-                    case GpsStatus.GPS_EVENT_FIRST_FIX:
-                        gpsStatusText = "GPS " + getString(R.string.info_connected_fix_received);
-                        break;
+        if(ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+            locationManager.addGpsStatusListener(new GpsStatus.Listener() {
+                @Override
+                public void onGpsStatusChanged(int event) {
+                    switch (event) {
+                        case GpsStatus.GPS_EVENT_STARTED:
+                            gpsStatusText = "GPS " + getString(R.string.info_connected);
+                            break;
+                        case GpsStatus.GPS_EVENT_STOPPED:
+                            gpsStatusText = "GPS " + getString(R.string.info_not_connected);
+                            break;
+                        case GpsStatus.GPS_EVENT_FIRST_FIX:
+                            gpsStatusText = "GPS " + getString(R.string.info_connected_fix_received);
+                            break;
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     private void stopStreamingInternalSensorData() {
         sensorManager.unregisterListener(this);
         if(locationManager != null)
-            locationManager.removeUpdates(locationListener);
+            if(ContextCompat.checkSelfPermission(this,
+                    Manifest.permission.ACCESS_FINE_LOCATION)
+                    != PackageManager.PERMISSION_GRANTED) {
+                locationManager.removeUpdates(locationListener);
+            }
     }
 
     @Override
