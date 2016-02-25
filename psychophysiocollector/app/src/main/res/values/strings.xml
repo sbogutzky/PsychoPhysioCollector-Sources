@@ -148,5 +148,6 @@
     <string name="imu_settings_led_toggle">LED an/aus</string>
 
     <string name="permission_granted">Berechtigung gegeben</string>
+    <string name="next">Weiter</string>
 
 </resources>

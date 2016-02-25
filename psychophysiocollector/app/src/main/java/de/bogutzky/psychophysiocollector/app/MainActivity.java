@@ -215,6 +215,9 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
     private String probandPreName = "";
     private String probandSurName = "";
 
+    int questionsCount = 0;
+    int questionsAmount = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -1044,8 +1047,9 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
         scaleViewIds = new ArrayList<>();
 
         ScrollView scrollView = new ScrollView(this);
-        RelativeLayout relativeLayout = new RelativeLayout(this);
-        Button saveButton = new Button(this);
+        final RelativeLayout relativeLayout = new RelativeLayout(this);
+        final Button saveButton = new Button(this);
+        Button nextButton = new Button(this);
         RelativeLayout.LayoutParams slp = new RelativeLayout.LayoutParams(
                 RelativeLayout.LayoutParams.MATCH_PARENT,
                 RelativeLayout.LayoutParams.MATCH_PARENT);
@@ -1053,6 +1057,7 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
                 RelativeLayout.LayoutParams.MATCH_PARENT,
                 RelativeLayout.LayoutParams.WRAP_CONTENT);
         RelativeLayout.LayoutParams saveParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        RelativeLayout.LayoutParams nextParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         Random rnd = new Random();
         try {
             JSONArray questions = questionnaire.getJSONObject("questionnaire").getJSONArray("questions");
@@ -1060,11 +1065,14 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
             // fragen zufällig sortieren
             questions = Utils.shuffleJsonArray(questions);
 
+            questionsAmount = questions.length();
+
             int tmpid = 0;
             int tmpid2 = 0;
             int tmpid3 = 0;
             int oldtmp = 0;
             for (int i = 0; i < questions.length(); i++) {
+                RelativeLayout wrapperLayout = new RelativeLayout(this);
                 JSONObject q = questions.getJSONObject(i);
                 if (q.getString("type").equals("rating")) {
                     RelativeLayout.LayoutParams params1 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
@@ -1113,10 +1121,12 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
                     oldtmp = tmpid3;
                     ratingBar.setLayoutParams(params4);
 
-                    relativeLayout.addView(textView);
-                    relativeLayout.addView(textView1);
-                    relativeLayout.addView(textView2);
-                    relativeLayout.addView(ratingBar);
+                    wrapperLayout.addView(textView);
+                    wrapperLayout.addView(textView1);
+                    wrapperLayout.addView(textView2);
+                    wrapperLayout.addView(ratingBar);
+                    relativeLayout.addView(wrapperLayout);
+                    wrapperLayout.setVisibility(View.INVISIBLE);
 
                     scaleTypes.add(q.getString("type"));
                     scaleViewIds.add(tmpid3);
@@ -1141,8 +1151,10 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
                     params2.addRule(RelativeLayout.BELOW, tmpid);
                     editText.setLayoutParams(params2);
                     oldtmp = tmpid2;
-                    relativeLayout.addView(textView);
-                    relativeLayout.addView(editText);
+                    wrapperLayout.addView(textView);
+                    wrapperLayout.addView(editText);
+                    relativeLayout.addView(wrapperLayout);
+                    wrapperLayout.setVisibility(View.INVISIBLE);
 
                     scaleTypes.add(q.getString("type"));
                     scaleViewIds.add(tmpid2);
@@ -1170,25 +1182,55 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
                     params2.addRule(RelativeLayout.BELOW, tmpid);
                     yesNoSwitch.setLayoutParams(params2);
                     oldtmp = tmpid2;
-                    relativeLayout.addView(textView);
-                    relativeLayout.addView(yesNoSwitch);
+                    wrapperLayout.addView(textView);
+                    wrapperLayout.addView(yesNoSwitch);
+                    relativeLayout.addView(wrapperLayout);
+                    wrapperLayout.setVisibility(View.INVISIBLE);
 
                     scaleTypes.add(q.getString("type"));
                     scaleViewIds.add(tmpid2);
                 }
             }
-            saveParams.addRule(RelativeLayout.BELOW, oldtmp);
+            //saveParams.addRule(RelativeLayout.BELOW, relativeLayout.getId());
+            saveParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
             saveButton.setLayoutParams(saveParams);
             saveButton.setText(getText(R.string.save));
+            saveButton.setVisibility(View.INVISIBLE);
+            //nextParams.addRule(RelativeLayout.BELOW, relativeLayout.getId());
+            nextParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+            nextButton.setLayoutParams(nextParams);
+            nextButton.setText(getString(R.string.next));
+
+            relativeLayout.addView(nextButton);
             relativeLayout.addView(saveButton);
             relativeLayout.setLayoutParams(rlp);
+
             scrollView.addView(relativeLayout);
         } catch (JSONException e) {
             e.printStackTrace();
         }
+        relativeLayout.getChildAt(0).setVisibility(View.VISIBLE);
 
         //dialog.setContentView(R.layout.flow_short_scale);
         dialog.setContentView(scrollView, slp);
+
+        nextButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(questionsCount == questionsAmount-1) {
+                    v.setVisibility(View.INVISIBLE);
+                    relativeLayout.getChildAt(questionsCount-1).setVisibility(View.INVISIBLE);
+                    saveButton.setVisibility(View.VISIBLE);
+                    questionsCount = 0;
+                    questionsAmount = 0;
+                } else {
+                    questionsCount++;
+                    relativeLayout.getChildAt(questionsCount-1).setVisibility(View.INVISIBLE);
+                    relativeLayout.getChildAt(questionsCount).setVisibility(View.VISIBLE);
+
+                }
+            }
+        });
 
         //Button saveButton = (Button) dialog.findViewById(R.id.button_save);
         saveButton.setOnClickListener(new View.OnClickListener() {
