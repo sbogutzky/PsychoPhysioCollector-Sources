@@ -26,6 +26,10 @@
 
     <string name="enable_sensors_done">Done</string>
 
+    <string name="settings_activity">Aktivität</string>
+    <string name="settings_proband_pre">Vorname</string>
+    <string name="settings_proband_sur">Nachname</string>
+    <string name="settings_undefined">undefined</string>
     <string name="settings_save">Speichern</string>
 
     <string name="graph">Graph</string>
@@ -142,5 +146,7 @@
     <string name="imu_settings_accelerometer_range">Accelerometer Range (g)</string>
     <string name="imu_settings_gyroscope_range">Gyroscope Range (dps)</string>
     <string name="imu_settings_led_toggle">LED an/aus</string>
+
+    <string name="permission_granted">Berechtigung gegeben</string>
 
 </resources>

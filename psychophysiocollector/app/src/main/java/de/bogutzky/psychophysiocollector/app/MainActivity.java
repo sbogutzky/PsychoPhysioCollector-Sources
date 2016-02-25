@@ -1,5 +1,6 @@
 package de.bogutzky.psychophysiocollector.app;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -34,6 +35,8 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Vibrator;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.Menu;
@@ -81,6 +84,7 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
     private static final String TAG = "MainActivity";
     private static final int MSG_BLUETOOTH_ADDRESS = 1;
     private final static int REQUEST_ENABLE_BT = 707;
+    private final static int PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 900;
     private static final int TIMER_UPDATE = 1;
     private static final int TIMER_END = 2;
     private static final int INTERNAL_SENSOR_CACHE_LENGTH = 1000;
@@ -207,6 +211,9 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
 
     private BioHarnessHandler bioHarnessHandler;
 
+    private String activityName = "";
+    private String probandPreName = "";
+    private String probandSurName = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -271,6 +278,15 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
                 return false;
             }
         });
+
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED ) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE);
+
+        }
     }
 
     private void checkBtEnabled() {
@@ -556,6 +572,15 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
         ArrayAdapter<String> qSpinnerAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, questionnaires);
         questionnaireSpinner.setAdapter(qSpinnerAdapter);
         questionnaireSpinner.setSelection(questionnairePos);
+
+        final EditText probandPreEditText = (EditText) dialog.findViewById(R.id.probandPreEditText);
+        final EditText probandSurEditText = (EditText) dialog.findViewById(R.id.probandSurEditText);
+        final EditText activityEditText = (EditText) dialog.findViewById(R.id.activityEditText);
+        probandPreEditText.setText(probandPreName);
+        probandSurEditText.setText(probandSurName);
+        activityEditText.setText(activityName);
+
+
         Button saveButton = (Button) dialog.findViewById(R.id.saveButton);
         saveButton.setOnClickListener(new View.OnClickListener() {
 
@@ -575,6 +600,10 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
                 editor.commit();
                 questionnaireFileName = "questionnaires/" + questionnaireSpinner.getSelectedItem().toString();
                 questionnaire = readQuestionnaireFromJSON();
+
+                probandPreName = probandPreEditText.getText().toString();
+                probandSurName = probandSurEditText.getText().toString();
+                activityName = activityEditText.getText().toString();
                 dialog.dismiss();
             }
         });
@@ -744,8 +773,10 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
         SimpleDateFormat simpleTimeFormat = new SimpleDateFormat("HH-mm-ss");
         String dateString = simpleDateFormat.format(new Date());
         String timeString = simpleTimeFormat.format(new Date());
-        this.directoryName = "PsychoPhysioCollector/" + dateString + "--" + timeString;
-
+        if(activityName.equals("")) activityName = getString(R.string.settings_undefined);
+        if(probandSurName.equals("")) probandSurName = getString(R.string.settings_undefined);
+        if(probandPreName.equals("")) probandPreName = getString(R.string.settings_undefined);
+        this.directoryName = "PsychoPhysioCollector/" + activityName.toLowerCase() + "/" + probandSurName.toLowerCase() + "-" + probandPreName.toLowerCase() + "/" + dateString + "--" + timeString;
         this.root = getStorageDirectory(this.directoryName);
     }
 
@@ -768,6 +799,11 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
             case REQUEST_ENABLE_BT:
                 if(resultCode==RESULT_OK){
                     Toast.makeText(MainActivity.this, getString(R.string.bluetooth_activated), Toast.LENGTH_LONG).show();
+                }
+                break;
+            case PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE:
+                if(resultCode==RESULT_OK){
+                    Toast.makeText(MainActivity.this, getString(R.string.permission_granted), Toast.LENGTH_LONG).show();
                 }
                 break;
             case MSG_BLUETOOTH_ADDRESS:
