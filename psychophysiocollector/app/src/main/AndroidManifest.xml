@@ -20,6 +20,7 @@
         <activity android:name=".ShimmerSensorActivationActivity" android:theme="@android:style/Theme.Dialog" android:label="@string/imu_config_enable_sensors" />
         <activity android:name=".ShimmerMainConfigurationActivity" android:theme="@android:style/Theme.Dialog" android:label="@string/imu_config_imu_configuration" />
 
-        <service android:enabled="true" android:name=".SensorService" />
+        <service android:enabled="true" android:name=".ShimmerSensorService" />
+        <service android:enabled="true" android:name=".BioHarnessSensorService" />
     </application>
 </manifest>

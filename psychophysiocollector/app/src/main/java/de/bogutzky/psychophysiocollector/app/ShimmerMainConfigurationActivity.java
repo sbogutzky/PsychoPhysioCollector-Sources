@@ -27,7 +27,7 @@ public class ShimmerMainConfigurationActivity extends Activity {
 
     private String mCurrentBluetoothDeviceAddress;
 
-    private SensorService mService;
+    private ShimmerSensorService mService;
 
     private double mSamplingRate = -1;
     private int mAccelerometerRange = -1;
@@ -37,7 +37,7 @@ public class ShimmerMainConfigurationActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_commands);
 
-        Intent intent = new Intent(this, SensorService.class);
+        Intent intent = new Intent(this, ShimmerSensorService.class);
         getApplicationContext().bindService(intent, mSensorServiceConnection, Context.BIND_AUTO_CREATE);
 
         Intent sender = getIntent();
@@ -162,7 +162,7 @@ public class ShimmerMainConfigurationActivity extends Activity {
     private ServiceConnection mSensorServiceConnection = new ServiceConnection() {
 
         public void onServiceConnected(ComponentName arg0, IBinder service) {
-            SensorService.LocalBinder binder = (SensorService.LocalBinder) service;
+            ShimmerSensorService.LocalBinder binder = (ShimmerSensorService.LocalBinder) service;
             mService = binder.getService();
             Log.d(TAG, "Service connected");
         }

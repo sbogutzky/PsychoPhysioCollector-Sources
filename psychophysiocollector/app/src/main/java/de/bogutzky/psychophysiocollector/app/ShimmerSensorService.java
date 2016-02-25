@@ -19,33 +19,12 @@ import java.util.Iterator;
 import de.bogutzky.psychophysiocollector.app.shimmer.imu.ShimmerImuHandler;
 import zephyr.android.BioHarnessBT.BTClient;
 
-public class SensorService extends Service {
-    private static final String TAG = "Service";
+public class ShimmerSensorService extends Service {
+    private static final String TAG = "ShimmerService";
     private final IBinder binder = new LocalBinder();
     public HashMap<String, Object> shimmerImuMap = new HashMap<>(7);
 
-    //TODO: Wozu benötigen wir das?
-    /*
-    private boolean[][] mTriggerResting = new boolean[7][3];
-    private boolean[][] mTriggerHitDetected = new boolean[7][3];
-    private double[][] mMaxData = new double[7][3];
-    private NotificationManager notificationManager;
-    */
-
     private BTClient _bt;
-
-    public boolean hasBioHarnessConnected() {
-        return bioHarnessConnected;
-    }
-
-    private boolean bioHarnessConnected = false;
-
-    public BioHarnessConnectedListener getBioHarnessConnectedListener() {
-        return bioHarnessConnectedListener;
-    }
-
-    private BioHarnessConnectedListener bioHarnessConnectedListener;
-
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -54,39 +33,19 @@ public class SensorService extends Service {
 
     @Override
     public void onCreate() {
-        Toast.makeText(this, "My Service Created", Toast.LENGTH_LONG).show();
-
-        //TODO: Wozu benötigen wir das?
-        /*
-        for (boolean[] row : mTriggerResting)
-            Arrays.fill(row, true);
-        for (boolean[] row : mTriggerHitDetected)
-            Arrays.fill(row, true);
-        for (double[] row : mMaxData)
-            Arrays.fill(row, 0);
-        Log.d(TAG, "onCreate");
-        notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        showNotification();
-        */
-    }
-
-    public void disconnectBioHarness() {
-        if(_bt != null && bioHarnessConnectedListener != null) {
-            _bt.removeConnectedEventListener(bioHarnessConnectedListener);
-            _bt.Close();
-        }
+        Toast.makeText(this, "Shimmer Service Created", Toast.LENGTH_LONG).show();
     }
 
     public class LocalBinder extends Binder {
-        public SensorService getService() {
+        public ShimmerSensorService getService() {
             // Return this instance of LocalService so clients can call public methods
-            return SensorService.this;
+            return ShimmerSensorService.this;
         }
     }
 
     @Override
     public void onDestroy() {
-        Toast.makeText(this, "Service Stopped", Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "Shimmer Service Stopped", Toast.LENGTH_LONG).show();
         Log.d(TAG, "onDestroy");
         Collection<Object> shimmerImus = shimmerImuMap.values();
         for (Object shimmerImu1 : shimmerImus) {
@@ -111,16 +70,6 @@ public class SensorService extends Service {
         return START_STICKY;
     }
 
-    public void connectBioHarness(MainActivity.BioHarnessHandler bioHarnessHandler, String bhMacID) {
-        _bt = new BTClient(BluetoothAdapter.getDefaultAdapter(), bhMacID);
-        bioHarnessConnectedListener = new BioHarnessConnectedListener(bioHarnessHandler, bioHarnessHandler);
-        _bt.addConnectedEventListener(bioHarnessConnectedListener);
-        if(_bt.IsConnected()) {
-            _bt.start();
-            bioHarnessConnected = true;
-        }
-    }
-
     public void connectShimmer(String bluetoothAddress, String selectedDevice, ShimmerImuHandler handler) {
         Log.d("Shimmer", "net Connection");
         Shimmer shimmerDevice = new Shimmer(this, handler, selectedDevice, false);
@@ -140,8 +89,6 @@ public class SensorService extends Service {
                 shimmerImu.stopStreaming();
             }
         }
-        if(_bt != null && bioHarnessConnectedListener != null)
-            _bt.removeConnectedEventListener(bioHarnessConnectedListener);
     }
 
     public void startStreamingAllDevicesGetSensorNames(File root, String directoryName, long startTimestamp) {
