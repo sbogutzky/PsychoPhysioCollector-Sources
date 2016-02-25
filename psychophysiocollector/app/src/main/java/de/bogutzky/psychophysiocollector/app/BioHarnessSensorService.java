@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import de.bogutzky.psychophysiocollector.app.bioharness.BioHarnessHandler;
 import de.bogutzky.psychophysiocollector.app.shimmer.imu.ShimmerImuHandler;
 import zephyr.android.BioHarnessBT.BTClient;
 
@@ -74,7 +75,7 @@ public class BioHarnessSensorService extends Service {
         return START_STICKY;
     }
 
-    public void connectBioHarness(MainActivity.BioHarnessHandler bioHarnessHandler, String bhMacID) {
+    public void connectBioHarness(BioHarnessHandler bioHarnessHandler, String bhMacID) {
         _bt = new BTClient(BluetoothAdapter.getDefaultAdapter(), bhMacID);
         bioHarnessConnectedListener = new BioHarnessConnectedListener(bioHarnessHandler, bioHarnessHandler);
         _bt.addConnectedEventListener(bioHarnessConnectedListener);

@@ -9,7 +9,7 @@ import de.bogutzky.psychophysiocollector.app.R;
 /**
  * Created by sbogutzky on 25.02.16.
  */
-public class BioharnessHandler extends Handler {
+public class BioHarnessHandler extends Handler {
     private double rrTime = 0;
 
     private boolean fileStorageCreated = false;
@@ -18,8 +18,12 @@ public class BioharnessHandler extends Handler {
         this.fileStorageCreated = fileStorageCreated;
     }
 
-    BioharnessHandler() {}
+    public BioHarnessHandler() {
+
+    }
+
     public void handleMessage(Message msg) {
+        /*
         if(!fileStorageCreated && loggingEnabled) {
             createBioHarnessFiles();
             fileStorageCreated = true;
@@ -60,7 +64,7 @@ public class BioharnessHandler extends Handler {
                     }
                     Log.v(TAG, "Logge RR interval mit Timestamp: " + time);
                     break;
-
+                /*
                 case HEART_RATE:
                     String HeartRatetext = msg.getData().getString("HeartRate");
                     timestamp = msg.getData().getLong("Timestamp");
@@ -296,7 +300,7 @@ public class BioharnessHandler extends Handler {
                         }
                     }
                     break;
-                ////////////////////////////////
+                */
             }
         }
     }
