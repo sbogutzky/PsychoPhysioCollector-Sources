@@ -866,24 +866,23 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
                         if(!paired) {
                             pairBluetoothDevice(device);
                         }
+
+                        if(device.getName().startsWith("RN") & shimmerImuService == null) {
+                            Intent intent=new Intent(this, ShimmerImuService.class);
+                            startService(intent);
+                            getApplicationContext().bindService(intent, shimmerImuServiceConnection, Context.BIND_AUTO_CREATE);
+                            registerReceiver(shimmerImuReceiver, new IntentFilter("de.bogutzky.data_collector.app"));
+                        }
+
+                        if(device.getName().startsWith("BH") & bioHarnessService == null) {
+                            Intent intent=new Intent(this, BioHarnessService.class);
+                            startService(intent);
+                            getApplicationContext().bindService(intent, bioHarnessServiceConnection, Context.BIND_AUTO_CREATE);
+                            registerReceiver(bioHarnessReceiver, new IntentFilter("de.bogutzky.data_collector.app"));
+                        }
+
                     } else {
                         Toast.makeText(this, getString(R.string.device_is_already_in_list), Toast.LENGTH_LONG).show();
-                    }
-
-
-
-                    if(shimmerImuService == null) {
-                        Intent intent=new Intent(this, ShimmerImuService.class);
-                        startService(intent);
-                        getApplicationContext().bindService(intent, shimmerImuServiceConnection, Context.BIND_AUTO_CREATE);
-                        registerReceiver(shimmerImuReceiver, new IntentFilter("de.bogutzky.data_collector.app"));
-                    }
-
-                    if(bioHarnessService == null) {
-                        Intent intent=new Intent(this, BioHarnessService.class);
-                        startService(intent);
-                        getApplicationContext().bindService(intent, bioHarnessServiceConnection, Context.BIND_AUTO_CREATE);
-                        registerReceiver(bioHarnessReceiver, new IntentFilter("de.bogutzky.data_collector.app"));
                     }
                 }
                 break;
