@@ -18,8 +18,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Collection;
-
-import de.bogutzky.psychophysiocollector.app.MainActivity;
 import de.bogutzky.psychophysiocollector.app.R;
 import de.bogutzky.psychophysiocollector.app.Utils;
 import de.bogutzky.psychophysiocollector.app.WriteDataTask;
@@ -46,7 +44,7 @@ public class ShimmerImuHandler extends Handler {
     private boolean isFirstDataRow = true;
     //float[] dataArray;
 
-    public ShimmerImuHandler(MainActivity activity, String filename, int maxBatchCount) {
+    public ShimmerImuHandler(Activity activity, String filename, int maxBatchCount) {
         this.activity = activity;
         this.filename = filename;
         this.vibrator = (Vibrator) activity.getSystemService(Context.VIBRATOR_SERVICE);
@@ -81,7 +79,6 @@ public class ShimmerImuHandler extends Handler {
     }
 
     public void setFields(String[] fields) {
-        //dataArray = new float[fields.length - 1];
         this.fields = fields;
         this.buffer0 = new Double[maxBatchCount][fields.length];
         this.buffer1 = new Double[maxBatchCount][fields.length];

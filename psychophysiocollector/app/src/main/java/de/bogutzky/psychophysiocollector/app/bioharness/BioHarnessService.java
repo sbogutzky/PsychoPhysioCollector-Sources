@@ -7,6 +7,8 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.widget.Toast;
 
+import java.io.File;
+
 import de.bogutzky.psychophysiocollector.app.R;
 import zephyr.android.BioHarnessBT.BTClient;
 
@@ -69,10 +71,10 @@ public class BioHarnessService extends Service {
         }
     }
 
-    public void startStreamingBioHarness(long startTimestamp) { // File root, String directoryName,
+    public void startStreamingBioHarness(File root, String directoryName, long startTimestamp) { // File root, String directoryName,
         if (bioHarnessConnected) {
-            //bioHarnessListener.bioHarnessHandler.setRoot(root);
-            //bioHarnessListener.bioHarnessHandler.setDirectoryName(directoryName);
+            bioHarnessListener.bioHarnessHandler.setRoot(root);
+            bioHarnessListener.bioHarnessHandler.setDirectoryName(directoryName);
             bioHarnessListener.bioHarnessHandler.setStartTimestamp(startTimestamp);
             bioHarnessListener.bioHarnessHandler.startStreaming();
         }

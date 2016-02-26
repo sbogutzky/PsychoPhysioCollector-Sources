@@ -1,19 +1,27 @@
 package de.bogutzky.psychophysiocollector.app.bioharness;
 
+import android.app.Activity;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 
+import de.bogutzky.psychophysiocollector.app.R;
 import de.bogutzky.psychophysiocollector.app.Utils;
+import de.bogutzky.psychophysiocollector.app.WriteDataTask;
+import de.bogutzky.psychophysiocollector.app.WriteDataTaskParams;
 
 public class BioHarnessHandler extends Handler {
     private static final String TAG = "BioHarnessHandler";
 
     private final int RtoR_MSG_ID = 0x24;
 
+    private Activity activity;
+    private File root;
     private int batchRowCount = 0;
     private int maxBatchCount;
     private Double[][] buffer;
@@ -25,8 +33,44 @@ public class BioHarnessHandler extends Handler {
     private boolean isFirstDataRow = true;
     private boolean isLogging = false;
 
-    public BioHarnessHandler(int maxBatchCount) {
+    public BioHarnessHandler(Activity activity, int maxBatchCount) {
+        this.activity = activity;
         this.maxBatchCount = maxBatchCount;
+    }
+
+    public void setRoot(File root) {
+        this.root = root;
+    }
+
+    public void writeHeader(String filename, String[] header) {
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, filename), true));
+            String outputString = "";
+            if(activity instanceof BioHarnessHandlerInterface) {
+                outputString += ((BioHarnessHandlerInterface) activity).getHeaderComments();
+            }
+            for (int i = 0; i < header.length; i++) {
+                if (header.length - 1 != i) {
+                    outputString += header[i] + ",";
+                } else {
+                    outputString += header[i] + "";
+                }
+            }
+            writer.write(outputString);
+            writer.newLine();
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            Log.e(TAG, "Error while writing in file", e);
+        }
+    }
+
+    public void setDirectoryName(String directoryName) {
+        if(activity instanceof BioHarnessHandlerInterface) {
+            this.root = ((BioHarnessHandlerInterface) activity).getStorageDirectory(directoryName);
+        } else {
+            this.root = null;
+        }
     }
 
     public void setStartTimestamp(long startTimestamp) {
@@ -42,6 +86,13 @@ public class BioHarnessHandler extends Handler {
 
     public void stopStreaming() {
         this.isLogging = false;
+
+        String footerComments = null;
+        if(activity instanceof BioHarnessHandlerInterface) {
+            footerComments = ((BioHarnessHandlerInterface) activity).getFooterComments();
+        }
+        writeValues(activity.getString(R.string.file_name_rr_interval), this.buffer, 2, footerComments);
+
         this.isFirstDataRow = true;
     }
 
@@ -67,17 +118,19 @@ public class BioHarnessHandler extends Handler {
                         Log.d(TAG, "Start timestamp: " + Utils.getDateString(this.startTimestamp, "dd/MM/yyyy hh:mm:ss.SSS"));
                         Log.d(TAG, "BioHarness start timestamp: " + Utils.getDateString(bioHarnessStartTimestamp.longValue(), "dd/MM/yyyy hh:mm:ss.SSS"));
                         this.buffer[batchRowCount][0] = timeDifference;
+                        writeHeader(activity.getString(R.string.file_name_rr_interval), new String[] {activity.getString(R.string.file_header_timestamp), activity.getString(R.string.file_header_rr_interval)});
                         this.isFirstDataRow = false;
                     }
 
                     this.buffer[batchRowCount][0] = this.incrementedTimestamp;
                     this.incrementedTimestamp += this.buffer[batchRowCount][1];
+                    this.buffer[batchRowCount][1] /= 1000.0;
 
-                    Log.d(TAG, "Timestamp: " + this.buffer[batchRowCount][0] / 1000.0 + " s / RR-Interval: " + this.buffer[batchRowCount][1] + " ms");
+                    Log.d(TAG, "Timestamp: " + this.buffer[batchRowCount][0]  + " ms / RR-Interval: " + this.buffer[batchRowCount][1] + " s");
 
                     batchRowCount++;
                     if (batchRowCount == maxBatchCount) {
-                        //writeValues(null); // "# BatchRowCount: " + batchRowCount
+                        writeValues(activity.getString(R.string.file_name_rr_interval), this.buffer, 2, "# BatchRowCount: " + batchRowCount); //
                         batchRowCount = 0;
                         if (this.buffer == this.buffer0) {
                             this.buffer = this.buffer1;
@@ -90,47 +143,6 @@ public class BioHarnessHandler extends Handler {
         }
 
         /*
-        if(!fileStorageCreated && loggingEnabled) {
-            createBioHarnessFiles();
-            fileStorageCreated = true;
-        }
-        if(msg.what == 101) {
-            notifyBHReady();
-        }
-        if(loggingEnabled) {
-            double time = 0;
-            long timestamp = 0;
-            switch (msg.what) {
-                case RtoR_MSG_ID:
-                    int rrInterval = msg.getData().getInt("rrInterval");
-                    timestamp = msg.getData().getLong("Timestamp");
-                    if(firstRRIntervalTimestamp == 0L) {
-                        firstRRIntervalTimestamp = timestamp;
-                        rrTime = System.currentTimeMillis() - startTimestamp;
-                    }
-                    rrTime += rrInterval;
-
-                    bhRRIntervalValues[bhRRIntervalValueCount][0] = rrTime;
-                    bhRRIntervalValues[bhRRIntervalValueCount][1] = Double.parseDouble(String.valueOf(rrInterval));
-                    bhRRIntervalValueCount++;
-                    if(bhRRIntervalValueCount >= bhRRIntervalValues.length) {
-                        if(!writingData) {
-                            bhRRIntervalValueCount = 0;
-                            setWritingData(true);
-                            writeData(bhRRIntervalValues, getString(R.string.file_name_rr_interval), 2, bhRRIntervalValues.length, "");
-                            bhRRIntervalValues = new Double[DATA_ARRAY_SIZE][2];
-                        } else if(!secondWritingData) {
-                            bhRRIntervalValueCount = 0;
-                            setSecondWritingData(true);
-                            writeData(bhRRIntervalValues, getString(R.string.file_name_rr_interval), 2, bhRRIntervalValues.length, "");
-                            bhRRIntervalValues = new Double[DATA_ARRAY_SIZE][2];
-                        } else {
-                            bhRRIntervalValues = resizeArray(bhRRIntervalValues);
-                        }
-                    }
-                    Log.v(TAG, "Logge RR interval mit Timestamp: " + time);
-                    break;
-                /*
                 case HEART_RATE:
                     String HeartRatetext = msg.getData().getString("HeartRate");
                     timestamp = msg.getData().getLong("Timestamp");
@@ -369,5 +381,9 @@ public class BioHarnessHandler extends Handler {
 
             }
         } */
+    }
+
+    private void writeValues(String filename, Double[][] buffer, int fields, String batchComments) {
+        new WriteDataTask().execute(new WriteDataTaskParams(this.root, filename, buffer, fields, this.batchRowCount, batchComments));
     }
 }

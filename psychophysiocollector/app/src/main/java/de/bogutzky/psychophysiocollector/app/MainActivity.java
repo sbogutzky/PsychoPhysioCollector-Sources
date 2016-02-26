@@ -76,13 +76,14 @@ import java.util.Random;
 import java.util.Set;
 
 import de.bogutzky.psychophysiocollector.app.bioharness.BioHarnessHandler;
+import de.bogutzky.psychophysiocollector.app.bioharness.BioHarnessHandlerInterface;
 import de.bogutzky.psychophysiocollector.app.bioharness.BioHarnessService;
 import de.bogutzky.psychophysiocollector.app.shimmer.imu.ShimmerImuHandler;
 import de.bogutzky.psychophysiocollector.app.shimmer.imu.ShimmerImuHandlerInterface;
 import de.bogutzky.psychophysiocollector.app.shimmer.imu.ShimmerImuMainConfigurationActivity;
 import de.bogutzky.psychophysiocollector.app.shimmer.imu.ShimmerImuService;
 
-public class MainActivity extends ListActivity implements SensorEventListener, ShimmerImuHandlerInterface {
+public class MainActivity extends ListActivity implements SensorEventListener, ShimmerImuHandlerInterface, BioHarnessHandlerInterface {
 
     private static final String TAG = "MainActivity";
     private static final int MSG_BLUETOOTH_ADDRESS = 1;
@@ -646,7 +647,6 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
 
     /*
     private void resetBioharnessStorage() {
-        bioHarnessHandler.setFileStorageCreated(false);
         bhPeakAccelerationValueCount = 0;
         bhRespirationRateValueCount = 0;
         bhHeartRateValueCount = 0;
@@ -665,115 +665,6 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
         bhAxisAccelerationValues = new Double[DATA_ARRAY_SIZE][4];
         bhBreathingValues = new Double[DATA_ARRAY_SIZE][2];
         bhEcgValues = new Double[DATA_ARRAY_SIZE][2];
-    }
-    */
-
-    /*
-    private void createBioHarnessFiles() {
-        if(bioHarnessService.getBioHarnessConnectedListener().isHeartRateEnabled()) {
-            try {
-                BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_heart_rate)), true));
-                String outputString = getHeaderComments();
-                outputString += "" + getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_heartrate) + "";
-                writer.write(outputString);
-                writer.newLine();
-                writer.flush();
-                writer.close();
-            } catch (IOException e) {
-                Log.e(TAG, "Error while writing in file", e);
-            }
-        }
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_respiration_rate)), true));
-            String outputString = getHeaderComments();
-            outputString += "" + getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_respirationrate) + "";
-            writer.write(outputString);
-            writer.newLine();
-            writer.flush();
-            writer.close();
-        } catch (IOException e) {
-            Log.e(TAG, "Error while writing in file", e);
-        }
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_posture)), true));
-            String outputString = getHeaderComments();
-            outputString += "" + getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_posture) + "";
-            writer.write(outputString);
-            writer.newLine();
-            writer.flush();
-            writer.close();
-        } catch (IOException e) {
-            Log.e(TAG, "Error while writing in file", e);
-        }
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_rr_interval)), true));
-            String outputString = getHeaderComments();
-            outputString += "" + getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_rr_interval) + "";
-            writer.write(outputString);
-            writer.newLine();
-            writer.flush();
-            writer.close();
-        } catch (IOException e) {
-            Log.e(TAG, "Error while writing in file", e);
-        }
-        if(bioHarnessService.getBioHarnessConnectedListener().isSkinTemperatureEnabled()) {
-            try {
-                BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_skin_temperature)), true));
-                String outputString = getHeaderComments();
-                outputString += "" + getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_skintemperature) + "";
-                writer.write(outputString);
-                writer.newLine();
-                writer.flush();
-                writer.close();
-            } catch (IOException e) {
-                Log.e(TAG, "Error while writing in file", e);
-            }
-        }
-
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_peak_acceleration)), true));
-            String outputString = getHeaderComments();
-            outputString += "" + getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_peakacceleration) + "";
-            writer.write(outputString);
-            writer.newLine();
-            writer.flush();
-            writer.close();
-        } catch (IOException e) {
-            Log.e(TAG, "Error while writing in file", e);
-        }
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_axis_acceleration)), true));
-            String outputString = getHeaderComments();
-            outputString += "" + getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_acceleration_x) + "," + getString(R.string.file_header_acceleration_y) + "," + getString(R.string.file_header_acceleration_z) + "";
-            writer.write(outputString);
-            writer.newLine();
-            writer.flush();
-            writer.close();
-        } catch (IOException e) {
-            Log.e(TAG, "Error while writing in file", e);
-        }
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_breathing)), true));
-            String outputString = getHeaderComments();
-            outputString += "" + getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_interval) + "";
-            writer.write(outputString);
-            writer.newLine();
-            writer.flush();
-            writer.close();
-        } catch (IOException e) {
-            Log.e(TAG, "Error while writing in file", e);
-        }
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_ecg)), true));
-            String outputString = getHeaderComments();
-            outputString += "" + getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_voltage) + "";
-            writer.write(outputString);
-            writer.newLine();
-            writer.flush();
-            writer.close();
-        } catch (IOException e) {
-            Log.e(TAG, "Error while writing in file", e);
-        }
     }
     */
 
@@ -960,7 +851,7 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
                 if (device.getName().startsWith("BH")) {
                     if (bluetoothAddresses.contains(device.getAddress())) {
                         if (bioHarnessService != null) {
-                            bioHarnessService.connectBioHarness(device.getAddress(), new BioHarnessHandler(5000));
+                            bioHarnessService.connectBioHarness(device.getAddress(), new BioHarnessHandler(this, 100));
                         }
                     }
                 }
@@ -975,7 +866,7 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
 
     private void startStreamingBioHarness() {
         if(bioHarnessService != null)
-            bioHarnessService.startStreamingBioHarness(this.startTimestamp);
+            bioHarnessService.startStreamingBioHarness(this.root, this.directoryName, this.startTimestamp);
     }
 
     private void stopStreamingBioHarness() {
