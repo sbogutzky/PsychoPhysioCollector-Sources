@@ -92,9 +92,11 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
     //private static final int INTERNAL_SENSOR_CACHE_LENGTH = 1000;
     //private static final int DATA_ARRAY_SIZE = 1000;
     private boolean loggingEnabled = false;
-    private ArrayAdapter adapter;
+
+    private ArrayAdapter arrayAdapter;
     private ArrayList<String> bluetoothAddresses;
     private ArrayList<String> deviceNames;
+
     private TextView textViewTimer;
     private Handler timerHandler;
     private Thread timerThread;
@@ -177,7 +179,7 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
 
     //private DecimalFormat decimalFormat;
 
-    //bth adapter
+    //bth arrayAdapter
     private BluetoothAdapter btAdapter = null;
 
     /*
@@ -236,8 +238,8 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
         checkBtEnabled();
 
         deviceNames = new ArrayList<>();
-        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, deviceNames);
-        setListAdapter(adapter);
+        arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, deviceNames);
+        setListAdapter(arrayAdapter);
 
         /*
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -284,7 +286,7 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
                     public void onClick(DialogInterface dialog, int which) {
                         deviceNames.remove(index);
                         getBluetoothAddresses().remove(index);
-                        adapter.notifyDataSetChanged();
+                        arrayAdapter.notifyDataSetChanged();
                         if (getBluetoothAddresses().size() == 0) {
                             connectMenuItem.setEnabled(false);
                         }
@@ -818,57 +820,66 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
 
         switch (requestCode) {
             case REQUEST_ENABLE_BT:
-                if(resultCode==RESULT_OK){
+                if(resultCode == RESULT_OK){
                     Toast.makeText(MainActivity.this, getString(R.string.bluetooth_activated), Toast.LENGTH_LONG).show();
                 }
                 break;
+
             case PERMISSIONS_REQUEST:
-                if(resultCode==RESULT_OK){
+                if(resultCode == RESULT_OK){
                     Toast.makeText(MainActivity.this, getString(R.string.permission_granted), Toast.LENGTH_LONG).show();
                 }
                 break;
-            case MSG_BLUETOOTH_ADDRESS:
 
-                // When DeviceListActivity returns with a device address to connect
+            case MSG_BLUETOOTH_ADDRESS:
                 if (resultCode == Activity.RESULT_OK) {
                     String bluetoothAddress = data.getExtras().getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
-                    Log.d(TAG, "Bluetooth Address: " + bluetoothAddress);
+                    Log.d(TAG, "Bluetooth address: " + bluetoothAddress);
 
-                    // Check if the bluetooth address has been previously selected
-                    boolean isNewAddress = !getBluetoothAddresses().contains(bluetoothAddress);
-
-                    if (isNewAddress) {
+                    // Check, if device is list view
+                    if (!getBluetoothAddresses().contains(bluetoothAddress)) {
+                        Log.d(TAG, "Bluetooth address of a new device");
                         addBluetoothAddress(bluetoothAddress);
+
                         btAdapter = BluetoothAdapter.getDefaultAdapter();
                         BluetoothDevice device = btAdapter.getRemoteDevice(bluetoothAddress);
-                        String name = device.getName();
-                        if(name==null) {
-                            name = bluetoothAddress + "";
+
+                        String deviceName = device.getName();
+                        if(deviceName == null) {
+                            Log.d(TAG, "Device has no device name");
+                            deviceName = bluetoothAddress + "";
                         }
-                        deviceNames.add(name);
-                        adapter.notifyDataSetChanged();
+
+                        // Change list view
+                        deviceNames.add(deviceName);
+                        arrayAdapter.notifyDataSetChanged();
+
+                        // Check, if device is paired
                         Set<BluetoothDevice> pairedDevices = btAdapter.getBondedDevices();
                         boolean paired = false;
-                        for(BluetoothDevice d:pairedDevices) {
-                            if(d.getAddress().equals(bluetoothAddress)) {
+                        for(BluetoothDevice pairedDevice:pairedDevices) {
+                            if(pairedDevice.getAddress().equals(bluetoothAddress)) {
                                 paired = true;
+                                Log.d(TAG, "Device already paired");
                             }
                         }
-                        if(!paired)
-                            pairDevice(device);
-                        Log.v("Main", "bond: " + bluetoothAddress);
+                        if(!paired) {
+                            pairBluetoothDevice(device);
+                        }
                     } else {
                         Toast.makeText(this, getString(R.string.device_is_already_in_list), Toast.LENGTH_LONG).show();
                     }
+
+
+
                     if(shimmerImuService == null) {
-                        Log.v(TAG, "shimmer service erstellen");
                         Intent intent=new Intent(this, ShimmerImuService.class);
                         startService(intent);
                         getApplicationContext().bindService(intent, shimmerImuServiceConnection, Context.BIND_AUTO_CREATE);
                         registerReceiver(shimmerImuReceiver, new IntentFilter("de.bogutzky.data_collector.app"));
                     }
+
                     if(bioHarnessService == null) {
-                        Log.v(TAG, "bio harness service erstellen");
                         Intent intent=new Intent(this, BioHarnessService.class);
                         startService(intent);
                         getApplicationContext().bindService(intent, bioHarnessServiceConnection, Context.BIND_AUTO_CREATE);
@@ -891,30 +902,6 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
             */
         }
     }
-
-    /*
-    private void showGraph(int which) {
-        graphView = new GraphView(this, which);
-        graphShowing = true;
-        final Dialog dialog = new Dialog(this);
-        dialog.setContentView(graphView);
-        dialog.setTitle(getString(R.string.graph));
-        dialog.setCancelable(true);
-        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
-        lp.copyFrom(dialog.getWindow().getAttributes());
-        lp.width = WindowManager.LayoutParams.MATCH_PARENT;
-        lp.height = WindowManager.LayoutParams.MATCH_PARENT;
-        dialog.getWindow().setAttributes(lp);
-        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialog) {
-                graphShowing = false;
-            }
-        });
-
-        dialog.show();
-    }
-    */
 
     private ArrayList<String> getBluetoothAddresses() {
         if (bluetoothAddresses == null) {
@@ -1637,6 +1624,15 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
         }
     } */
 
+    private void pairBluetoothDevice(BluetoothDevice device) {
+        try {
+            Method method = device.getClass().getMethod("createBond", (Class[]) null);
+            method.invoke(device, (Object[]) null);
+        } catch (Exception e) {
+            Log.e(TAG, "Error during the pairing", e);
+        }
+    }
+
     public String getBioHarnessBtDeviceAddress(BluetoothAdapter bluetoothAdapter) {
         Set<BluetoothDevice> bondedDevices = bluetoothAdapter.getBondedDevices();
         if (bondedDevices.size() > 0) {
@@ -1712,15 +1708,6 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
             }
         }
     };
-
-    private void pairDevice(BluetoothDevice device) {
-        try {
-            Method method = device.getClass().getMethod("createBond", (Class[]) null);
-            method.invoke(device, (Object[]) null);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 /*
     private Double[][] resizeArray(Double[][] original) {
         Double[][] copy = new Double[original.length + INTERNAL_SENSOR_CACHE_LENGTH][original[0].length];
@@ -1737,6 +1724,30 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
     public void setWritingData(boolean d) {
         this.writingData = d;
         //Log.v(TAG, "writingdata: " + writingData);
+    }
+    */
+
+    /*
+    private void showGraph(int which) {
+        graphView = new GraphView(this, which);
+        graphShowing = true;
+        final Dialog dialog = new Dialog(this);
+        dialog.setContentView(graphView);
+        dialog.setTitle(getString(R.string.graph));
+        dialog.setCancelable(true);
+        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+        lp.copyFrom(dialog.getWindow().getAttributes());
+        lp.width = WindowManager.LayoutParams.MATCH_PARENT;
+        lp.height = WindowManager.LayoutParams.MATCH_PARENT;
+        dialog.getWindow().setAttributes(lp);
+        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                graphShowing = false;
+            }
+        });
+
+        dialog.show();
     }
     */
 
