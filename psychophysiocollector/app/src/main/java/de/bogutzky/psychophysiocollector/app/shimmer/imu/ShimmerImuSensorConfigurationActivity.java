@@ -1,4 +1,4 @@
-package de.bogutzky.psychophysiocollector.app;
+package de.bogutzky.psychophysiocollector.app.shimmer.imu;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -18,7 +18,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Locale;
 
-public class ShimmerSensorConfigurationActivity extends Activity {
+import de.bogutzky.psychophysiocollector.app.R;
+
+public class ShimmerImuSensorConfigurationActivity extends Activity {
     //private static final String TAG = "ShimmerSConfigActivity";
 	public final static String[] samplingRates = {"10","51,2","102,4","128","170,7","204,8","256","512"};
 	public final static String[] accelerometerRanges = {"+/- 1,5g","+/- 6g"};

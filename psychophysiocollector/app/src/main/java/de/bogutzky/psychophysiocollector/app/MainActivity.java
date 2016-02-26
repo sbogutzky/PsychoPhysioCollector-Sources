@@ -79,6 +79,7 @@ import de.bogutzky.psychophysiocollector.app.bioharness.BioHarnessHandler;
 import de.bogutzky.psychophysiocollector.app.bioharness.BioHarnessService;
 import de.bogutzky.psychophysiocollector.app.shimmer.imu.ShimmerImuHandler;
 import de.bogutzky.psychophysiocollector.app.shimmer.imu.ShimmerImuHandlerInterface;
+import de.bogutzky.psychophysiocollector.app.shimmer.imu.ShimmerImuMainConfigurationActivity;
 import de.bogutzky.psychophysiocollector.app.shimmer.imu.ShimmerImuService;
 
 public class MainActivity extends ListActivity implements SensorEventListener, ShimmerImuHandlerInterface {
@@ -632,7 +633,7 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
             int shimmerImuCount = shimmerImuService.shimmerImuMap.values().size();
             if(shimmerImuCount > 0 && deviceNames.get(position).contains("RN42")) {
                 Object o = l.getItemAtPosition(position);
-                Intent intent = new Intent(MainActivity.this, ShimmerMainConfigurationActivity.class);
+                Intent intent = new Intent(MainActivity.this, ShimmerImuMainConfigurationActivity.class);
                 intent.putExtra("DeviceName", o.toString());
                 intent.putExtra("BluetoothDeviceAddress", getBluetoothAddresses().get(position));
                 startActivityForResult(intent, REQUEST_MAIN_COMMAND_SHIMMER);

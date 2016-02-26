@@ -1,4 +1,4 @@
-package de.bogutzky.psychophysiocollector.app;
+package de.bogutzky.psychophysiocollector.app.shimmer.imu;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -21,10 +21,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
-import de.bogutzky.psychophysiocollector.app.shimmer.imu.ShimmerImuService;
+import de.bogutzky.psychophysiocollector.app.MainActivity;
+import de.bogutzky.psychophysiocollector.app.R;
 
 
-public class ShimmerMainConfigurationActivity extends Activity {
+public class ShimmerImuMainConfigurationActivity extends Activity {
     private static final String TAG = "ShimmerMConfigActivity";
 
     private String mCurrentBluetoothDeviceAddress;
@@ -61,7 +62,7 @@ public class ShimmerMainConfigurationActivity extends Activity {
             public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
                 switch (position) {
                     case 0:
-                        Intent intent0 = new Intent(ShimmerMainConfigurationActivity.this, ShimmerSensorActivationActivity.class);
+                        Intent intent0 = new Intent(ShimmerImuMainConfigurationActivity.this, ShimmerImuSensorActivationActivity.class);
                         intent0.putExtra("enabledSensors", mService.getEnabledSensors(mCurrentBluetoothDeviceAddress));
                         startActivityForResult(intent0, MainActivity.REQUEST_CONFIGURE_SHIMMER);
                         break;
@@ -71,7 +72,7 @@ public class ShimmerMainConfigurationActivity extends Activity {
                         mAccelerometerRange = mService.getAccelerometerRange(mCurrentBluetoothDeviceAddress);
                         mGyroscopeRange = mService.getGyroscopeRange(mCurrentBluetoothDeviceAddress);
 
-                        Intent intent1 = new Intent(ShimmerMainConfigurationActivity.this, ShimmerSensorConfigurationActivity.class);
+                        Intent intent1 = new Intent(ShimmerImuMainConfigurationActivity.this, ShimmerImuSensorConfigurationActivity.class);
                         intent1.putExtra("BluetoothAddress", mCurrentBluetoothDeviceAddress);
                         intent1.putExtra("SamplingRate", mSamplingRate);
                         intent1.putExtra("AccelerometerRange", mAccelerometerRange);
@@ -106,7 +107,7 @@ public class ShimmerMainConfigurationActivity extends Activity {
                                 }
                             }
                         }
-                        AlertDialog.Builder builder = new AlertDialog.Builder(ShimmerMainConfigurationActivity.this);
+                        AlertDialog.Builder builder = new AlertDialog.Builder(ShimmerImuMainConfigurationActivity.this);
                         CharSequence[] cs = spinnerArray.toArray(new CharSequence[spinnerArray.size()]);
                         builder.setTitle(getString(R.string.select_graph_gata))
                                 .setItems(cs, new DialogInterface.OnClickListener() {
@@ -154,8 +155,8 @@ public class ShimmerMainConfigurationActivity extends Activity {
                 break;
             case MainActivity.REQUEST_CONFIGURE_SHIMMER:
                 if (resultCode == Activity.RESULT_OK) {
-                    Log.d(TAG, "Current device set sensors: " + mCurrentBluetoothDeviceAddress + ", " + data.getExtras().getInt(ShimmerSensorActivationActivity.mDone));
-                    mService.setEnabledSensors(data.getExtras().getInt(ShimmerSensorActivationActivity.mDone), mCurrentBluetoothDeviceAddress);
+                    Log.d(TAG, "Current device set sensors: " + mCurrentBluetoothDeviceAddress + ", " + data.getExtras().getInt(ShimmerImuSensorActivationActivity.mDone));
+                    mService.setEnabledSensors(data.getExtras().getInt(ShimmerImuSensorActivationActivity.mDone), mCurrentBluetoothDeviceAddress);
                 }
                 break;
         }
