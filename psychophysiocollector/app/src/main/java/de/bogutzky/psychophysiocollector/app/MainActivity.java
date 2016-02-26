@@ -200,12 +200,11 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
     public static final int REQUEST_CONFIGURE_SHIMMER = 5;
     public static final int SHOW_GRAPH = 13;
 
+    private MenuItem addMenuItem;
     private MenuItem connectMenuItem;
     private MenuItem disconnectMenuItem;
     private MenuItem startStreamMenuItem;
     private MenuItem stopStreamMenuItem;
-
-    //private boolean bioHarnessConnected = false;
 
     private ArrayList<String> scaleTypes;
     private ArrayList<Integer> scaleViewIds;
@@ -223,8 +222,6 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
 
     //private boolean writingData = false;
     //private boolean secondWritingData = false;
-
-    //private BioHarnessHandler bioHarnessHandler;
 
     private String activityName = "";
     private String probandPreName = "";
@@ -291,7 +288,7 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
                             connectMenuItem.setEnabled(false);
                         }
                         disconnectBioHarness();
-                        disconnectedAllShimmers();
+                        disconnectAllShimmerImus();
                     }
                 });
                 builder.create().show();
@@ -382,15 +379,17 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
         this.disconnectMenuItem = menu.getItem(5);
         this.startStreamMenuItem = menu.getItem(0);
         this.stopStreamMenuItem = menu.getItem(1);
+        this.addMenuItem = menu.getItem(3);
         return true;
     }
 
     void disconnectDevices() {
-        disconnectedAllShimmers();
+        disconnectAllShimmerImus();
         disconnectBioHarness();
         this.directoryName = null;
         connectMenuItem.setEnabled(true);
         disconnectMenuItem.setEnabled(false);
+        addMenuItem.setEnabled(true);
     }
 
     @Override
@@ -399,15 +398,16 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-        if (id == R.id.action_add_sensor) {
-            findBluetoothAddress();
+        if (id == R.id.action_add_bluetooth_device) {
+            addBluetoothDevice();
             return true;
         }
 
         if (id == R.id.action_connect) {
             disconnectMenuItem.setEnabled(true);
             connectMenuItem.setEnabled(false);
-            connectedAllShimmers();
+            addMenuItem.setEnabled(false);
+            connectAllShimmerImus();
             connectBioHarness();
         }
 
@@ -433,14 +433,14 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
             if(bioHarnessConnected) {
                 resetBioharnessStorage();
             }*/
-            startAllStreaming();
+            startStreamingOfAllShimmerImus();
             startTimerThread();
             //startStreamingInternalSensorData();
         }
 
         if (id == R.id.action_stop_streaming) {
             this.stopTimestamp = System.currentTimeMillis();
-            stopAllStreaming();
+            stopAllStreamingOfAllShimmerImus();
             stopTimerThread();
             //stopStreamingInternalSensorData();
             writeLeftOverData();
@@ -464,14 +464,14 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
             if(shimmerImuService != null) {
                 int shimmerImuCount = shimmerImuService.shimmerImuMap.values().size();
 
-                if(shimmerImuCount > 0) {
-                    TextView infoShimmerImoConnectionStatus = (TextView) dialog.findViewById(R.id.textViewInfoShimmerImoConnectionStatus);
-                    infoShimmerImoConnectionStatus.setText(getString(R.string.info_connected, shimmerImuCount));
-                }
+                TextView infoShimmerImoConnectionStatus = (TextView) dialog.findViewById(R.id.textViewInfoShimmerImoConnectionStatus);
+                infoShimmerImoConnectionStatus.setText(getString(R.string.info_connected, shimmerImuCount));
+            }
 
-                if(bioHarnessService.hasBioHarnessConnected()) {
+            if(bioHarnessService != null) {
+                if(bioHarnessService.isBioHarnessConnected()) {
                     TextView infoBioHarnessConnectionStatus = (TextView) dialog.findViewById(R.id.textViewInfoBioHarnessConnectionStatus);
-                    infoBioHarnessConnectionStatus.setText(getText(R.string.info_connected));
+                    infoBioHarnessConnectionStatus.setText(getString(R.string.info_connected, 1));
                 }
             }
 
@@ -518,11 +518,6 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
             }
         }
         */
-    }
-
-    private void disconnectBioHarness() {
-        if(bioHarnessService != null) // && bioHarnessConnected)
-            bioHarnessService.disconnectBioHarness();
     }
 
     /**
@@ -645,19 +640,6 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
         }
     }
 
-    private void connectBioHarness() {
-        if (btAdapter != null) {
-            String bioHarnessBtDeviceAdress = getBioHarnessBtDeviceAddress(btAdapter);
-
-            if(bioHarnessBtDeviceAdress != null) {
-                if(bioHarnessService != null) {
-                    //bioHarnessHandler = new BioHarnessHandler();
-                    bioHarnessService.connectBioHarness(new BioHarnessHandler(), bioHarnessBtDeviceAdress);
-                }
-            }
-        }
-
-    }
     /*
     private void resetBioharnessStorage() {
         bioHarnessHandler.setFileStorageCreated(false);
@@ -814,6 +796,11 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
         super.onDestroy();
     }
 
+    private void addBluetoothDevice() {
+        Intent intent = new Intent(this, DeviceListActivity.class);
+        startActivityForResult(intent, MSG_BLUETOOTH_ADDRESS);
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -867,7 +854,7 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
                             pairBluetoothDevice(device);
                         }
 
-                        if(device.getName().startsWith("RN") & shimmerImuService == null) {
+                        if(device.getName().startsWith("RN42") & shimmerImuService == null) {
                             Intent intent=new Intent(this, ShimmerImuService.class);
                             startService(intent);
                             getApplicationContext().bindService(intent, shimmerImuServiceConnection, Context.BIND_AUTO_CREATE);
@@ -916,12 +903,7 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
         }
     }
 
-    private void findBluetoothAddress() {
-        Intent intent = new Intent(this, DeviceListActivity.class);
-        startActivityForResult(intent, MSG_BLUETOOTH_ADDRESS);
-    }
-
-    private void connectedAllShimmers() {
+    private void connectAllShimmerImus() {
         if(btAdapter == null)
             btAdapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -931,28 +913,53 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
             for (BluetoothDevice device : pairedDevices) {
                 if (device.getName().contains("RN42")) {
                     if(bluetoothAddresses.contains(device.getAddress())) {
-                        shimmerImuService.connectShimmer(device.getAddress(), Integer.toString(count), new ShimmerImuHandler(this, "imu-" + device.getName().toLowerCase() + ".csv", 2500));
-                        count++;
+                        if(shimmerImuService != null) {
+                            shimmerImuService.connectShimmerImu(device.getAddress(), Integer.toString(count), new ShimmerImuHandler(this, "imu-" + device.getName().toLowerCase() + ".csv", 2500));
+                            count++;
+                        }
                     }
                 }
             }
         }
     }
 
-    private void disconnectedAllShimmers() {
+    private void disconnectAllShimmerImus() {
         stopService(new Intent(MainActivity.this, ShimmerImuService.class));
         if(shimmerImuService != null)
-            shimmerImuService.disconnectAllDevices();
+            shimmerImuService.disconnectAllShimmerImus();
     }
 
-    private void startAllStreaming() {
+    private void startStreamingOfAllShimmerImus() {
         if(shimmerImuService != null)
-            shimmerImuService.startStreamingAllDevicesGetSensorNames(this.root, this.directoryName, this.startTimestamp);
+            shimmerImuService.startStreamingAllShimmerImus(this.root, this.directoryName, this.startTimestamp);
     }
 
-    private void stopAllStreaming() {
+    private void stopAllStreamingOfAllShimmerImus() {
         if(shimmerImuService != null)
-            shimmerImuService.stopStreamingAllDevices();
+            shimmerImuService.stopStreamingAllShimmerImus();
+    }
+
+    private void connectBioHarness() {
+        if (btAdapter == null)
+            btAdapter = BluetoothAdapter.getDefaultAdapter();
+
+        Set<BluetoothDevice> pairedDevices = btAdapter.getBondedDevices();
+        if (pairedDevices.size() > 0) {
+            for (BluetoothDevice device : pairedDevices) {
+                if (device.getName().startsWith("BH")) {
+                    if (bluetoothAddresses.contains(device.getAddress())) {
+                        if (bioHarnessService != null) {
+                            bioHarnessService.connectBioHarness(device.getAddress(), new BioHarnessHandler());
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void disconnectBioHarness() {
+        if(bioHarnessService != null && bioHarnessService.isBioHarnessConnected())
+            bioHarnessService.disconnectBioHarness();
     }
 
     class TimerHandlerCallback implements Handler.Callback {
@@ -1632,20 +1639,6 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
         }
     }
 
-    public String getBioHarnessBtDeviceAddress(BluetoothAdapter bluetoothAdapter) {
-        Set<BluetoothDevice> bondedDevices = bluetoothAdapter.getBondedDevices();
-        if (bondedDevices.size() > 0) {
-            for (BluetoothDevice bluetoothDevice : bondedDevices) {
-                if (bluetoothDevice.getName().startsWith("BH")) {
-                    if(getBluetoothAddresses().contains(bluetoothDevice.getAddress())) {
-                        return bluetoothDevice.getAddress();
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
     private ServiceConnection shimmerImuServiceConnection = new ServiceConnection() {
 
         public void onServiceConnected(ComponentName arg0, IBinder service) {
@@ -1749,5 +1742,4 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
         dialog.show();
     }
     */
-
 }

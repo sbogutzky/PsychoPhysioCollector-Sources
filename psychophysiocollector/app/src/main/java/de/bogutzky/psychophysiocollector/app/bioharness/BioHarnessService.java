@@ -7,7 +7,6 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.widget.Toast;
 
-import de.bogutzky.psychophysiocollector.app.BioHarnessConnectedListener;
 import de.bogutzky.psychophysiocollector.app.R;
 import zephyr.android.BioHarnessBT.BTClient;
 
@@ -17,13 +16,13 @@ public class BioHarnessService extends Service {
 
     private BTClient btClient;
 
-    public boolean hasBioHarnessConnected() {
+    public boolean isBioHarnessConnected() {
         return bioHarnessConnected;
     }
 
     private boolean bioHarnessConnected = false;
 
-    private BioHarnessConnectedListener bioHarnessConnectedListener;
+    private BioHarnessListener bioHarnessListener;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -33,13 +32,6 @@ public class BioHarnessService extends Service {
     @Override
     public void onCreate() {
         Toast.makeText(this, R.string.bio_harness_service_started, Toast.LENGTH_LONG).show();
-    }
-
-    public void disconnectBioHarness() {
-        if(btClient != null && bioHarnessConnectedListener != null) {
-            btClient.removeConnectedEventListener(bioHarnessConnectedListener);
-            btClient.Close();
-        }
     }
 
     public class LocalBinder extends Binder {
@@ -59,20 +51,28 @@ public class BioHarnessService extends Service {
         return START_STICKY;
     }
 
-    public void connectBioHarness(BioHarnessHandler bioHarnessHandler, String bhMacID) {
-        btClient = new BTClient(BluetoothAdapter.getDefaultAdapter(), bhMacID);
-        bioHarnessConnectedListener = new BioHarnessConnectedListener(bioHarnessHandler, bioHarnessHandler);
-        btClient.addConnectedEventListener(bioHarnessConnectedListener);
+    public void connectBioHarness(String bluetoothAddress, BioHarnessHandler bioHarnessHandler) {
+        btClient = new BTClient(BluetoothAdapter.getDefaultAdapter(), bluetoothAddress);
+        bioHarnessListener = new BioHarnessListener(bioHarnessHandler, bioHarnessHandler);
+        btClient.addConnectedEventListener(bioHarnessListener);
         if(btClient.IsConnected()) {
             btClient.start();
             bioHarnessConnected = true;
         }
     }
 
-    /*
-    public void stopStreamingAllDevices() {
+    public void disconnectBioHarness() {
+        if(btClient != null && bioHarnessListener != null) {
+            btClient.removeConnectedEventListener(bioHarnessListener);
+            btClient.Close();
+            bioHarnessConnected = false;
+        }
+    }
 
-        if(btClient != null && bioHarnessConnectedListener != null)
-            btClient.removeConnectedEventListener(bioHarnessConnectedListener);
+    /*
+    public void stopStreamingAllShimmerImus() {
+
+        if(btClient != null && bioHarnessListener != null)
+            btClient.removeConnectedEventListener(bioHarnessListener);
     }*/
 }

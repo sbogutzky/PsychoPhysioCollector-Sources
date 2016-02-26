@@ -49,21 +49,12 @@ public class ShimmerImuService extends Service {
 
     }
 
-    public void disconnectAllDevices() {
-        Collection<Object> shimmerImus = shimmerImuMap.values();
-        for (Object shimmerImu1 : shimmerImus) {
-            Shimmer shimmerImu = (Shimmer) shimmerImu1;
-            shimmerImu.stop();
-        }
-        shimmerImuMap.clear();
-    }
-
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         return START_STICKY;
     }
 
-    public void connectShimmer(String bluetoothAddress, String selectedDevice, ShimmerImuHandler handler) {
+    public void connectShimmerImu(String bluetoothAddress, String selectedDevice, ShimmerImuHandler handler) {
         Shimmer shimmerDevice = new Shimmer(this, handler, selectedDevice, false);
         shimmerImuMap.remove(bluetoothAddress);
         if (shimmerImuMap.get(bluetoothAddress) == null) {
@@ -72,7 +63,16 @@ public class ShimmerImuService extends Service {
         }
     }
 
-    public void stopStreamingAllDevices() {
+    public void disconnectAllShimmerImus() {
+        Collection<Object> shimmerImus = shimmerImuMap.values();
+        for (Object shimmerImu1 : shimmerImus) {
+            Shimmer shimmerImu = (Shimmer) shimmerImu1;
+            shimmerImu.stop();
+        }
+        shimmerImuMap.clear();
+    }
+
+    public void stopStreamingAllShimmerImus() {
         Collection<Object> shimmerImus = shimmerImuMap.values();
         for (Object shimmerImu1 : shimmerImus) {
             Shimmer shimmerImu = (Shimmer) shimmerImu1;
@@ -83,7 +83,7 @@ public class ShimmerImuService extends Service {
         }
     }
 
-    public void startStreamingAllDevicesGetSensorNames(File root, String directoryName, long startTimestamp) {
+    public void startStreamingAllShimmerImus(File root, String directoryName, long startTimestamp) {
         Collection<Object> shimmerImus = shimmerImuMap.values();
         for (Object shimmerImu1 : shimmerImus) {
             Shimmer shimmerImu = (Shimmer) shimmerImu1;

@@ -1,4 +1,4 @@
-package de.bogutzky.psychophysiocollector.app;
+package de.bogutzky.psychophysiocollector.app.bioharness;
 
 
 import android.os.Bundle;
@@ -6,9 +6,10 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
+import de.bogutzky.psychophysiocollector.app.TimeConverter;
 import zephyr.android.BioHarnessBT.*;
 
-public class BioHarnessConnectedListener extends ConnectListenerImpl {
+public class BioHarnessListener extends ConnectListenerImpl {
     private Handler messageHandler;
     private final int GP_MSG_ID = 0x20;
     private final int BREATHING_MSG_ID = 0x21;
@@ -45,7 +46,7 @@ public class BioHarnessConnectedListener extends ConnectListenerImpl {
 
     private PacketTypeRequest RqPacketType = new PacketTypeRequest();
 
-    public BioHarnessConnectedListener(Handler handler, Handler _NewHandler) {
+    public BioHarnessListener(Handler handler, Handler _NewHandler) {
         super(handler, null);
         messageHandler = _NewHandler;
     }
