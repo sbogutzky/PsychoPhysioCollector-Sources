@@ -21,6 +21,7 @@ import java.util.Collection;
 
 import de.bogutzky.psychophysiocollector.app.MainActivity;
 import de.bogutzky.psychophysiocollector.app.R;
+import de.bogutzky.psychophysiocollector.app.Utils;
 import de.bogutzky.psychophysiocollector.app.WriteDataTask;
 import de.bogutzky.psychophysiocollector.app.WriteDataTaskParams;
 
@@ -128,9 +129,10 @@ public class ShimmerImuHandler extends Handler {
                     if(this.isFirstDataRow) {
                         // Time difference between start the evaluation and here
                         this.timeDifference = System.currentTimeMillis() - this.startTimestamp;
-                        Log.d(TAG, "Time difference: " + this.timeDifference + " ms");
                         this.imuStartTimestamp = this.buffer[batchRowCount][0];
-                        Log.d(TAG, "IMU start timestamp: " + this.imuStartTimestamp + " ms");
+                        Log.d(TAG, "Time difference: " + timeDifference + " ms");
+                        Log.d(TAG, "Start timestamp: " + Utils.getDateString(this.startTimestamp, "dd/MM/yyyy hh:mm:ss.SSS"));
+                        Log.d(TAG, "Shimmer IMU start timestamp: " + Utils.getDateString(this.imuStartTimestamp.longValue(), "dd/MM/yyyy hh:mm:ss.SSS"));
                         this.isFirstDataRow = false;
                     }
 

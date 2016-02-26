@@ -1,4 +1,4 @@
-package de.bogutzky.psychophysiocollector.app;
+package de.bogutzky.psychophysiocollector.app.bioharness;
 import java.util.GregorianCalendar;
 import java.util.concurrent.TimeUnit;
 

@@ -4,25 +4,91 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
-import de.bogutzky.psychophysiocollector.app.R;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
-/**
- * Created by sbogutzky on 25.02.16.
- */
+import de.bogutzky.psychophysiocollector.app.Utils;
+
 public class BioHarnessHandler extends Handler {
-    private double rrTime = 0;
+    private static final String TAG = "BioHarnessHandler";
 
-    private boolean fileStorageCreated = false;
+    private final int RtoR_MSG_ID = 0x24;
 
-    public void setFileStorageCreated(boolean fileStorageCreated) {
-        this.fileStorageCreated = fileStorageCreated;
+    private int batchRowCount = 0;
+    private int maxBatchCount;
+    private Double[][] buffer;
+    private Double[][] buffer0;
+    private Double[][] buffer1;
+
+    private long startTimestamp;
+    private Double incrementedTimestamp;
+    private boolean isFirstDataRow = true;
+    private boolean isLogging = false;
+
+    public BioHarnessHandler(int maxBatchCount) {
+        this.maxBatchCount = maxBatchCount;
     }
 
-    public BioHarnessHandler() {
+    public void setStartTimestamp(long startTimestamp) {
+        this.startTimestamp = startTimestamp;
+    }
 
+    public void startStreaming() {
+        this.buffer0 = new Double[maxBatchCount][2];
+        this.buffer1 = new Double[maxBatchCount][2];
+        this.buffer = buffer0;
+        this.isLogging = true;
+    }
+
+    public void stopStreaming() {
+        this.isLogging = false;
+        this.isFirstDataRow = true;
     }
 
     public void handleMessage(Message msg) {
+
+        switch (msg.what) {
+            case RtoR_MSG_ID:
+                if(isLogging) {
+                    int rrInterval = msg.getData().getInt("rrInterval");
+                    long timestamp = msg.getData().getLong("Timestamp");
+
+                    this.buffer[batchRowCount][1] = rrInterval / 1.0;
+
+                    if (this.isFirstDataRow) {
+
+                        // Time difference between start the evaluation and here
+                        Double bioHarnessStartTimestamp = timestamp / 1.0;
+                        Double timeDifference = bioHarnessStartTimestamp - this.startTimestamp;
+                        this.incrementedTimestamp = timeDifference;
+
+                        //TODO: Negative time difference
+                        Log.d(TAG, "Time difference: " + timeDifference + " ms");
+                        Log.d(TAG, "Start timestamp: " + Utils.getDateString(this.startTimestamp, "dd/MM/yyyy hh:mm:ss.SSS"));
+                        Log.d(TAG, "BioHarness start timestamp: " + Utils.getDateString(bioHarnessStartTimestamp.longValue(), "dd/MM/yyyy hh:mm:ss.SSS"));
+                        this.buffer[batchRowCount][0] = timeDifference;
+                        this.isFirstDataRow = false;
+                    }
+
+                    this.buffer[batchRowCount][0] = this.incrementedTimestamp;
+                    this.incrementedTimestamp += this.buffer[batchRowCount][1];
+
+                    Log.d(TAG, "Timestamp: " + this.buffer[batchRowCount][0] / 1000.0 + " s / RR-Interval: " + this.buffer[batchRowCount][1] + " ms");
+
+                    batchRowCount++;
+                    if (batchRowCount == maxBatchCount) {
+                        //writeValues(null); // "# BatchRowCount: " + batchRowCount
+                        batchRowCount = 0;
+                        if (this.buffer == this.buffer0) {
+                            this.buffer = this.buffer1;
+                        } else {
+                            this.buffer = this.buffer0;
+                        }
+                    }
+                }
+                break;
+        }
+
         /*
         if(!fileStorageCreated && loggingEnabled) {
             createBioHarnessFiles();

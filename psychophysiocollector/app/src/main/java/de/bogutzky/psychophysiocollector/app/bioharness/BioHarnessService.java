@@ -69,10 +69,19 @@ public class BioHarnessService extends Service {
         }
     }
 
-    /*
-    public void stopStreamingAllShimmerImus() {
+    public void startStreamingBioHarness(long startTimestamp) { // File root, String directoryName,
+        if (bioHarnessConnected) {
+            //bioHarnessListener.bioHarnessHandler.setRoot(root);
+            //bioHarnessListener.bioHarnessHandler.setDirectoryName(directoryName);
+            bioHarnessListener.bioHarnessHandler.setStartTimestamp(startTimestamp);
+            bioHarnessListener.bioHarnessHandler.startStreaming();
+        }
+    }
 
-        if(btClient != null && bioHarnessListener != null)
+    public void stopStreamingBioHarness() {
+        if(btClient != null && bioHarnessListener != null) {
+            bioHarnessListener.bioHarnessHandler.stopStreaming();
             btClient.removeConnectedEventListener(bioHarnessListener);
-    }*/
+        }
+    }
 }
