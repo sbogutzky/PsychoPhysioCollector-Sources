@@ -21,13 +21,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
+import de.bogutzky.psychophysiocollector.app.shimmer.imu.ShimmerImuService;
+
 
 public class ShimmerMainConfigurationActivity extends Activity {
     private static final String TAG = "ShimmerMConfigActivity";
 
     private String mCurrentBluetoothDeviceAddress;
 
-    private ShimmerSensorService mService;
+    private ShimmerImuService mService;
 
     private double mSamplingRate = -1;
     private int mAccelerometerRange = -1;
@@ -37,7 +39,7 @@ public class ShimmerMainConfigurationActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_commands);
 
-        Intent intent = new Intent(this, ShimmerSensorService.class);
+        Intent intent = new Intent(this, ShimmerImuService.class);
         getApplicationContext().bindService(intent, mSensorServiceConnection, Context.BIND_AUTO_CREATE);
 
         Intent sender = getIntent();
@@ -162,7 +164,7 @@ public class ShimmerMainConfigurationActivity extends Activity {
     private ServiceConnection mSensorServiceConnection = new ServiceConnection() {
 
         public void onServiceConnected(ComponentName arg0, IBinder service) {
-            ShimmerSensorService.LocalBinder binder = (ShimmerSensorService.LocalBinder) service;
+            ShimmerImuService.LocalBinder binder = (ShimmerImuService.LocalBinder) service;
             mService = binder.getService();
             Log.d(TAG, "Service connected");
         }

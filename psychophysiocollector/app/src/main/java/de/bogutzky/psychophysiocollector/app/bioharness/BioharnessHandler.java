@@ -300,8 +300,8 @@ public class BioHarnessHandler extends Handler {
                         }
                     }
                     break;
-                */
+
             }
-        }
+        } */
     }
 }
