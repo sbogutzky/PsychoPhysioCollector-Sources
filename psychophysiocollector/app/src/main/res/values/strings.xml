@@ -48,7 +48,7 @@
     <string name="info_session">Sitzung: </string>
     <string name="info_started">gestartet</string>
     <string name="info_not_started">nicht gestartet</string>
-    <string name="info_connected">verbunden</string>
+    <string name="info_connected">%1$d verbunden</string>
     <string name="info_not_connected">nicht verbunden</string>
     <string name="info_connected_fix_received">verbunden und Fix erhalten</string>
     <string name="info_could_not_read">konnte nicht gelesen werde.</string>
@@ -149,5 +149,13 @@
 
     <string name="permission_granted">Berechtigung gegeben</string>
     <string name="next">Weiter</string>
+    <string name="bioharness_removed">BioHarness entfernt</string>
+    <string name="bioharness_paired">BioHarness gepaired</string>
+    <string name="shimmer_imu_paired">Shimmer IMU gepaired</string>
+    <string name="shimmer_imu_removed">Shimmer IMU entfernt</string>
+    <string name="shimmer_imu_service_stopped">Shimmer IMU Service gestoppt</string>
+    <string name="shimmer_imu_service_started">Shimmer IMU Service gestarted</string>
+    <string name="bio_harness_service_started">BioHarness Service gestartet</string>
+    <string name="bio_harness_service_stopped">BioHarness Service gestoppt</string>
 
 </resources>

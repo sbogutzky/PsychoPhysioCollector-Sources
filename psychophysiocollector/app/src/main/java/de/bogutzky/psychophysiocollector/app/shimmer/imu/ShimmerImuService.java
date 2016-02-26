@@ -1,11 +1,9 @@
-package de.bogutzky.psychophysiocollector.app;
+package de.bogutzky.psychophysiocollector.app.shimmer.imu;
 
 import android.app.Service;
-import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.shimmerresearch.android.Shimmer;
@@ -16,15 +14,12 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import de.bogutzky.psychophysiocollector.app.shimmer.imu.ShimmerImuHandler;
-import zephyr.android.BioHarnessBT.BTClient;
+import de.bogutzky.psychophysiocollector.app.R;
 
-public class ShimmerSensorService extends Service {
-    private static final String TAG = "ShimmerService";
+public class ShimmerImuService extends Service {
+    //private static final String TAG = "ShimmerService";
     private final IBinder binder = new LocalBinder();
     public HashMap<String, Object> shimmerImuMap = new HashMap<>(7);
-
-    private BTClient _bt;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -33,45 +28,33 @@ public class ShimmerSensorService extends Service {
 
     @Override
     public void onCreate() {
-        Toast.makeText(this, "Shimmer Service Created", Toast.LENGTH_LONG).show();
+        Toast.makeText(this, R.string.shimmer_imu_service_started, Toast.LENGTH_LONG).show();
     }
 
     public class LocalBinder extends Binder {
-        public ShimmerSensorService getService() {
+        public ShimmerImuService getService() {
             // Return this instance of LocalService so clients can call public methods
-            return ShimmerSensorService.this;
+            return ShimmerImuService.this;
         }
     }
 
     @Override
     public void onDestroy() {
-        Toast.makeText(this, "Shimmer Service Stopped", Toast.LENGTH_LONG).show();
-        Log.d(TAG, "onDestroy");
+        Toast.makeText(this, R.string.shimmer_imu_service_stopped, Toast.LENGTH_LONG).show();
         Collection<Object> shimmerImus = shimmerImuMap.values();
         for (Object shimmerImu1 : shimmerImus) {
             Shimmer shimmerImu = (Shimmer) shimmerImu1;
             shimmerImu.stop();
         }
 
-    }
-
-    public void disconnectAllDevices() {
-        Collection<Object> shimmerImus = shimmerImuMap.values();
-        for (Object shimmerImu1 : shimmerImus) {
-            Shimmer shimmerImu = (Shimmer) shimmerImu1;
-            shimmerImu.stop();
-        }
-        shimmerImuMap.clear();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d("LocalService", "Received start id " + startId + ": " + intent);
         return START_STICKY;
     }
 
-    public void connectShimmer(String bluetoothAddress, String selectedDevice, ShimmerImuHandler handler) {
-        Log.d("Shimmer", "net Connection");
+    public void connectShimmerImu(String bluetoothAddress, String selectedDevice, ShimmerImuHandler handler) {
         Shimmer shimmerDevice = new Shimmer(this, handler, selectedDevice, false);
         shimmerImuMap.remove(bluetoothAddress);
         if (shimmerImuMap.get(bluetoothAddress) == null) {
@@ -80,7 +63,16 @@ public class ShimmerSensorService extends Service {
         }
     }
 
-    public void stopStreamingAllDevices() {
+    public void disconnectAllShimmerImus() {
+        Collection<Object> shimmerImus = shimmerImuMap.values();
+        for (Object shimmerImu1 : shimmerImus) {
+            Shimmer shimmerImu = (Shimmer) shimmerImu1;
+            shimmerImu.stop();
+        }
+        shimmerImuMap.clear();
+    }
+
+    public void stopStreamingAllShimmerImus() {
         Collection<Object> shimmerImus = shimmerImuMap.values();
         for (Object shimmerImu1 : shimmerImus) {
             Shimmer shimmerImu = (Shimmer) shimmerImu1;
@@ -91,7 +83,7 @@ public class ShimmerSensorService extends Service {
         }
     }
 
-    public void startStreamingAllDevicesGetSensorNames(File root, String directoryName, long startTimestamp) {
+    public void startStreamingAllShimmerImus(File root, String directoryName, long startTimestamp) {
         Collection<Object> shimmerImus = shimmerImuMap.values();
         for (Object shimmerImu1 : shimmerImus) {
             Shimmer shimmerImu = (Shimmer) shimmerImu1;
@@ -288,29 +280,6 @@ public class ShimmerSensorService extends Service {
             }
         }
         return range;
-    }
-    */
-
-    /*
-    private void showNotification() {
-
-        // In this sample, we'll use the same text for the ticker and the expanded notification
-        CharSequence text = getString(R.string.service_running);
-
-        // Set the icon, scrolling text and timestamp
-        Notification notification = new Notification(R.drawable.ic_launcher, text,
-                System.currentTimeMillis());
-
-        // The PendingIntent to launch our activity if the user selects this notification
-        PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
-                new Intent(this, MainActivity.class), 0);
-
-        // Set the info for the views that show in the notification panel.
-        notification.setLatestEventInfo(this, getString(R.string.service_name),
-                text, contentIntent);
-
-        // Send the notification.
-        notificationManager.notify(1233, notification);
     }
     */
 }

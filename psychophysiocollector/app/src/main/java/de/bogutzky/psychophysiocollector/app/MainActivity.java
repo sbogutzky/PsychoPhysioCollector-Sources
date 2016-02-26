@@ -23,11 +23,9 @@ import android.graphics.drawable.Drawable;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
-import android.location.GpsStatus;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
+//import android.hardware.SensorManager;
+//import android.location.LocationListener;
+//import android.location.LocationManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Environment;
@@ -67,19 +65,25 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Method;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
+//import java.text.DecimalFormat;
+//import java.text.DecimalFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Random;
 import java.util.Set;
 
+import de.bogutzky.psychophysiocollector.app.bioharness.BioHarnessHandler;
+import de.bogutzky.psychophysiocollector.app.bioharness.BioHarnessHandlerInterface;
+import de.bogutzky.psychophysiocollector.app.bioharness.BioHarnessService;
 import de.bogutzky.psychophysiocollector.app.shimmer.imu.ShimmerImuHandler;
 import de.bogutzky.psychophysiocollector.app.shimmer.imu.ShimmerImuHandlerInterface;
+import de.bogutzky.psychophysiocollector.app.shimmer.imu.ShimmerImuMainConfigurationActivity;
+import de.bogutzky.psychophysiocollector.app.shimmer.imu.ShimmerImuService;
 
-public class MainActivity extends ListActivity implements SensorEventListener,ShimmerImuHandlerInterface {
+public class MainActivity extends ListActivity implements SensorEventListener, ShimmerImuHandlerInterface, BioHarnessHandlerInterface {
 
     private static final String TAG = "MainActivity";
     private static final int MSG_BLUETOOTH_ADDRESS = 1;
@@ -87,12 +91,14 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
     private final static int PERMISSIONS_REQUEST = 900;
     private static final int TIMER_UPDATE = 1;
     private static final int TIMER_END = 2;
-    private static final int INTERNAL_SENSOR_CACHE_LENGTH = 1000;
-    private static final int DATA_ARRAY_SIZE = 1000;
+    //private static final int INTERNAL_SENSOR_CACHE_LENGTH = 1000;
+    //private static final int DATA_ARRAY_SIZE = 1000;
     private boolean loggingEnabled = false;
-    private ArrayAdapter adapter;
+
+    private ArrayAdapter arrayAdapter;
     private ArrayList<String> bluetoothAddresses;
     private ArrayList<String> deviceNames;
+
     private TextView textViewTimer;
     private Handler timerHandler;
     private Thread timerThread;
@@ -100,13 +106,16 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
     private double timerCycleInMin;
     private String directoryName;
     private File root;
+    /*
     private SensorManager sensorManager;
     private android.hardware.Sensor accelerometer;
     private android.hardware.Sensor gyroscope;
     private LocationManager locationManager;
     private LocationListener locationListener;
+    */
     private String gpsStatusText;
-    private float lastLocationAccuracy;
+    //private float lastLocationAccuracy;
+
     private Vibrator vibrator;
     private long[] vibratorPatternFeedback = {0, 500, 200, 100, 100, 100, 100, 100};
 
@@ -115,6 +124,8 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
     private Spinner questionnaireSpinner;
     private int scaleTimerValue;
     private int scaleTimerVarianceValue;
+
+    /*
     private Double[][] accelerometerValues;
     private int accelerometerValueCount;
     private Double[][] gyroscopeValues;
@@ -139,15 +150,17 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
     private int bhBreathingValueCount;
     private Double[][] bhEcgValues;
     private int bhEcgValueCount;
+    */
 
     private String questionnaireFileName = "questionnaires/fks.json";
     private JSONObject questionnaire;
 
     /* min api 9*/
-    private Sensor linearAccelerationSensor;
+    //private Sensor linearAccelerationSensor;
 
     private long startTimestamp;
     private long stopTimestamp;
+    /*
     private long gyroscopeEventStartTimestamp;
     private long gyroscopeStartTimestamp;
     private long accelerometerEventStartTimestamp;
@@ -164,11 +177,14 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
     private Long firstBreathingTimestamp;
     private Long firstEcgTimestamp;
     private Long bhStartTimestamp;
+    */
 
-    private DecimalFormat decimalFormat;
+    //private DecimalFormat decimalFormat;
 
-    //bth adapter
+    //bth arrayAdapter
     private BluetoothAdapter btAdapter = null;
+
+    /*
     private final int BREATHING_MSG_ID = 0x21;
     private final int ECG_MSG_ID = 0x22;
     private final int RtoR_MSG_ID = 0x24;
@@ -179,37 +195,35 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
     private final int RESPIRATION_RATE = 0x101;
     private final int SKIN_TEMPERATURE = 0x102;
     private final int PEAK_ACCLERATION = 0x104;
+    */
 
     public final static int REQUEST_MAIN_COMMAND_SHIMMER=3;
     public final static int REQUEST_COMMANDS_SHIMMER=4;
     public static final int REQUEST_CONFIGURE_SHIMMER = 5;
     public static final int SHOW_GRAPH = 13;
 
+    private MenuItem addMenuItem;
     private MenuItem connectMenuItem;
     private MenuItem disconnectMenuItem;
     private MenuItem startStreamMenuItem;
     private MenuItem stopStreamMenuItem;
-
-    private boolean bioHarnessConnected = false;
 
     private ArrayList<String> scaleTypes;
     private ArrayList<Integer> scaleViewIds;
 
     private boolean wroteQuestionnaireHeader = false;
 
-    ShimmerSensorService shimmerService;
-    BioHarnessSensorService bioHarnessSensorService;
-    private GraphView graphView;
-    private boolean graphShowing = false;
-    private String graphAdress = "";
+    ShimmerImuService shimmerImuService;
+    BioHarnessService bioHarnessService;
+    //private GraphView graphView;
+    //private boolean graphShowing = false;
+    //private String graphAdress = "";
 
-    private int sensorDataDelay = 20000; // ca. 50 Hz
+    //private int sensorDataDelay = 20000; // ca. 50 Hz
     private boolean isSessionStarted = false;
 
-    private boolean writingData = false;
-    private boolean secondWritingData = false;
-
-    private BioHarnessHandler bioHarnessHandler;
+    //private boolean writingData = false;
+    //private boolean secondWritingData = false;
 
     private String activityName = "";
     private String probandPreName = "";
@@ -225,24 +239,29 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
 
         checkBtEnabled();
 
-        deviceNames = new ArrayList<String>();
-        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, deviceNames);
-        setListAdapter(adapter);
+        deviceNames = new ArrayList<>();
+        arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, deviceNames);
+        setListAdapter(arrayAdapter);
 
+        /*
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         gyroscope = sensorManager.getDefaultSensor(android.hardware.Sensor.TYPE_GYROSCOPE);
         this.linearAccelerationSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         this.lastLocationAccuracy = 0;
+        */
+
+        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
         timerCycleInMin = 15;
 
+        /*
         DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols();
         otherSymbols.setDecimalSeparator('.');
         decimalFormat = new DecimalFormat("#.###", otherSymbols);
         decimalFormat.setMinimumFractionDigits(3);
+        */
 
         textViewTimer = (TextView) findViewById(R.id.text_view_timer);
         textViewTimer.setVisibility(View.INVISIBLE);
@@ -269,12 +288,12 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
                     public void onClick(DialogInterface dialog, int which) {
                         deviceNames.remove(index);
                         getBluetoothAddresses().remove(index);
-                        adapter.notifyDataSetChanged();
+                        arrayAdapter.notifyDataSetChanged();
                         if (getBluetoothAddresses().size() == 0) {
                             connectMenuItem.setEnabled(false);
                         }
                         disconnectBioHarness();
-                        disconnectedAllShimmers();
+                        disconnectAllShimmerImus();
                     }
                 });
                 builder.create().show();
@@ -319,6 +338,7 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
 
     private void resetTime() {
         this.startTimestamp = System.currentTimeMillis();
+        /*
         this.gyroscopeEventStartTimestamp = 0L;
         this.accelerometerEventStartTimestamp = 0L;
         this.linearAccelerationSensorEventStartTimestamp = 0L;
@@ -332,15 +352,16 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
         this.firstBreathingTimestamp = 0L;
         this.firstEcgTimestamp = 0L;
         this.bhStartTimestamp = 0L;
+        */
     }
 
     private JSONObject readQuestionnaireFromJSON() {
-        BufferedReader input = null;
+        BufferedReader input;
         JSONObject jsonObject = null;
         try {
             input = new BufferedReader(new InputStreamReader(
                     getAssets().open(questionnaireFileName)));
-            StringBuffer content = new StringBuffer();
+            StringBuilder content = new StringBuilder();
             char[] buffer = new char[1024];
             int num;
             while ((num = input.read(buffer)) > 0) {
@@ -348,9 +369,7 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
             }
             jsonObject = new JSONObject(content.toString());
 
-        }catch (IOException e) {
-
-        } catch (JSONException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return jsonObject;
@@ -365,15 +384,17 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
         this.disconnectMenuItem = menu.getItem(5);
         this.startStreamMenuItem = menu.getItem(0);
         this.stopStreamMenuItem = menu.getItem(1);
+        this.addMenuItem = menu.getItem(3);
         return true;
     }
 
     void disconnectDevices() {
-        disconnectedAllShimmers();
+        disconnectAllShimmerImus();
         disconnectBioHarness();
-        this.directoryName = null;
+
         connectMenuItem.setEnabled(true);
         disconnectMenuItem.setEnabled(false);
+        addMenuItem.setEnabled(true);
     }
 
     @Override
@@ -382,15 +403,16 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-        if (id == R.id.action_add_sensor) {
-            findBluetoothAddress();
+        if (id == R.id.action_add_bluetooth_device) {
+            addBluetoothDevice();
             return true;
         }
 
         if (id == R.id.action_connect) {
             disconnectMenuItem.setEnabled(true);
             connectMenuItem.setEnabled(false);
-            connectedAllShimmers();
+            addMenuItem.setEnabled(false);
+            connectAllShimmerImus();
             connectBioHarness();
         }
 
@@ -407,22 +429,25 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
             wroteQuestionnaireHeader = false;
             loggingEnabled = true;
             isSessionStarted = true;
+
             this.startStreamMenuItem.setEnabled(false);
             this.stopStreamMenuItem.setEnabled(true);
+            this.disconnectMenuItem.setEnabled(false);
+
             if (this.directoryName == null) {
                 createRootDirectory();
             }
-            if(bioHarnessConnected) {
-                resetBioharnessStorage();
-            }
-            startAllStreaming();
+
+            startStreamingOfAllShimmerImus();
+            startStreamingBioHarness();
             startTimerThread();
             //startStreamingInternalSensorData();
         }
 
         if (id == R.id.action_stop_streaming) {
             this.stopTimestamp = System.currentTimeMillis();
-            stopAllStreaming();
+            stopAllStreamingOfAllShimmerImus();
+            stopStreamingBioHarness();
             stopTimerThread();
             //stopStreamingInternalSensorData();
             writeLeftOverData();
@@ -431,6 +456,7 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
             this.directoryName = null;
             this.startStreamMenuItem.setEnabled(true);
             this.stopStreamMenuItem.setEnabled(false);
+            this.disconnectMenuItem.setEnabled(true);
         }
 
         if (id == R.id.action_info) {
@@ -443,17 +469,17 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
                 infoSessionStatus.setText(getString(R.string.info_started));
             }
 
-            if(shimmerService != null) {
-                int shimmerImuCount = shimmerService.shimmerImuMap.values().size();
+            if(shimmerImuService != null) {
+                int shimmerImuCount = shimmerImuService.shimmerImuMap.values().size();
 
-                if(shimmerImuCount > 0) {
-                    TextView infoShimmerImoConnectionStatus = (TextView) dialog.findViewById(R.id.textViewInfoShimmerImoConnectionStatus);
-                    infoShimmerImoConnectionStatus.setText(shimmerImuCount + " " + getText(R.string.info_connected));
-                }
+                TextView infoShimmerImoConnectionStatus = (TextView) dialog.findViewById(R.id.textViewInfoShimmerImoConnectionStatus);
+                infoShimmerImoConnectionStatus.setText(getString(R.string.info_connected, shimmerImuCount));
+            }
 
-                if(bioHarnessSensorService.hasBioHarnessConnected()) {
+            if(bioHarnessService != null) {
+                if(bioHarnessService.isBioHarnessConnected()) {
                     TextView infoBioHarnessConnectionStatus = (TextView) dialog.findViewById(R.id.textViewInfoBioHarnessConnectionStatus);
-                    infoBioHarnessConnectionStatus.setText(getText(R.string.info_connected));
+                    infoBioHarnessConnectionStatus.setText(getString(R.string.info_connected, 1));
                 }
             }
 
@@ -487,7 +513,7 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
         writeLinearAccelerationValues(true,1);
         ((GPSListener)locationListener).writeGpsValues(true,1);
 
-        if(shimmerService != null) {
+        if(shimmerImuService != null) {
             if(bioHarnessConnected) {
                 //bh data
                 writeData(bhRRIntervalValues, getString(R.string.file_name_rr_interval), 2, true, getFooterComments(), 1);
@@ -502,11 +528,6 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
         */
     }
 
-    private void disconnectBioHarness() {
-        if(bioHarnessSensorService != null && bioHarnessConnected)
-            bioHarnessSensorService.disconnectBioHarness();
-    }
-
     /**
      * Return date in specified format.
      * @param millis Date in milliseconds
@@ -516,7 +537,7 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
     public static String getDate(long millis, String dateFormat)
     {
         // Create a DateFormatter object for displaying date in specified format.
-        SimpleDateFormat formatter = new SimpleDateFormat(dateFormat);
+        SimpleDateFormat formatter = new SimpleDateFormat(dateFormat, Locale.GERMANY);
 
         // Create a calendar object that will convert the date and time value in milliseconds to date.
         Calendar calendar = Calendar.getInstance();
@@ -572,7 +593,7 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
         } catch (IOException e) {
             e.printStackTrace();
         }
-        ArrayAdapter<String> qSpinnerAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, questionnaires);
+        ArrayAdapter<String> qSpinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, questionnaires);
         questionnaireSpinner.setAdapter(qSpinnerAdapter);
         questionnaireSpinner.setSelection(questionnairePos);
 
@@ -600,7 +621,7 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
                 editor.putInt("scaleTimerValue", Integer.valueOf(scale_timerSpinner.getSelectedItem().toString()));
                 editor.putInt("scaleTimerVarianceValue", Integer.valueOf(scale_timerVarianceSpinner.getSelectedItem().toString()));
                 editor.putString("questionnaireValue", "questionnaires/" + questionnaireSpinner.getSelectedItem().toString());
-                editor.commit();
+                editor.apply();
                 questionnaireFileName = "questionnaires/" + questionnaireSpinner.getSelectedItem().toString();
                 questionnaire = readQuestionnaireFromJSON();
 
@@ -615,11 +636,11 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
 
     @Override
     protected void onListItemClick(ListView l, View v, int position, long id) {
-        if(shimmerService != null) {
-            int shimmerImuCount = shimmerService.shimmerImuMap.values().size();
+        if(shimmerImuService != null) {
+            int shimmerImuCount = shimmerImuService.shimmerImuMap.values().size();
             if(shimmerImuCount > 0 && deviceNames.get(position).contains("RN42")) {
                 Object o = l.getItemAtPosition(position);
-                Intent intent = new Intent(MainActivity.this, ShimmerMainConfigurationActivity.class);
+                Intent intent = new Intent(MainActivity.this, ShimmerImuMainConfigurationActivity.class);
                 intent.putExtra("DeviceName", o.toString());
                 intent.putExtra("BluetoothDeviceAddress", getBluetoothAddresses().get(position));
                 startActivityForResult(intent, REQUEST_MAIN_COMMAND_SHIMMER);
@@ -627,22 +648,8 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
         }
     }
 
-    private void connectBioHarness() {
-        if (btAdapter != null) {
-            String bioHarnessBtDeviceAdress = getBioHarnessBtDeviceAdress(btAdapter);
-
-            if(bioHarnessBtDeviceAdress != null) {
-                if(bioHarnessSensorService != null) {
-                    bioHarnessHandler = new BioHarnessHandler();
-                    bioHarnessSensorService.connectBioHarness(bioHarnessHandler, bioHarnessBtDeviceAdress);
-                }
-            }
-        }
-
-    }
-
+    /*
     private void resetBioharnessStorage() {
-        bioHarnessHandler.setFileStorageCreated(false);
         bhPeakAccelerationValueCount = 0;
         bhRespirationRateValueCount = 0;
         bhHeartRateValueCount = 0;
@@ -662,117 +669,11 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
         bhBreathingValues = new Double[DATA_ARRAY_SIZE][2];
         bhEcgValues = new Double[DATA_ARRAY_SIZE][2];
     }
-
-    private void createBioHarnessFiles() {
-        if(bioHarnessSensorService.getBioHarnessConnectedListener().isHeartRateEnabled()) {
-            try {
-                BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_heart_rate)), true));
-                String outputString = getHeaderComments();
-                outputString += "" + getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_heartrate) + "";
-                writer.write(outputString);
-                writer.newLine();
-                writer.flush();
-                writer.close();
-            } catch (IOException e) {
-                Log.e(TAG, "Error while writing in file", e);
-            }
-        }
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_respiration_rate)), true));
-            String outputString = getHeaderComments();
-            outputString += "" + getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_respirationrate) + "";
-            writer.write(outputString);
-            writer.newLine();
-            writer.flush();
-            writer.close();
-        } catch (IOException e) {
-            Log.e(TAG, "Error while writing in file", e);
-        }
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_posture)), true));
-            String outputString = getHeaderComments();
-            outputString += "" + getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_posture) + "";
-            writer.write(outputString);
-            writer.newLine();
-            writer.flush();
-            writer.close();
-        } catch (IOException e) {
-            Log.e(TAG, "Error while writing in file", e);
-        }
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_rr_interval)), true));
-            String outputString = getHeaderComments();
-            outputString += "" + getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_rr_interval) + "";
-            writer.write(outputString);
-            writer.newLine();
-            writer.flush();
-            writer.close();
-        } catch (IOException e) {
-            Log.e(TAG, "Error while writing in file", e);
-        }
-        if(bioHarnessSensorService.getBioHarnessConnectedListener().isSkinTemperatureEnabled()) {
-            try {
-                BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_skin_temperature)), true));
-                String outputString = getHeaderComments();
-                outputString += "" + getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_skintemperature) + "";
-                writer.write(outputString);
-                writer.newLine();
-                writer.flush();
-                writer.close();
-            } catch (IOException e) {
-                Log.e(TAG, "Error while writing in file", e);
-            }
-        }
-
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_peak_acceleration)), true));
-            String outputString = getHeaderComments();
-            outputString += "" + getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_peakacceleration) + "";
-            writer.write(outputString);
-            writer.newLine();
-            writer.flush();
-            writer.close();
-        } catch (IOException e) {
-            Log.e(TAG, "Error while writing in file", e);
-        }
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_axis_acceleration)), true)); //TODO: RENAME
-            String outputString = getHeaderComments();
-            outputString += "" + getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_acceleration_x) + "," + getString(R.string.file_header_acceleration_y) + "," + getString(R.string.file_header_acceleration_z) + "";
-            writer.write(outputString);
-            writer.newLine();
-            writer.flush();
-            writer.close();
-        } catch (IOException e) {
-            Log.e(TAG, "Error while writing in file", e);
-        }
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_breathing)), true));
-            String outputString = getHeaderComments();
-            outputString += "" + getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_interval) + "";
-            writer.write(outputString);
-            writer.newLine();
-            writer.flush();
-            writer.close();
-        } catch (IOException e) {
-            Log.e(TAG, "Error while writing in file", e);
-        }
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, getString(R.string.file_name_ecg)), true));
-            String outputString = getHeaderComments();
-            outputString += "" + getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_voltage) + "";
-            writer.write(outputString);
-            writer.newLine();
-            writer.flush();
-            writer.close();
-        } catch (IOException e) {
-            Log.e(TAG, "Error while writing in file", e);
-        }
-    }
+    */
 
     private void createRootDirectory() {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        SimpleDateFormat simpleTimeFormat = new SimpleDateFormat("HH-mm-ss");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.GERMAN);
+        SimpleDateFormat simpleTimeFormat = new SimpleDateFormat("HH-mm-ss", Locale.GERMAN);
         String dateString = simpleDateFormat.format(new Date());
         String timeString = simpleTimeFormat.format(new Date());
         if(activityName.equals("")) activityName = getString(R.string.settings_undefined);
@@ -784,13 +685,26 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
 
     @Override
     protected void onDestroy() {
-        loggingEnabled = false;
+        if(shimmerImuService != null) {
+            stopService(new Intent(MainActivity.this, ShimmerImuService.class));
+            shimmerImuService = null;
+        }
+        if(bioHarnessService != null) {
+            stopService(new Intent(MainActivity.this, BioHarnessService.class));
+            bioHarnessService = null;
+        }
 
+        loggingEnabled = false;
         if (timerThread != null) {
             stopTimerThread();
         }
 
         super.onDestroy();
+    }
+
+    private void addBluetoothDevice() {
+        Intent intent = new Intent(this, DeviceListActivity.class);
+        startActivityForResult(intent, MSG_BLUETOOTH_ADDRESS);
     }
 
     @Override
@@ -799,64 +713,73 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
 
         switch (requestCode) {
             case REQUEST_ENABLE_BT:
-                if(resultCode==RESULT_OK){
+                if(resultCode == RESULT_OK){
                     Toast.makeText(MainActivity.this, getString(R.string.bluetooth_activated), Toast.LENGTH_LONG).show();
                 }
                 break;
+
             case PERMISSIONS_REQUEST:
-                if(resultCode==RESULT_OK){
+                if(resultCode == RESULT_OK){
                     Toast.makeText(MainActivity.this, getString(R.string.permission_granted), Toast.LENGTH_LONG).show();
                 }
                 break;
-            case MSG_BLUETOOTH_ADDRESS:
 
-                // When DeviceListActivity returns with a device address to connect
+            case MSG_BLUETOOTH_ADDRESS:
                 if (resultCode == Activity.RESULT_OK) {
                     String bluetoothAddress = data.getExtras().getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
-                    Log.d(TAG, "Bluetooth Address: " + bluetoothAddress);
+                    Log.d(TAG, "Bluetooth address: " + bluetoothAddress);
 
-                    // Check if the bluetooth address has been previously selected
-                    boolean isNewAddress = !getBluetoothAddresses().contains(bluetoothAddress);
-
-                    if (isNewAddress) {
+                    // Check, if device is list view
+                    if (!getBluetoothAddresses().contains(bluetoothAddress)) {
+                        Log.d(TAG, "Bluetooth address of a new device");
                         addBluetoothAddress(bluetoothAddress);
+
                         btAdapter = BluetoothAdapter.getDefaultAdapter();
                         BluetoothDevice device = btAdapter.getRemoteDevice(bluetoothAddress);
-                        String name = device.getName();
-                        if(name==null) {
-                            name = bluetoothAddress + "";
+
+                        String deviceName = device.getName();
+                        if(deviceName == null) {
+                            Log.d(TAG, "Device has no device name");
+                            deviceName = bluetoothAddress + "";
                         }
-                        deviceNames.add(name);
-                        adapter.notifyDataSetChanged();
+
+                        // Change list view
+                        deviceNames.add(deviceName);
+                        arrayAdapter.notifyDataSetChanged();
+
+                        // Check, if device is paired
                         Set<BluetoothDevice> pairedDevices = btAdapter.getBondedDevices();
                         boolean paired = false;
-                        for(BluetoothDevice d:pairedDevices) {
-                            if(d.getAddress().equals(bluetoothAddress)) {
+                        for(BluetoothDevice pairedDevice:pairedDevices) {
+                            if(pairedDevice.getAddress().equals(bluetoothAddress)) {
                                 paired = true;
+                                Log.d(TAG, "Device already paired");
                             }
                         }
-                        if(!paired)
-                            pairDevice(device);
-                        Log.v("Main", "bond: " + bluetoothAddress);
+                        if(!paired) {
+                            pairBluetoothDevice(device);
+                        }
+
+                        if(device.getName().startsWith("RN42") & shimmerImuService == null) {
+                            Intent intent = new Intent(this, ShimmerImuService.class);
+                            startService(intent);
+                            getApplicationContext().bindService(intent, shimmerImuServiceConnection, Context.BIND_AUTO_CREATE);
+                            registerReceiver(shimmerImuReceiver, new IntentFilter("de.bogutzky.data_collector.app"));
+                        }
+
+                        if(device.getName().startsWith("BH") & bioHarnessService == null) {
+                            Intent intent = new Intent(this, BioHarnessService.class);
+                            startService(intent);
+                            getApplicationContext().bindService(intent, bioHarnessServiceConnection, Context.BIND_AUTO_CREATE);
+                            registerReceiver(bioHarnessReceiver, new IntentFilter("de.bogutzky.data_collector.app"));
+                        }
+
                     } else {
                         Toast.makeText(this, getString(R.string.device_is_already_in_list), Toast.LENGTH_LONG).show();
                     }
-                    if(shimmerService == null) {
-                        Log.v(TAG, "shimmer service erstellen");
-                        Intent intent=new Intent(this, ShimmerSensorService.class);
-                        startService(intent);
-                        getApplicationContext().bindService(intent, shimmerServiceConnection, Context.BIND_AUTO_CREATE);
-                        registerReceiver(shimmerReceiver, new IntentFilter("de.bogutzky.data_collector.app"));
-                    }
-                    if(bioHarnessSensorService == null) {
-                        Log.v(TAG, "bio harness service erstellen");
-                        Intent intent=new Intent(this, BioHarnessSensorService.class);
-                        startService(intent);
-                        getApplicationContext().bindService(intent, bhServiceConnection, Context.BIND_AUTO_CREATE);
-                        registerReceiver(bioHarnessReceiver, new IntentFilter("de.bogutzky.data_collector.app"));
-                    }
                 }
                 break;
+            /*
             case REQUEST_MAIN_COMMAND_SHIMMER:
                 if(resultCode == Activity.RESULT_OK) {
                     int action = data.getIntExtra("action", 0);
@@ -868,34 +791,13 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
                 }
 
                 break;
+            */
         }
-    }
-
-    private void showGraph(int which) {
-        graphView = new GraphView(this, which);
-        graphShowing = true;
-        final Dialog dialog = new Dialog(this);
-        dialog.setContentView(graphView);
-        dialog.setTitle(getString(R.string.graph));
-        dialog.setCancelable(true);
-        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
-        lp.copyFrom(dialog.getWindow().getAttributes());
-        lp.width = WindowManager.LayoutParams.MATCH_PARENT;
-        lp.height = WindowManager.LayoutParams.MATCH_PARENT;
-        dialog.getWindow().setAttributes(lp);
-        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialog) {
-                graphShowing = false;
-            }
-        });
-
-        dialog.show();
     }
 
     private ArrayList<String> getBluetoothAddresses() {
         if (bluetoothAddresses == null) {
-            bluetoothAddresses = new ArrayList<String>();
+            bluetoothAddresses = new ArrayList<>();
         }
         return bluetoothAddresses;
     }
@@ -907,12 +809,7 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
         }
     }
 
-    private void findBluetoothAddress() {
-        Intent intent = new Intent(this, DeviceListActivity.class);
-        startActivityForResult(intent, MSG_BLUETOOTH_ADDRESS);
-    }
-
-    private void connectedAllShimmers() {
+    private void connectAllShimmerImus() {
         if(btAdapter == null)
             btAdapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -922,61 +819,95 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
             for (BluetoothDevice device : pairedDevices) {
                 if (device.getName().contains("RN42")) {
                     if(bluetoothAddresses.contains(device.getAddress())) {
-                        BluetoothDevice btDevice = device;
-
-                        String bluetoothAddress = btDevice.getAddress();
-                        shimmerService.connectShimmer(bluetoothAddress, Integer.toString(count), new ShimmerImuHandler(this, "imu-" + btDevice.getName().toLowerCase() + ".csv", 2500));
-                        count++;
+                        if(shimmerImuService != null) {
+                            shimmerImuService.connectShimmerImu(device.getAddress(), Integer.toString(count), new ShimmerImuHandler(this, "imu-" + device.getName().toLowerCase() + ".csv", 2500));
+                            count++;
+                        }
                     }
                 }
             }
         }
     }
 
-    private void disconnectedAllShimmers() {
-        stopService(new Intent(MainActivity.this, ShimmerSensorService.class));
-        if(shimmerService != null)
-            shimmerService.disconnectAllDevices();
+    private void disconnectAllShimmerImus() {
+        if(shimmerImuService != null)
+            shimmerImuService.disconnectAllShimmerImus();
     }
 
-    private void startAllStreaming() {
-        if(shimmerService != null)
-            shimmerService.startStreamingAllDevicesGetSensorNames(this.root, this.directoryName, this.startTimestamp);
+    private void startStreamingOfAllShimmerImus() {
+        if(shimmerImuService != null)
+            shimmerImuService.startStreamingAllShimmerImus(this.root, this.directoryName, this.startTimestamp);
     }
 
-    private void stopAllStreaming() {
-        if(shimmerService != null)
-            shimmerService.stopStreamingAllDevices();
+    private void stopAllStreamingOfAllShimmerImus() {
+        if(shimmerImuService != null)
+            shimmerImuService.stopStreamingAllShimmerImus();
+    }
+
+    private void connectBioHarness() {
+        if (btAdapter == null)
+            btAdapter = BluetoothAdapter.getDefaultAdapter();
+
+        Set<BluetoothDevice> pairedDevices = btAdapter.getBondedDevices();
+        if (pairedDevices.size() > 0) {
+            for (BluetoothDevice device : pairedDevices) {
+                if (device.getName().startsWith("BH")) {
+                    if (bluetoothAddresses.contains(device.getAddress())) {
+                        if (bioHarnessService != null) {
+                            bioHarnessService.connectBioHarness(device.getAddress(), new BioHarnessHandler(this, 100));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void disconnectBioHarness() {
+        if(bioHarnessService != null && bioHarnessService.isBioHarnessConnected())
+            bioHarnessService.disconnectBioHarness();
+    }
+
+    private void startStreamingBioHarness() {
+        if(bioHarnessService != null)
+            bioHarnessService.startStreamingBioHarness(this.root, this.directoryName, this.startTimestamp);
+    }
+
+    private void stopStreamingBioHarness() {
+        if(bioHarnessService != null)
+            bioHarnessService.stopStreamingBioHarness();
+    }
+
+    class TimerHandlerCallback implements Handler.Callback {
+
+        @Override
+        public boolean handleMessage(Message message) {
+
+            switch (message.what) {
+                case TIMER_UPDATE:
+                    if (textViewTimer.getVisibility() == View.INVISIBLE) {
+                        textViewTimer.setVisibility(View.VISIBLE);
+                        textViewTimer.requestLayout();
+                    }
+                    int minutes = message.arg1 / 1000 / 60;
+                    int seconds = message.arg1 / 1000 % 60;
+                    String time = String.format("%02d:%02d", minutes, seconds);
+                    textViewTimer.setText(time);
+                    break;
+
+                case TIMER_END:
+                    feedbackNotification();
+                    textViewTimer.setVisibility(View.INVISIBLE);
+                    showLikertScaleDialog();
+                    break;
+            }
+
+            return true;
+        }
     }
 
     private void startTimerThread() {
         timerThreadShouldContinue = true;
-
-        timerHandler = new Handler() {
-
-            @Override
-            public void handleMessage(Message msg) {
-                super.handleMessage(msg);
-                switch (msg.what) {
-                    case TIMER_UPDATE:
-                        if (textViewTimer.getVisibility() == View.INVISIBLE) {
-                            textViewTimer.setVisibility(View.VISIBLE);
-                            textViewTimer.requestLayout();
-                        }
-                        int minutes = msg.arg1 / 1000 / 60;
-                        int seconds = msg.arg1 / 1000 % 60;
-                        String time = String.format("%02d:%02d", minutes, seconds);
-                        textViewTimer.setText(time);
-                        break;
-
-                    case TIMER_END:
-                        feedbackNotification();
-                        textViewTimer.setVisibility(View.INVISIBLE);
-                        showLikertScaleDialog();
-                        break;
-                }
-            }
-        };
+        timerHandler = new Handler(new TimerHandlerCallback());
 
         Random r = new Random();
         int variance = 0;
@@ -1066,10 +997,9 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
             questions = Utils.shuffleJsonArray(questions);
 
             questionsAmount = questions.length();
-
-            int tmpid = 0;
-            int tmpid2 = 0;
-            int tmpid3 = 0;
+            int tmpid;
+            int tmpid2;
+            int tmpid3;
             int oldtmp = 0;
             for (int i = 0; i < questions.length(); i++) {
                 RelativeLayout wrapperLayout = new RelativeLayout(this);
@@ -1084,8 +1014,8 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
                     tmpid3 = rnd.nextInt(Integer.MAX_VALUE);
                     TextView textView = new TextView(this);
                     textView.setId(tmpid);
-                    Drawable bottom = getResources().getDrawable(R.drawable.section_header);
-                    textView.setCompoundDrawables(null,null,null,bottom);
+                    Drawable bottom = ContextCompat.getDrawable(this, R.drawable.section_header);
+                    textView.setCompoundDrawables(null,null,null, bottom);
                     textView.setCompoundDrawablePadding(4);
                     textView.setPadding(4, 0, 0, 0);
                     textView.setTextColor(Color.WHITE);
@@ -1294,13 +1224,13 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
         } catch (IOException e) {
             Log.e(TAG, "Error while writing in file", e);
         }
-        if(!loggingEnabled) {
+        /*if(!loggingEnabled) {
             String footer = getFooterComments();
             writeFoooter(footer, getString(R.string.file_name_self_report));
-        }
+        }*/
     }
 
-    private void startStreamingInternalSensorData() {
+   /* private void startStreamingInternalSensorData() {
 
         this.accelerometerValues = new Double[INTERNAL_SENSOR_CACHE_LENGTH][4];
         this.accelerometerValueCount = 0;
@@ -1371,8 +1301,8 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
                 }
             });
         }
-    }
-
+    } */
+/*
     private void stopStreamingInternalSensorData() {
         sensorManager.unregisterListener(this);
         if(locationManager != null)
@@ -1381,8 +1311,13 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
                     != PackageManager.PERMISSION_GRANTED) {
                 locationManager.removeUpdates(locationListener);
             }
+    }*/
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
     }
 
+    /*
     @Override
     public void onSensorChanged(SensorEvent event) {
         if (loggingEnabled) {
@@ -1521,7 +1456,7 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
         } catch (IOException e) {
             Log.e(TAG, "Error while writing in file", e);
         }
-    }
+    } */
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int i) {
@@ -1563,6 +1498,7 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
         return null;
     }
 
+    /*
     public class GPSListener implements LocationListener {
         private static final String TAG = "GPSListener";
         private String filename;
@@ -1645,404 +1581,79 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
         @Override
         public void onStatusChanged(String provider, int status, Bundle extras) {
         }
-    }
+    } */
 
-    public String getBioHarnessBtDeviceAdress(BluetoothAdapter bluetoothAdapter) {
-        Set<BluetoothDevice> bondedDevices = bluetoothAdapter.getBondedDevices();
-        if (bondedDevices.size() > 0) {
-            for (BluetoothDevice bluetoothDevice : bondedDevices) {
-                if (bluetoothDevice.getName().startsWith("BH")) {
-                    if(getBluetoothAddresses().contains(bluetoothDevice.getAddress())) {
-                        return bluetoothDevice.getAddress();
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
-    class BioHarnessHandler extends Handler {
-        private double rrTime = 0;
-
-        private boolean fileStorageCreated = false;
-
-        public void setFileStorageCreated(boolean fileStorageCreated) {
-            this.fileStorageCreated = fileStorageCreated;
-        }
-
-        BioHarnessHandler() {}
-        public void handleMessage(Message msg) {
-            if(!fileStorageCreated && loggingEnabled) {
-                createBioHarnessFiles();
-                fileStorageCreated = true;
-            }
-            if(msg.what == 101) {
-                notifyBHReady();
-            }
-            if(loggingEnabled) {
-                double time = 0;
-                long timestamp = 0;
-                switch (msg.what) {
-                    case RtoR_MSG_ID:
-                        int rrInterval = msg.getData().getInt("rrInterval");
-                        timestamp = msg.getData().getLong("Timestamp");
-                        if(firstRRIntervalTimestamp == 0L) {
-                            firstRRIntervalTimestamp = timestamp;
-                            rrTime = System.currentTimeMillis() - startTimestamp;
-                        }
-                        rrTime += rrInterval;
-
-                        bhRRIntervalValues[bhRRIntervalValueCount][0] = rrTime;
-                        bhRRIntervalValues[bhRRIntervalValueCount][1] = Double.parseDouble(String.valueOf(rrInterval));
-                        bhRRIntervalValueCount++;
-                        if(bhRRIntervalValueCount >= bhRRIntervalValues.length) {
-                            if(!writingData) {
-                                bhRRIntervalValueCount = 0;
-                                setWritingData(true);
-                                writeData(bhRRIntervalValues, getString(R.string.file_name_rr_interval), 2, bhRRIntervalValues.length, "");
-                                bhRRIntervalValues = new Double[DATA_ARRAY_SIZE][2];
-                            } else if(!secondWritingData) {
-                                bhRRIntervalValueCount = 0;
-                                setSecondWritingData(true);
-                                writeData(bhRRIntervalValues, getString(R.string.file_name_rr_interval), 2, bhRRIntervalValues.length, "");
-                                bhRRIntervalValues = new Double[DATA_ARRAY_SIZE][2];
-                            } else {
-                                bhRRIntervalValues = resizeArray(bhRRIntervalValues);
-                            }
-                        }
-                        Log.v(TAG, "Logge RR interval mit Timestamp: " + time);
-                        break;
-
-                    case HEART_RATE:
-                        String HeartRatetext = msg.getData().getString("HeartRate");
-                        timestamp = msg.getData().getLong("Timestamp");
-                        if(firstbhHeartRateTimestamp == 0L) {
-                            firstbhHeartRateTimestamp = timestamp;
-                            bhStartTimestamp = System.currentTimeMillis() - startTimestamp;
-                        }
-                        time = bhStartTimestamp + (timestamp - firstbhHeartRateTimestamp) / 1000.0;
-                        bhHeartRateValues[bhHeartRateValueCount][0] = time;
-                        bhHeartRateValues[bhHeartRateValueCount][1] = Double.parseDouble(HeartRatetext);
-                        bhHeartRateValueCount++;
-                        System.out.println("Heart Rate Info is " + HeartRatetext);
-                        if(bhHeartRateValueCount >= bhHeartRateValues.length) {
-                            if(!writingData) {
-                                bhHeartRateValueCount = 0;
-                                setWritingData(true);
-                                writeData(bhHeartRateValues, getString(R.string.file_name_heart_rate), 2, bhHeartRateValues.length, "");
-                                bhHeartRateValues = new Double[DATA_ARRAY_SIZE][2];
-                            } else if(!secondWritingData) {
-                                bhHeartRateValueCount = 0;
-                                setSecondWritingData(true);
-                                writeData(bhHeartRateValues, getString(R.string.file_name_heart_rate), 2, bhHeartRateValues.length, "");
-                                bhHeartRateValues = new Double[DATA_ARRAY_SIZE][2];
-                            } else {
-                                bhHeartRateValues = resizeArray(bhHeartRateValues);
-                            }
-                        }
-                        break;
-
-                    case RESPIRATION_RATE:
-                        String RespirationRatetext = msg.getData().getString("RespirationRate");
-                        if(RespirationRatetext != null) {
-                            timestamp = msg.getData().getLong("Timestamp");
-                            if(firstRespirationRateTimestamp == 0L) {
-                                firstRespirationRateTimestamp = timestamp;
-                                bhStartTimestamp = System.currentTimeMillis() - startTimestamp;
-                            }
-                            time = bhStartTimestamp + (timestamp - firstRespirationRateTimestamp);
-                            bhRespirationRateValues[bhRespirationRateValueCount][0] = time;
-                            bhRespirationRateValues[bhRespirationRateValueCount][1] = Double.parseDouble(RespirationRatetext);
-                            bhRespirationRateValueCount++;
-                            System.out.println("RespirationRate Info is " + RespirationRatetext);
-                            if(bhRespirationRateValueCount >= bhRespirationRateValues.length) {
-                                if(!writingData) {
-                                    bhRespirationRateValueCount = 0;
-                                    setWritingData(true);
-                                    writeData(bhRespirationRateValues, getString(R.string.file_name_respiration_rate), 2, bhRespirationRateValues.length, "");
-                                    bhRespirationRateValues = new Double[DATA_ARRAY_SIZE][2];
-                                } else if(!secondWritingData) {
-                                    bhRespirationRateValueCount = 0;
-                                    setSecondWritingData(true);
-                                    writeData(bhRespirationRateValues, getString(R.string.file_name_respiration_rate), 2, bhRespirationRateValues.length, "");
-                                    bhRespirationRateValues = new Double[DATA_ARRAY_SIZE][2];
-                                } else {
-                                    bhRespirationRateValues = resizeArray(bhRespirationRateValues);
-                                }
-                            }
-                        }
-                        break;
-
-                    case SKIN_TEMPERATURE:
-                        String SkinTemperaturetext = msg.getData().getString("SkinTemperature");
-                        timestamp = msg.getData().getLong("Timestamp");
-                        if(firstSkinTemperatureTimestamp == 0L) {
-                            firstSkinTemperatureTimestamp = timestamp;
-                            bhStartTimestamp = System.currentTimeMillis() - startTimestamp;
-                        }
-                        time = bhStartTimestamp + (timestamp - firstSkinTemperatureTimestamp);
-                        bhSkinTemperatureValues[bhSkinTemperatureValueCount][0] = time;
-                        bhSkinTemperatureValues[bhSkinTemperatureValueCount][1] = Double.parseDouble(SkinTemperaturetext);
-                        bhSkinTemperatureValueCount++;
-                        System.out.println("SkinTemperature Info is " + SkinTemperaturetext);
-                        if(bhSkinTemperatureValueCount >= bhSkinTemperatureValues.length) {
-                            if(!writingData) {
-                                bhSkinTemperatureValueCount = 0;
-                                setWritingData(true);
-                                writeData(bhSkinTemperatureValues, getString(R.string.file_name_skin_temperature), 2, bhSkinTemperatureValues.length, "");
-                                bhSkinTemperatureValues = new Double[DATA_ARRAY_SIZE][2];
-                            } else if(!secondWritingData) {
-                                bhSkinTemperatureValueCount = 0;
-                                setSecondWritingData(true);
-                                writeData(bhSkinTemperatureValues, getString(R.string.file_name_skin_temperature), 2, bhSkinTemperatureValues.length, "");
-                                bhSkinTemperatureValues = new Double[DATA_ARRAY_SIZE][2];
-                            } else {
-                                bhSkinTemperatureValues = resizeArray(bhSkinTemperatureValues);
-                            }
-                        }
-                        break;
-
-                    case POSTURE:
-                        String PostureText = msg.getData().getString("Posture");
-                        timestamp = msg.getData().getLong("Timestamp");
-                        if(firstbhPostureTimestamp == 0L) {
-                            firstbhPostureTimestamp = timestamp;
-                            bhStartTimestamp = System.currentTimeMillis() - startTimestamp;
-                        }
-                        time = bhStartTimestamp + (timestamp - firstbhPostureTimestamp);
-                        bhPostureValues[bhPostureValueCount][0] = time;
-                        bhPostureValues[bhPostureValueCount][1] = Double.parseDouble(PostureText);
-                        bhPostureValueCount++;
-                        System.out.println("Posture Info is " + PostureText);
-                        if(bhPostureValueCount >= bhPostureValues.length) {
-                            if(!writingData) {
-                                bhPostureValueCount = 0;
-                                setWritingData(true);
-                                writeData(bhPostureValues, getString(R.string.file_name_posture), 2, bhPostureValues.length, "");
-                                bhPostureValues = new Double[DATA_ARRAY_SIZE][2];
-                            } else if(!secondWritingData) {
-                                bhPostureValueCount = 0;
-                                setSecondWritingData(true);
-                                writeData(bhPostureValues, getString(R.string.file_name_posture), 2, bhPostureValues.length, "");
-                                bhPostureValues = new Double[DATA_ARRAY_SIZE][2];
-                            } else {
-                                bhPostureValues = resizeArray(bhPostureValues);
-                            }
-                        }
-                        break;
-
-                    case PEAK_ACCLERATION:
-                        String PeakAccText = msg.getData().getString("PeakAcceleration");
-                        timestamp = msg.getData().getLong("Timestamp");
-
-                        if(firstPeakAccelerationTimestamp == 0L) {
-                            firstPeakAccelerationTimestamp = timestamp;
-                            bhStartTimestamp = System.currentTimeMillis() - startTimestamp;
-                        }
-                        time = bhStartTimestamp + (timestamp - firstPeakAccelerationTimestamp);
-
-                        bhPeakAccelerationValues[bhPeakAccelerationValueCount][0] = time;
-                        bhPeakAccelerationValues[bhPeakAccelerationValueCount][1] = Double.parseDouble(PeakAccText);
-                        bhPeakAccelerationValueCount++;
-                        System.out.println("PeakAcceleration Info is " + PeakAccText);
-
-                        if(bhPeakAccelerationValueCount >= bhPeakAccelerationValues.length) {
-                            if(!writingData) {
-                                bhPeakAccelerationValueCount = 0;
-                                setWritingData(true);
-                                writeData(bhPeakAccelerationValues, getString(R.string.file_name_peak_acceleration), 2, bhPeakAccelerationValues.length, "");
-                                bhPeakAccelerationValues = new Double[DATA_ARRAY_SIZE][2];
-                            } else if(!secondWritingData) {
-                                bhPeakAccelerationValueCount = 0;
-                                setSecondWritingData(true);
-                                writeData(bhPeakAccelerationValues, getString(R.string.file_name_peak_acceleration), 2, bhPeakAccelerationValues.length, "");
-                                bhPeakAccelerationValues = new Double[DATA_ARRAY_SIZE][2];
-                            } else {
-                                bhPeakAccelerationValues = resizeArray(bhPeakAccelerationValues);
-                            }
-                        }
-                        break;
-                    ////////////////////////////////
-                    case BREATHING_MSG_ID:
-                        timestamp = msg.getData().getLong("Timestamp");
-                        short interval = msg.getData().getShort("Interval");
-                        if(firstBreathingTimestamp == 0L) {
-                            firstBreathingTimestamp = timestamp;
-                            bhStartTimestamp = System.currentTimeMillis() - startTimestamp;
-                        }
-                        time = bhStartTimestamp + (timestamp - firstBreathingTimestamp);
-                        bhBreathingValues[bhBreathingValueCount][0] = time;
-                        bhBreathingValues[bhBreathingValueCount][1] = Double.parseDouble(String.valueOf(interval));
-                        bhBreathingValueCount++;
-                        if(bhBreathingValueCount >= bhBreathingValues.length) {
-                            if(!writingData) {
-                                bhBreathingValueCount = 0;
-                                setWritingData(true);
-                                writeData(bhBreathingValues, getString(R.string.file_name_breathing), 2, bhBreathingValues.length, "");
-                                bhBreathingValues = new Double[DATA_ARRAY_SIZE][2];
-                            } else if(!secondWritingData) {
-                                bhBreathingValueCount = 0;
-                                setSecondWritingData(true);
-                                writeData(bhBreathingValues, getString(R.string.file_name_breathing), 2, bhBreathingValues.length, "");
-                                bhBreathingValues = new Double[DATA_ARRAY_SIZE][2];
-                            } else {
-                                bhBreathingValues = resizeArray(bhBreathingValues);
-                            }
-                        }
-                        break;
-                    case ECG_MSG_ID:
-                        timestamp = msg.getData().getLong("Timestamp");
-                        short voltage = msg.getData().getShort("Voltage");
-                        if(firstEcgTimestamp == 0L) {
-                            firstEcgTimestamp = timestamp;
-                            bhStartTimestamp = System.currentTimeMillis() - startTimestamp;
-                        }
-                        time = bhStartTimestamp + (timestamp - firstEcgTimestamp);
-                        bhEcgValues[bhEcgValueCount][0] = time;
-                        bhEcgValues[bhEcgValueCount][1] = Double.parseDouble(String.valueOf(voltage));
-                        bhEcgValueCount++;
-                        if(bhEcgValueCount >= bhEcgValues.length) {
-                            if(!writingData) {
-                                bhEcgValueCount = 0;
-                                setWritingData(true);
-                                writeData(bhEcgValues, getString(R.string.file_name_ecg), 2, bhEcgValues.length, "");
-                                bhEcgValues = new Double[DATA_ARRAY_SIZE][2];
-                            } else if(!secondWritingData) {
-                                bhEcgValueCount = 0;
-                                setSecondWritingData(true);
-                                writeData(bhEcgValues, getString(R.string.file_name_ecg), 2, bhEcgValues.length, "");
-                                bhEcgValues = new Double[DATA_ARRAY_SIZE][2];
-                            } else {
-                                bhEcgValues = resizeArray(bhEcgValues);
-                            }
-                        }
-                        break;
-                    case ACCEL_100mg_MSG_ID:
-                        timestamp = msg.getData().getLong("Timestamp");
-                        double acc_x = msg.getData().getDouble("AccelerationX");
-                        double acc_y = msg.getData().getDouble("AccelerationY");
-                        double acc_z = msg.getData().getDouble("AccelerationZ");
-                        if(firstAxisAccelerationTimestamp == 0L) {
-                            firstAxisAccelerationTimestamp = timestamp;
-                            bhStartTimestamp = System.currentTimeMillis() - startTimestamp;
-                        }
-                        time = bhStartTimestamp + (timestamp - firstAxisAccelerationTimestamp);
-                        bhAxisAccelerationValues[bhAxisAccelerationValueCount][0] = time;
-                        bhAxisAccelerationValues[bhAxisAccelerationValueCount][0] = acc_x;
-                        bhAxisAccelerationValues[bhAxisAccelerationValueCount][0] = acc_y;
-                        bhAxisAccelerationValues[bhAxisAccelerationValueCount][0] = acc_z;
-                        bhAxisAccelerationValueCount++;
-                        if(bhAxisAccelerationValueCount >= bhAxisAccelerationValues.length) {
-                            if(!writingData) {
-                                bhAxisAccelerationValueCount = 0;
-                                setWritingData(true);
-                                writeData(bhAxisAccelerationValues, getString(R.string.file_name_axis_acceleration), 2, bhAxisAccelerationValues.length, "");
-                                bhAxisAccelerationValues = new Double[DATA_ARRAY_SIZE][4];
-                            } else if(!secondWritingData) {
-                                bhAxisAccelerationValueCount = 0;
-                                setSecondWritingData(true);
-                                writeData(bhAxisAccelerationValues, getString(R.string.file_name_axis_acceleration), 2, bhAxisAccelerationValues.length, "");
-                                bhAxisAccelerationValues = new Double[DATA_ARRAY_SIZE][4];
-                            } else {
-                                bhAxisAccelerationValues = resizeArray(bhAxisAccelerationValues);
-                            }
-                        }
-                        break;
-                    ////////////////////////////////
-                }
-            }
-        }
-    }
-
-    void writeData (Double[][] data, String filename, int fields, int count, String footerString) {
-        WriteDataTask task = new WriteDataTask();
-        //task.execute(new WriteDataTaskParams(data, filename, this.root, fields, footer, footerString, slot, this));
-        task.execute(new WriteDataTaskParams(this.root, filename, data, fields, count, footerString));
-    }
-
-    private void notifyBHReady() {
-        Toast.makeText(this, "BioHarness " + getString(R.string.is_ready), Toast.LENGTH_LONG).show();
-        bioHarnessConnected = true;
-    }
-
-    private ServiceConnection shimmerServiceConnection = new ServiceConnection() {
-
-        public void onServiceConnected(ComponentName arg0, IBinder service) {
-            Log.d(TAG, "service connected");
-            ShimmerSensorService.LocalBinder binder = (ShimmerSensorService.LocalBinder) service;
-            shimmerService = binder.getService();
-        }
-
-        public void onServiceDisconnected(ComponentName arg0) {
-            Log.d(TAG, "service connected");
-        }
-    };
-
-    private ServiceConnection bhServiceConnection = new ServiceConnection() {
-
-        public void onServiceConnected(ComponentName arg0, IBinder service) {
-            Log.d(TAG, "bh service connected");
-            BioHarnessSensorService.LocalBinder binder = (BioHarnessSensorService.LocalBinder) service;
-            bioHarnessSensorService = binder.getService();
-        }
-
-        public void onServiceDisconnected(ComponentName arg0) {
-            Log.d(TAG, "service connected");
-        }
-    };
-
-    private BroadcastReceiver shimmerReceiver = new BroadcastReceiver(){
-
-        @Override
-        public void onReceive(Context arg0, Intent arg1) {
-            if(arg1.getIntExtra("ShimmerState", -1)!=-1){
-                Log.v(TAG, "receiver receive");
-            }
-            String action = arg1.getAction();
-
-            if (BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(action)) {
-                final int state        = arg1.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE, BluetoothDevice.ERROR);
-                final int prevState    = arg1.getIntExtra(BluetoothDevice.EXTRA_PREVIOUS_BOND_STATE, BluetoothDevice.ERROR);
-
-                if (state == BluetoothDevice.BOND_BONDED && prevState == BluetoothDevice.BOND_BONDING) {
-                    Toast.makeText(getApplicationContext(), "Paired", Toast.LENGTH_SHORT);
-                } else if (state == BluetoothDevice.BOND_NONE && prevState == BluetoothDevice.BOND_BONDED){
-                    Toast.makeText(getApplicationContext(), "UnPaired", Toast.LENGTH_SHORT);
-                }
-
-            }
-        }
-    };
-
-    private BroadcastReceiver bioHarnessReceiver= new BroadcastReceiver(){
-
-        @Override
-        public void onReceive(Context arg0, Intent arg1) {
-            String action = arg1.getAction();
-
-            if (BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(action)) {
-                final int state        = arg1.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE, BluetoothDevice.ERROR);
-                final int prevState    = arg1.getIntExtra(BluetoothDevice.EXTRA_PREVIOUS_BOND_STATE, BluetoothDevice.ERROR);
-
-                if (state == BluetoothDevice.BOND_BONDED && prevState == BluetoothDevice.BOND_BONDING) {
-                    Toast.makeText(getApplicationContext(), "BH Paired", Toast.LENGTH_SHORT);
-                } else if (state == BluetoothDevice.BOND_NONE && prevState == BluetoothDevice.BOND_BONDED){
-                    Toast.makeText(getApplicationContext(), "BH UnPaired", Toast.LENGTH_SHORT);
-                }
-
-            }
-        }
-    };
-
-    private void pairDevice(BluetoothDevice device) {
+    private void pairBluetoothDevice(BluetoothDevice device) {
         try {
             Method method = device.getClass().getMethod("createBond", (Class[]) null);
             method.invoke(device, (Object[]) null);
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(TAG, "Error during the pairing", e);
         }
     }
 
+    private ServiceConnection shimmerImuServiceConnection = new ServiceConnection() {
+
+        public void onServiceConnected(ComponentName arg0, IBinder service) {
+            ShimmerImuService.LocalBinder binder = (ShimmerImuService.LocalBinder) service;
+            shimmerImuService = binder.getService();
+        }
+
+        public void onServiceDisconnected(ComponentName arg0) {
+        }
+    };
+
+    private ServiceConnection bioHarnessServiceConnection = new ServiceConnection() {
+
+        public void onServiceConnected(ComponentName arg0, IBinder service) {
+            BioHarnessService.LocalBinder binder = (BioHarnessService.LocalBinder) service;
+            bioHarnessService = binder.getService();
+        }
+
+        public void onServiceDisconnected(ComponentName arg0) {
+        }
+    };
+
+    private BroadcastReceiver shimmerImuReceiver = new BroadcastReceiver(){
+
+        @Override
+        public void onReceive(Context arg0, Intent arg1) {
+            String action = arg1.getAction();
+
+            if (BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(action)) {
+                final int state  = arg1.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE, BluetoothDevice.ERROR);
+                final int prevState = arg1.getIntExtra(BluetoothDevice.EXTRA_PREVIOUS_BOND_STATE, BluetoothDevice.ERROR);
+
+                if (state == BluetoothDevice.BOND_BONDED && prevState == BluetoothDevice.BOND_BONDING) {
+                    Toast.makeText(getApplicationContext(), R.string.shimmer_imu_paired, Toast.LENGTH_SHORT).show();
+                } else if (state == BluetoothDevice.BOND_NONE && prevState == BluetoothDevice.BOND_BONDED){
+                    Toast.makeText(getApplicationContext(), R.string.shimmer_imu_removed, Toast.LENGTH_SHORT).show();
+                }
+
+            }
+        }
+    };
+
+    private BroadcastReceiver bioHarnessReceiver = new BroadcastReceiver(){
+
+        @Override
+        public void onReceive(Context arg0, Intent arg1) {
+            String action = arg1.getAction();
+
+            if (BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(action)) {
+                final int state = arg1.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE, BluetoothDevice.ERROR);
+                final int prevState = arg1.getIntExtra(BluetoothDevice.EXTRA_PREVIOUS_BOND_STATE, BluetoothDevice.ERROR);
+
+                if (state == BluetoothDevice.BOND_BONDED && prevState == BluetoothDevice.BOND_BONDING) {
+                    Toast.makeText(getApplicationContext(), R.string.bioharness_paired, Toast.LENGTH_SHORT).show();
+                } else if (state == BluetoothDevice.BOND_NONE && prevState == BluetoothDevice.BOND_BONDED){
+                    Toast.makeText(getApplicationContext(), R.string.bioharness_removed, Toast.LENGTH_SHORT).show();
+                }
+
+            }
+        }
+    };
+/*
     private Double[][] resizeArray(Double[][] original) {
         Double[][] copy = new Double[original.length + INTERNAL_SENSOR_CACHE_LENGTH][original[0].length];
         System.arraycopy(original,0,copy,0,original.length);
@@ -2059,5 +1670,29 @@ public class MainActivity extends ListActivity implements SensorEventListener,Sh
         this.writingData = d;
         //Log.v(TAG, "writingdata: " + writingData);
     }
+    */
 
+    /*
+    private void showGraph(int which) {
+        graphView = new GraphView(this, which);
+        graphShowing = true;
+        final Dialog dialog = new Dialog(this);
+        dialog.setContentView(graphView);
+        dialog.setTitle(getString(R.string.graph));
+        dialog.setCancelable(true);
+        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+        lp.copyFrom(dialog.getWindow().getAttributes());
+        lp.width = WindowManager.LayoutParams.MATCH_PARENT;
+        lp.height = WindowManager.LayoutParams.MATCH_PARENT;
+        dialog.getWindow().setAttributes(lp);
+        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                graphShowing = false;
+            }
+        });
+
+        dialog.show();
+    }
+    */
 }

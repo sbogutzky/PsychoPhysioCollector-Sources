@@ -1,4 +1,4 @@
-package de.bogutzky.psychophysiocollector.app;
+package de.bogutzky.psychophysiocollector.app.shimmer.imu;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -9,10 +9,12 @@ import android.widget.CheckBox;
 
 import com.shimmerresearch.android.Shimmer;
 
+import de.bogutzky.psychophysiocollector.app.R;
+
 /**
  * Created by epix on 04.08.2015.
  */
-public class ShimmerSensorActivationActivity extends Activity {
+public class ShimmerImuSensorActivationActivity extends Activity {
     // Return Intent extra
     public static String mDone = "Done";
     private int mReturnEnabledSensors = 0;
