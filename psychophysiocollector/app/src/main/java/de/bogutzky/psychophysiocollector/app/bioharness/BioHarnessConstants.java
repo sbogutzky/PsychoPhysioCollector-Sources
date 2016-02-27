@@ -13,4 +13,11 @@ public class BioHarnessConstants {
     public static final int RESPIRATION_RATE = 0x101;
     public static final int SKIN_TEMPERATURE = 0x102;
     public static final int PEAK_ACCLERATION = 0x104;
+
+    public static final int RtoR_STORE_ID = 0;
+    public static final int GP_STORE_ID = 4;
+    public static final int BREATHING_STORE_ID = 2;
+    public static final int ECG_STORE_ID = 1;
+    public static final int ACCEL_STORE_ID = 3;
+    public static final int SUMMARY_STORE_ID = 5;
 }
