@@ -15,11 +15,11 @@ public class BioHarnessListener extends ConnectListenerImpl {
     public BioHarnessHandler bioHarnessHandler;
 
     /* Creating the different Objects for different types of Packets */
-    private GeneralPacketInfo generalPacketInfo = new GeneralPacketInfo();
+    //private GeneralPacketInfo generalPacketInfo = new GeneralPacketInfo();
     private ECGPacketInfo ecgPacketInfo = new ECGPacketInfo();
-    private BreathingPacketInfo breathingInfoPacket = new BreathingPacketInfo();
+    //private BreathingPacketInfo breathingInfoPacket = new BreathingPacketInfo();
     private RtoRPacketInfo rtoRPacketInfo = new RtoRPacketInfo();
-    private AccelerometerPacketInfo accelerometerPacketInfo = new AccelerometerPacketInfo();
+    //private AccelerometerPacketInfo accelerometerPacketInfo = new AccelerometerPacketInfo();
     //private SummaryPacketInfo SummaryInfoPacket = new SummaryPacketInfo();
 
     private PacketTypeRequest RqPacketType = new PacketTypeRequest();
@@ -38,7 +38,7 @@ public class BioHarnessListener extends ConnectListenerImpl {
         /* Use this object to enable or disable the different Packet types */
         RqPacketType.GP_ENABLE = false;
         RqPacketType.RtoR_ENABLE = true;
-        RqPacketType.ECG_ENABLE = false;
+        RqPacketType.ECG_ENABLE = true;
         RqPacketType.ACCELEROMETER_ENABLE = false;
         RqPacketType.BREATHING_ENABLE = false;
         RqPacketType.LOGGING_ENABLE = false;
@@ -54,11 +54,11 @@ public class BioHarnessListener extends ConnectListenerImpl {
                 switch (msgID) {
 
                     case BioHarnessConstants.GP_MSG_ID:
-                        processPacketGeneral(dataArray);
+                        //processPacketGeneral(dataArray);
                         break;
 
                     case BioHarnessConstants.BREATHING_MSG_ID:
-                        processPacketBreath(dataArray);
+                        //processPacketBreath(dataArray);
                         break;
 
                     case BioHarnessConstants.ECG_MSG_ID:
@@ -70,13 +70,74 @@ public class BioHarnessListener extends ConnectListenerImpl {
                         break;
 
                     case BioHarnessConstants.ACCEL_100mg_MSG_ID:
-                        processPacketAccel(dataArray);
+                        //processPacketAccel(dataArray);
                         break;
                 }
             }
         });
     }
 
+    private short lastRRInterval = 0;
+    private void processPacketRtoR(byte[] dataArray) {
+
+        // Extract timestamp
+        long timestamp = TimeConverter.timeToEpoch(
+                rtoRPacketInfo.GetTSYear(dataArray),
+                rtoRPacketInfo.GetTSMonth(dataArray),
+                rtoRPacketInfo.GetTSDay(dataArray),
+                rtoRPacketInfo.GetMsofDay(dataArray)
+        );
+
+        // Extract RtoR Data
+        int[] samples = rtoRPacketInfo.GetRtoRSamples(dataArray);
+
+        // Convert values and send message
+        for (int sample : samples) {
+            short currentRRInterval = (short) sample;
+            if (lastRRInterval != currentRRInterval) {
+                lastRRInterval = currentRRInterval;
+                int rrInterval = Math.abs(lastRRInterval);
+
+                Message message = new Message();
+                message.what = BioHarnessConstants.RtoR_MSG_ID;
+                Bundle bundle = new Bundle();
+                bundle.putInt("rrInterval", rrInterval);
+                bundle.putLong("Timestamp", timestamp);
+                message.setData(bundle);
+                bioHarnessHandler.sendMessage(message);
+            }
+        }
+        //Log.d(TAG,  "RR-Intervals at " + Utils.getDateString(timestamp, "dd/MM/yyyy hh:mm:ss.SSS"));
+    }
+
+    private void processPacketEcg(byte[] dataArray) {
+
+        // Extract timestamp
+        long timestamp = TimeConverter.timeToEpoch(
+                ecgPacketInfo.GetTSYear(dataArray),
+                ecgPacketInfo.GetTSMonth(dataArray),
+                ecgPacketInfo.GetTSDay(dataArray),
+                ecgPacketInfo.GetMsofDay(dataArray)
+        );
+
+        // Extract ECG Data
+        short[] samples = ecgPacketInfo.GetECGSamples(dataArray);
+
+        // Convert values and send message
+        for (short sample : samples) {
+            Message message = new Message();
+            message.what = BioHarnessConstants.ECG_MSG_ID;
+            Bundle bundle = new Bundle();
+
+            bundle.putShort("Voltage", sample);
+            bundle.putLong("Timestamp", timestamp);
+            message.setData(bundle);
+            bioHarnessHandler.sendMessage(message);
+        }
+        //Log.d(TAG, samples.length + " ECG samples at " + Utils.getDateString(timestamp, "dd/MM/yyyy hh:mm:ss.SSS"));
+    }
+
+    /*
     private void processPacketGeneral(byte[] dataArray) {
         long timestamp = TimeConverter.timeToEpoch(
                 generalPacketInfo.GetTSYear(dataArray),
@@ -122,7 +183,9 @@ public class BioHarnessListener extends ConnectListenerImpl {
         message.setData(bundle);
         bioHarnessHandler.sendMessage(message);
     }
+    */
 
+    /*
     private void processPacketBreath(byte[] dataArray) {
 
         // Extract timestamp
@@ -147,34 +210,9 @@ public class BioHarnessListener extends ConnectListenerImpl {
             message.setData(bundle);
             bioHarnessHandler.sendMessage(message);
         }
-    }
+    } */
 
-    private void processPacketEcg(byte[] dataArray) {
-
-        // Extract timestamp
-        long timestamp = TimeConverter.timeToEpoch(
-                ecgPacketInfo.GetTSYear(dataArray),
-                ecgPacketInfo.GetTSMonth(dataArray),
-                ecgPacketInfo.GetTSDay(dataArray),
-                ecgPacketInfo.GetMsofDay(dataArray)
-        );
-
-        // Extract ECG Data
-        short[] samples = ecgPacketInfo.GetECGSamples(dataArray);
-
-        // Convert values and send message
-        for (short sample : samples) {
-            Message message = new Message();
-            message.what = BioHarnessConstants.ECG_MSG_ID;
-            Bundle bundle = new Bundle();
-
-            bundle.putShort("Voltage", sample);
-            bundle.putLong("Timestamp", timestamp);
-            message.setData(bundle);
-            bioHarnessHandler.sendMessage(message);
-        }
-    }
-
+    /*
     private void processPacketAccel(byte[] dataArray) {
 
         // Extract timestamp
@@ -207,39 +245,6 @@ public class BioHarnessListener extends ConnectListenerImpl {
             message.setData(bundle);
             bioHarnessHandler.sendMessage(message);
         }
-
     }
-
-    private short lastRRInterval = 0;
-    private void processPacketRtoR(byte[] dataArray) {
-
-        // Extract timestamp
-        long timestamp = TimeConverter.timeToEpoch(
-                rtoRPacketInfo.GetTSYear(dataArray),
-                rtoRPacketInfo.GetTSMonth(dataArray),
-                rtoRPacketInfo.GetTSDay(dataArray),
-                rtoRPacketInfo.GetMsofDay(dataArray)
-        );
-
-        // Extract RtoR Data
-        int[] samples = rtoRPacketInfo.GetRtoRSamples(dataArray);
-
-        // Convert values and send message
-        for (int sample : samples) {
-            short currentRRInterval = (short) sample;
-            if (lastRRInterval != currentRRInterval) {
-                lastRRInterval = currentRRInterval;
-                int rrInterval = Math.abs(lastRRInterval);
-
-                Message message = new Message();
-                message.what = BioHarnessConstants.RtoR_MSG_ID;
-                Bundle bundle = new Bundle();
-                bundle.putInt("rrInterval", rrInterval);
-                bundle.putLong("Timestamp", timestamp);
-                message.setData(bundle);
-                bioHarnessHandler.sendMessage(message);
-            }
-        }
-        //Log.d(TAG,  "RR-Intervals at " + Utils.getDateString(timestamp, "dd/MM/yyyy hh:mm:ss.SSS"));
-    }
+    */
 }
