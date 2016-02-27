@@ -8,7 +8,7 @@ android {
         minSdkVersion 17
         targetSdkVersion 23
         versionCode 1
-        versionName "1.9.5"
+        versionName "1.9.6"
         applicationId "de.bogutzky.psychophysiocollector.app"
     }
     buildTypes {
