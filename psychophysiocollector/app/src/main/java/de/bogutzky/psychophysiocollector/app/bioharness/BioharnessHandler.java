@@ -18,8 +18,6 @@ import de.bogutzky.psychophysiocollector.app.WriteDataTaskParams;
 public class BioHarnessHandler extends Handler {
     private static final String TAG = "BioHarnessHandler";
 
-    private final int RtoR_MSG_ID = 0x24;
-
     private Activity activity;
     private File root;
     private int batchRowCount = 0;
@@ -99,7 +97,7 @@ public class BioHarnessHandler extends Handler {
     public void handleMessage(Message msg) {
 
         switch (msg.what) {
-            case RtoR_MSG_ID:
+            case BioHarnessConstants.RtoR_MSG_ID:
                 if(isLogging) {
                     int rrInterval = msg.getData().getInt("rrInterval");
                     long timestamp = msg.getData().getLong("Timestamp");
