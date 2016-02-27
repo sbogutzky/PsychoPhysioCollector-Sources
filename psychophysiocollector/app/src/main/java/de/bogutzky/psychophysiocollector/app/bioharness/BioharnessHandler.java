@@ -108,12 +108,14 @@ public class BioHarnessHandler extends Handler {
 
                         // Time difference between start the evaluation and here
                         Double bioHarnessStartTimestamp = timestamp / 1.0;
-                        Double timeDifference = bioHarnessStartTimestamp - this.startTimestamp;
+                        //Double timeDifference = bioHarnessStartTimestamp - this.startTimestamp;
+                        Double timeDifference = System.currentTimeMillis() - this.startTimestamp / 1.0;
                         this.incrementedTimestamp = timeDifference;
 
                         //TODO: Negative time difference
                         Log.d(TAG, "Time difference: " + timeDifference + " ms");
                         Log.d(TAG, "Start timestamp: " + Utils.getDateString(this.startTimestamp, "dd/MM/yyyy hh:mm:ss.SSS"));
+                        Log.d(TAG, "First data row timestamp: " + Utils.getDateString(System.currentTimeMillis(), "dd/MM/yyyy hh:mm:ss.SSS"));
                         Log.d(TAG, "BioHarness start timestamp: " + Utils.getDateString(bioHarnessStartTimestamp.longValue(), "dd/MM/yyyy hh:mm:ss.SSS"));
                         this.buffer[batchRowCount][0] = timeDifference;
                         writeHeader(activity.getString(R.string.file_name_rr_interval), new String[] {activity.getString(R.string.file_header_timestamp), activity.getString(R.string.file_header_rr_interval)});
