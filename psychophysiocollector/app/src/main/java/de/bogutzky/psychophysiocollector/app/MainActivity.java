@@ -18,14 +18,9 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
-import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
-//import android.hardware.SensorManager;
-//import android.location.LocationListener;
-//import android.location.LocationManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Environment;
@@ -36,7 +31,6 @@ import android.os.Vibrator;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
-import android.view.ContextThemeWrapper;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -46,27 +40,13 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.RatingBar;
-import android.widget.RelativeLayout;
-import android.widget.ScrollView;
 import android.widget.Spinner;
-import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.lang.reflect.Method;
-//import java.text.DecimalFormat;
-//import java.text.DecimalFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -78,10 +58,17 @@ import java.util.Set;
 import de.bogutzky.psychophysiocollector.app.bioharness.BioHarnessHandler;
 import de.bogutzky.psychophysiocollector.app.bioharness.BioHarnessHandlerInterface;
 import de.bogutzky.psychophysiocollector.app.bioharness.BioHarnessService;
+import de.bogutzky.psychophysiocollector.app.questionnaire.Questionnaire;
 import de.bogutzky.psychophysiocollector.app.shimmer.imu.ShimmerImuHandler;
 import de.bogutzky.psychophysiocollector.app.shimmer.imu.ShimmerImuHandlerInterface;
 import de.bogutzky.psychophysiocollector.app.shimmer.imu.ShimmerImuMainConfigurationActivity;
 import de.bogutzky.psychophysiocollector.app.shimmer.imu.ShimmerImuService;
+
+//import android.hardware.SensorManager;
+//import android.location.LocationListener;
+//import android.location.LocationManager;
+//import java.text.DecimalFormat;
+//import java.text.DecimalFormatSymbols;
 
 public class MainActivity extends ListActivity implements SensorEventListener, ShimmerImuHandlerInterface, BioHarnessHandlerInterface {
 
@@ -93,7 +80,6 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
     private static final int TIMER_END = 2;
     //private static final int INTERNAL_SENSOR_CACHE_LENGTH = 1000;
     //private static final int DATA_ARRAY_SIZE = 1000;
-    private boolean loggingEnabled = false;
 
     private ArrayAdapter arrayAdapter;
     private ArrayList<String> bluetoothAddresses;
@@ -125,6 +111,8 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
     private int scaleTimerValue;
     private int scaleTimerVarianceValue;
 
+    private Questionnaire questionnaire;
+
     /*
     private Double[][] accelerometerValues;
     private int accelerometerValueCount;
@@ -153,7 +141,6 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
     */
 
     private String questionnaireFileName = "questionnaires/fks.json";
-    private JSONObject questionnaire;
 
     /* min api 9*/
     //private Sensor linearAccelerationSensor;
@@ -208,11 +195,6 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
     private MenuItem startStreamMenuItem;
     private MenuItem stopStreamMenuItem;
 
-    private ArrayList<String> scaleTypes;
-    private ArrayList<Integer> scaleViewIds;
-
-    private boolean wroteQuestionnaireHeader = false;
-
     ShimmerImuService shimmerImuService;
     BioHarnessService bioHarnessService;
     //private GraphView graphView;
@@ -228,9 +210,6 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
     private String activityName = "";
     private String probandPreName = "";
     private String probandSurName = "";
-
-    int questionsCount = 0;
-    int questionsAmount = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -271,8 +250,6 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
         scaleTimerVarianceValue = sharedPref.getInt("scaleTimerVarianceValue", 30);
         questionnaireFileName = sharedPref.getString("questionnaireValue", "questionnaires/fks.json");
         timerCycleInMin = scaleTimerValue;
-
-        questionnaire = readQuestionnaireFromJSON();
 
         getListView().setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
@@ -355,26 +332,6 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
         */
     }
 
-    private JSONObject readQuestionnaireFromJSON() {
-        BufferedReader input;
-        JSONObject jsonObject = null;
-        try {
-            input = new BufferedReader(new InputStreamReader(
-                    getAssets().open(questionnaireFileName)));
-            StringBuilder content = new StringBuilder();
-            char[] buffer = new char[1024];
-            int num;
-            while ((num = input.read(buffer)) > 0) {
-                content.append(buffer, 0, num);
-            }
-            jsonObject = new JSONObject(content.toString());
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return jsonObject;
-    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -426,9 +383,8 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
 
         if (id == R.id.action_start_streaming) {
             resetTime();
-            wroteQuestionnaireHeader = false;
-            loggingEnabled = true;
             isSessionStarted = true;
+            this.questionnaire = null;
 
             this.startStreamMenuItem.setEnabled(false);
             this.stopStreamMenuItem.setEnabled(true);
@@ -446,13 +402,14 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
 
         if (id == R.id.action_stop_streaming) {
             this.stopTimestamp = System.currentTimeMillis();
+
             stopAllStreamingOfAllShimmerImus();
             stopStreamingBioHarness();
+            isSessionStarted = false;
             stopTimerThread();
             //stopStreamingInternalSensorData();
             writeLeftOverData();
-            loggingEnabled = false;
-            isSessionStarted = false;
+
             this.directoryName = null;
             this.startStreamMenuItem.setEnabled(true);
             this.stopStreamMenuItem.setEnabled(false);
@@ -552,6 +509,7 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
     }
 
     public String getHeaderComments() {
+        //TODO: Change
         return "# StartTime: " + getDate(this.startTimestamp, "yyyy/MM/dd HH:mm:ss") + "\n";
 
     }
@@ -623,7 +581,6 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
                 editor.putString("questionnaireValue", "questionnaires/" + questionnaireSpinner.getSelectedItem().toString());
                 editor.apply();
                 questionnaireFileName = "questionnaires/" + questionnaireSpinner.getSelectedItem().toString();
-                questionnaire = readQuestionnaireFromJSON();
 
                 probandPreName = probandPreEditText.getText().toString();
                 probandSurName = probandSurEditText.getText().toString();
@@ -694,7 +651,6 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
             bioHarnessService = null;
         }
 
-        loggingEnabled = false;
         if (timerThread != null) {
             stopTimerThread();
         }
@@ -897,12 +853,33 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
                 case TIMER_END:
                     feedbackNotification();
                     textViewTimer.setVisibility(View.INVISIBLE);
-                    showLikertScaleDialog();
+                    showQuestionnaire();
                     break;
             }
 
             return true;
         }
+    }
+
+    void showQuestionnaire() {
+        if (this.questionnaire == null) {
+            questionnaire = new Questionnaire(this, questionnaireFileName);
+        }
+        questionnaire.showQuestionnaire();
+        Button saveButton = questionnaire.getSaveButton();
+        saveButton.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View view) {
+                if (isSessionStarted) {
+                    questionnaire.saveQuestionnaireItems(root, getHeaderComments(), null, startTimestamp);
+                    startTimerThread();
+                } else {
+                    questionnaire.saveQuestionnaireItems(root, null, getFooterComments(), startTimestamp);
+                }
+                questionnaire.getQuestionnaireDialog().dismiss();
+            }
+        });
     }
 
     private void startTimerThread() {
@@ -947,287 +924,6 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
         timerThreadShouldContinue = false;
         textViewTimer.setVisibility(View.INVISIBLE);
         timerThread = null;
-    }
-
-    private void showLikertScaleDialog() {
-        final long showTimestamp = System.currentTimeMillis();
-        final Dialog dialog = new Dialog(this);
-        dialog.setContentView(R.layout.questionnaire);
-        dialog.setTitle(getString(R.string.feedback));
-        dialog.setCancelable(false);
-        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
-        lp.copyFrom(dialog.getWindow().getAttributes());
-        lp.width = WindowManager.LayoutParams.MATCH_PARENT;
-        lp.height = WindowManager.LayoutParams.MATCH_PARENT;
-        dialog.getWindow().setAttributes(lp);
-        Button startQuestionnaireButton = (Button)dialog.findViewById(R.id.startQuestionnaireButton);
-        startQuestionnaireButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                createQuestionnaire(dialog, showTimestamp);
-            }
-        });
-        dialog.show();
-        //pauseAllSensors();
-    }
-
-    private void createQuestionnaire(final Dialog dialog, final long showTimestamp) {
-        final long startTimestamp = System.currentTimeMillis();
-
-        scaleTypes = new ArrayList<>();
-        scaleViewIds = new ArrayList<>();
-
-        ScrollView scrollView = new ScrollView(this);
-        final RelativeLayout relativeLayout = new RelativeLayout(this);
-        final Button saveButton = new Button(this);
-        Button nextButton = new Button(this);
-        RelativeLayout.LayoutParams slp = new RelativeLayout.LayoutParams(
-                RelativeLayout.LayoutParams.MATCH_PARENT,
-                RelativeLayout.LayoutParams.MATCH_PARENT);
-        RelativeLayout.LayoutParams rlp = new RelativeLayout.LayoutParams(
-                RelativeLayout.LayoutParams.MATCH_PARENT,
-                RelativeLayout.LayoutParams.WRAP_CONTENT);
-        RelativeLayout.LayoutParams saveParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-        RelativeLayout.LayoutParams nextParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-        Random rnd = new Random();
-        try {
-            JSONArray questions = questionnaire.getJSONObject("questionnaire").getJSONArray("questions");
-
-            // fragen zufällig sortieren
-            questions = Utils.shuffleJsonArray(questions);
-
-            questionsAmount = questions.length();
-            int tmpid;
-            int tmpid2;
-            int tmpid3;
-            int oldtmp = 0;
-            for (int i = 0; i < questions.length(); i++) {
-                RelativeLayout wrapperLayout = new RelativeLayout(this);
-                JSONObject q = questions.getJSONObject(i);
-                if (q.getString("type").equals("rating")) {
-                    RelativeLayout.LayoutParams params1 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
-                    RelativeLayout.LayoutParams params2 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-                    RelativeLayout.LayoutParams params3 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-                    RelativeLayout.LayoutParams params4 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-                    tmpid = rnd.nextInt(Integer.MAX_VALUE);
-                    tmpid2 = rnd.nextInt(Integer.MAX_VALUE);
-                    tmpid3 = rnd.nextInt(Integer.MAX_VALUE);
-                    TextView textView = new TextView(this);
-                    textView.setId(tmpid);
-                    Drawable bottom = ContextCompat.getDrawable(this, R.drawable.section_header);
-                    textView.setCompoundDrawables(null,null,null, bottom);
-                    textView.setCompoundDrawablePadding(4);
-                    textView.setPadding(4, 0, 0, 0);
-                    textView.setTextColor(Color.WHITE);
-                    textView.setTextSize(16);
-                    params1.setMargins(0, 10, 0, 0);
-                    textView.setText(q.getString("question"));
-                    if(i > 0) {
-                        params1.addRule(RelativeLayout.BELOW, oldtmp);
-                    }
-                    textView.setLayoutParams(params1);
-
-                    TextView textView1 = new TextView(this);
-                    textView1.setText(q.getJSONArray("ratings").getString(0));
-                    params2.setMargins(0, 8, 0, 0);
-                    params2.addRule(RelativeLayout.BELOW, tmpid);
-                    textView1.setLayoutParams(params2);
-
-                    TextView textView2 = new TextView(this);
-                    textView2.setId(tmpid2);
-                    textView2.setText(q.getJSONArray("ratings").getString(1));
-                    params3.setMargins(0, 8, 0, 0);
-                    params3.addRule(RelativeLayout.BELOW, tmpid);
-                    params3.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-                    textView2.setLayoutParams(params3);
-
-                    RatingBar ratingBar = new RatingBar(new ContextThemeWrapper(this, R.style.RatingBar), null, 0);
-                    ratingBar.setNumStars(q.getInt("stars"));
-                    ratingBar.setStepSize(1.0f);
-                    ratingBar.setId(tmpid3);
-                    params4.addRule(RelativeLayout.BELOW, tmpid2);
-                    params4.setMargins(0, 8, 0, 20);
-                    params4.addRule(RelativeLayout.CENTER_HORIZONTAL);
-                    oldtmp = tmpid3;
-                    ratingBar.setLayoutParams(params4);
-
-                    wrapperLayout.addView(textView);
-                    wrapperLayout.addView(textView1);
-                    wrapperLayout.addView(textView2);
-                    wrapperLayout.addView(ratingBar);
-                    relativeLayout.addView(wrapperLayout);
-                    wrapperLayout.setVisibility(View.INVISIBLE);
-
-                    scaleTypes.add(q.getString("type"));
-                    scaleViewIds.add(tmpid3);
-
-                } else if (q.getString("type").equals("text")) {
-                    RelativeLayout.LayoutParams params1 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
-                    RelativeLayout.LayoutParams params2 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
-
-                    tmpid = rnd.nextInt(Integer.MAX_VALUE);
-                    tmpid2 = rnd.nextInt(Integer.MAX_VALUE);
-
-                    TextView textView = new TextView(this);
-                    textView.setId(tmpid);
-                    textView.setText(q.getString("question"));
-                    if(i > 0) {
-                        params1.addRule(RelativeLayout.BELOW, oldtmp);
-                    }
-                    textView.setLayoutParams(params1);
-
-                    EditText editText = new EditText(this);
-                    editText.setId(tmpid2);
-                    params2.addRule(RelativeLayout.BELOW, tmpid);
-                    editText.setLayoutParams(params2);
-                    oldtmp = tmpid2;
-                    wrapperLayout.addView(textView);
-                    wrapperLayout.addView(editText);
-                    relativeLayout.addView(wrapperLayout);
-                    wrapperLayout.setVisibility(View.INVISIBLE);
-
-                    scaleTypes.add(q.getString("type"));
-                    scaleViewIds.add(tmpid2);
-                } else if (q.getString("type").equals("truefalse")) {
-                    RelativeLayout.LayoutParams params1 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
-                    RelativeLayout.LayoutParams params2 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
-
-                    tmpid = rnd.nextInt(Integer.MAX_VALUE);
-                    tmpid2 = rnd.nextInt(Integer.MAX_VALUE);
-
-                    TextView textView = new TextView(this);
-                    textView.setId(tmpid);
-                    textView.setText(q.getString("question"));
-                    if(i > 0) {
-                        params1.addRule(RelativeLayout.BELOW, oldtmp);
-                    }
-                    textView.setLayoutParams(params1);
-
-                    Switch yesNoSwitch = new Switch(this);
-                    yesNoSwitch.setText("");
-                    yesNoSwitch.setTextOff(getResources().getString(R.string.no));
-                    yesNoSwitch.setTextOn(getResources().getString(R.string.yes));
-                    yesNoSwitch.setId(tmpid2);
-
-                    params2.addRule(RelativeLayout.BELOW, tmpid);
-                    yesNoSwitch.setLayoutParams(params2);
-                    oldtmp = tmpid2;
-                    wrapperLayout.addView(textView);
-                    wrapperLayout.addView(yesNoSwitch);
-                    relativeLayout.addView(wrapperLayout);
-                    wrapperLayout.setVisibility(View.INVISIBLE);
-
-                    scaleTypes.add(q.getString("type"));
-                    scaleViewIds.add(tmpid2);
-                }
-            }
-            //saveParams.addRule(RelativeLayout.BELOW, relativeLayout.getId());
-            saveParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-            saveButton.setLayoutParams(saveParams);
-            saveButton.setText(getText(R.string.save));
-            saveButton.setVisibility(View.INVISIBLE);
-            //nextParams.addRule(RelativeLayout.BELOW, relativeLayout.getId());
-            nextParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-            nextButton.setLayoutParams(nextParams);
-            nextButton.setText(getString(R.string.next));
-
-            relativeLayout.addView(nextButton);
-            relativeLayout.addView(saveButton);
-            relativeLayout.setLayoutParams(rlp);
-
-            scrollView.addView(relativeLayout);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        relativeLayout.getChildAt(0).setVisibility(View.VISIBLE);
-
-        //dialog.setContentView(R.layout.flow_short_scale);
-        dialog.setContentView(scrollView, slp);
-
-        nextButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(questionsCount == questionsAmount-1) {
-                    v.setVisibility(View.INVISIBLE);
-                    relativeLayout.getChildAt(questionsCount-1).setVisibility(View.INVISIBLE);
-                    saveButton.setVisibility(View.VISIBLE);
-                    questionsCount = 0;
-                    questionsAmount = 0;
-                } else {
-                    questionsCount++;
-                    relativeLayout.getChildAt(questionsCount-1).setVisibility(View.INVISIBLE);
-                    relativeLayout.getChildAt(questionsCount).setVisibility(View.VISIBLE);
-
-                }
-            }
-        });
-
-        //Button saveButton = (Button) dialog.findViewById(R.id.button_save);
-        saveButton.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View view) {
-                saveScaleItems(dialog, showTimestamp, startTimestamp);
-                dialog.dismiss();
-                if (loggingEnabled) {
-                    //resumeAllSensors();
-                    startTimerThread();
-                }
-            }
-        });
-    }
-
-    private void saveScaleItems(final Dialog dialog, long showTimestamp, long startTimestamp) {
-
-        String outputString = "";
-        if(!wroteQuestionnaireHeader) {
-            wroteQuestionnaireHeader = true;
-            outputString = getHeaderComments();
-            outputString += "" + getString(R.string.file_header_timestamp_show) + "," + getString(R.string.file_header_timestamp_start) + "," + getString(R.string.file_header_timestamp_stop) + ",";
-            for (int i = 0; i < scaleTypes.size(); i++) {
-                if (i != scaleTypes.size() - 1) {
-                    outputString += "item." + String.format("%02d", (i+1)) + ",";
-                } else {
-                    outputString += "item." + String.format("%02d", (i+1)) + "\n";
-                }
-            }
-        }
-        outputString += Long.toString((showTimestamp- this.startTimestamp)) + "," + Long.toString((startTimestamp- this.startTimestamp)) + "," + Long.toString((System.currentTimeMillis()- this.startTimestamp)) + ",";
-        for (int i = 0; i < scaleTypes.size(); i++) {
-            String value = "";
-            if(scaleTypes.get(i).equals("rating")) {
-                RatingBar r = (RatingBar) dialog.findViewById(scaleViewIds.get(i));
-                value = Float.toString(r.getRating());
-            } else if(scaleTypes.get(i).equals("text")) {
-                EditText e = (EditText) dialog.findViewById(scaleViewIds.get(i));
-                value = e.getText().toString();
-            } else if(scaleTypes.get(i).equals("truefalse")) {
-                Switch s = (Switch) dialog.findViewById(scaleViewIds.get(i));
-                if(s.isChecked())
-                    value = "1";
-                else
-                    value = "0";
-            }
-            if(i != scaleTypes.size()-1) {
-                outputString += value + ",";
-            } else {
-                outputString += value;
-            }
-        }
-
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(root, getString(R.string.file_name_self_report)), true));
-            writer.write(outputString);
-            writer.newLine();
-            writer.flush();
-            writer.close();
-        } catch (IOException e) {
-            Log.e(TAG, "Error while writing in file", e);
-        }
-        /*if(!loggingEnabled) {
-            String footer = getFooterComments();
-            writeFoooter(footer, getString(R.string.file_name_self_report));
-        }*/
     }
 
    /* private void startStreamingInternalSensorData() {
@@ -1446,7 +1142,7 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
             writeData(accelerometerValues, getString(R.string.file_name_acceleration), 4, accelerometerValues.length, "");
     }
 
-    private void writeFoooter (String data, String filename) {
+    private void writeFooter (String data, String filename) {
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, filename), true));
             writer.write(data);
