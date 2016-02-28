@@ -20,8 +20,8 @@ import java.io.IOException;
 import java.util.Collection;
 import de.bogutzky.psychophysiocollector.app.R;
 import de.bogutzky.psychophysiocollector.app.Utils;
-import de.bogutzky.psychophysiocollector.app.WriteDataTask;
-import de.bogutzky.psychophysiocollector.app.WriteDataTaskParams;
+import de.bogutzky.psychophysiocollector.app.data.management.WriteDataTask;
+import de.bogutzky.psychophysiocollector.app.data.management.WriteDataTaskParams;
 
 @SuppressLint("HandlerLeak")
 public class ShimmerImuHandler extends Handler {

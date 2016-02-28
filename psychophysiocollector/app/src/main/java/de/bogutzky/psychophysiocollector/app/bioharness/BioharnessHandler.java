@@ -12,8 +12,8 @@ import java.io.IOException;
 
 import de.bogutzky.psychophysiocollector.app.R;
 import de.bogutzky.psychophysiocollector.app.Utils;
-import de.bogutzky.psychophysiocollector.app.WriteDataTask;
-import de.bogutzky.psychophysiocollector.app.WriteDataTaskParams;
+import de.bogutzky.psychophysiocollector.app.data.management.WriteDataTask;
+import de.bogutzky.psychophysiocollector.app.data.management.WriteDataTaskParams;
 
 public class BioHarnessHandler extends Handler {
     private static final String TAG = "BioHarnessHandler";
