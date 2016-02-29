@@ -1,0 +1,17 @@
+{
+  "questionnaire": {
+    "title": "Flow-Kurzskala mit Entscheidungsfrage",
+    "questions": [
+      {
+        "type": "rating",
+        "stars": 7,
+        "question": "Wie bereit bist du?",
+        "ratings": ["Trifft nicht zu", "Trifft zu"]
+      },
+      {
+        "type": "truefalse",
+        "question": "Bist du wirklich bereit?"
+      }
+    ]
+  }
+}

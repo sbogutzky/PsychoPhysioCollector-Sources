@@ -315,7 +315,7 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
 
         if (id == R.id.action_start_streaming) {
             this.isFirstSelfReportRequest = true;
-            showQuestionnaire();
+            showQuestionnaire(true);
 
             this.startStreamMenuItem.setEnabled(false);
             this.stopStreamMenuItem.setEnabled(true);
@@ -732,7 +732,7 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
                 case TIMER_END:
                     feedbackNotification();
                     textViewTimer.setVisibility(View.INVISIBLE);
-                    showQuestionnaire();
+                    showQuestionnaire(false);
                     break;
             }
 
@@ -740,8 +740,13 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
         }
     }
 
-    void showQuestionnaire() {
-        final Questionnaire questionnaire = new Questionnaire(this, questionnaireFileName);
+    void showQuestionnaire(boolean initialQuestionnaire) {
+        final Questionnaire questionnaire;
+        if(initialQuestionnaire) {
+            questionnaire = new Questionnaire(this, "questionnaires/initial-questions.json");
+        } else {
+            questionnaire = new Questionnaire(this, questionnaireFileName);
+        }
         Button saveButton = questionnaire.getSaveButton();
         saveButton.setOnClickListener(new View.OnClickListener() {
 
