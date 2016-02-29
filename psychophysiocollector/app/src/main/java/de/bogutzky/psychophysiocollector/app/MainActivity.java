@@ -38,9 +38,11 @@ import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Spinner;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -118,9 +120,11 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
     private Spinner selfReportIntervalSpinner;
     private Spinner selfReportVarianceSpinner;
     private Spinner questionnaireSpinner;
+    private Spinner initialQuestionnaireSpinner;
     private int selfReportInterval;
     private int selfReportVariance;
     private String questionnaireFileName = "questionnaires/flow-short-scale.json";
+    private String initialQuestionnaireFileName = "questionnaires/initial-questions.json";
 
     /*
     private Double[][] accelerometerValues;
@@ -192,6 +196,7 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
         selfReportInterval = sharedPref.getInt("selfReportInterval", 15);
         selfReportVariance = sharedPref.getInt("selfReportVariance", 30);
         questionnaireFileName = sharedPref.getString("questionnaireValue", "questionnaires/flow-short-scale.json");
+        initialQuestionnaireFileName = sharedPref.getString("initialQuestionnaireValue", "questionnaires/initial-questions.json");
         activityName = sharedPref.getString("activityName", "");
         participantFirstName = sharedPref.getString("participantFirstName", "");
         participantLastName = sharedPref.getString("participantLastName", "");
@@ -421,9 +426,11 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
         int selfReportIntervalSpinnerPosition = sharedPref.getInt("selfReportIntervalSpinnerPosition", 2);
         int selfReportVarianceSpinnerPosition = sharedPref.getInt("selfReportVarianceSpinnerPosition", 0);
         int questionnaireSpinnerPosition = sharedPref.getInt("questionnaireSpinnerPosition", 0);
+        int initialQuestionnaireSpinnerPosition = sharedPref.getInt("initialQuestionnaireSpinnerPosition", 3);
         String activityName = sharedPref.getString("activityName", "");
         String participantFirstName = sharedPref.getString("participantFirstName", "");
         String participantLastName = sharedPref.getString("participantLastName", "");
+        boolean configureInterval = sharedPref.getBoolean("configureInterval", false);
         final Dialog dialog = new Dialog(this);
         dialog.setContentView(R.layout.settings);
         dialog.setTitle(getString(R.string.action_settings));
@@ -445,6 +452,7 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
         selfReportVarianceSpinner.setSelection(selfReportVarianceSpinnerPosition);
 
         questionnaireSpinner = (Spinner) dialog.findViewById(R.id.questionnaireSpinner);
+        initialQuestionnaireSpinner = (Spinner) dialog.findViewById(R.id.initial_questionnaireSpinner);
         AssetManager assetManager = getApplicationContext().getAssets();
         String[] questionnaires = new String[0];
         try {
@@ -455,6 +463,8 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
         ArrayAdapter<String> qSpinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, questionnaires);
         questionnaireSpinner.setAdapter(qSpinnerAdapter);
         questionnaireSpinner.setSelection(questionnaireSpinnerPosition);
+        initialQuestionnaireSpinner.setAdapter(qSpinnerAdapter);
+        initialQuestionnaireSpinner.setSelection(initialQuestionnaireSpinnerPosition);
 
         final EditText participantFirstNameEditText = (EditText) dialog.findViewById(R.id.participant_first_name_edit_text);
         final EditText participantLastNameEditText = (EditText) dialog.findViewById(R.id.participant_last_name_edit_text);
@@ -462,6 +472,16 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
         participantFirstNameEditText.setText(participantFirstName);
         participantLastNameEditText.setText(participantLastName);
         activityNameEditText.setText(activityName);
+
+        final Switch configureIntervalSwitch = (Switch) dialog.findViewById(R.id.configure_interval_switch);
+        configureIntervalSwitch.setChecked(configureInterval);
+        if(configureInterval) {
+            dialog.findViewById(R.id.configure_interval_layout).setVisibility(View.VISIBLE);
+            dialog.findViewById(R.id.configure_variance_layout).setVisibility(View.VISIBLE);
+        } else {
+            dialog.findViewById(R.id.configure_interval_layout).setVisibility(View.GONE);
+            dialog.findViewById(R.id.configure_variance_layout).setVisibility(View.GONE);
+        }
 
         Button saveButton = (Button) dialog.findViewById(R.id.saveButton);
         saveButton.setOnClickListener(new View.OnClickListener() {
@@ -471,6 +491,7 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
                 selfReportInterval = Integer.valueOf(selfReportIntervalSpinner.getSelectedItem().toString());
                 selfReportVariance = Integer.valueOf(selfReportVarianceSpinner.getSelectedItem().toString());
                 questionnaireFileName = "questionnaires/" + questionnaireSpinner.getSelectedItem().toString();
+                initialQuestionnaireFileName = "questionnaires/" + initialQuestionnaireSpinner.getSelectedItem().toString();
                 MainActivity.this.participantFirstName = participantFirstNameEditText.getText().toString();
                 MainActivity.this.participantLastName = participantLastNameEditText.getText().toString();
                 MainActivity.this.activityName = activityNameEditText.getText().toString();
@@ -479,15 +500,30 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
                 editor.putInt("selfReportIntervalSpinnerPosition", selfReportIntervalSpinner.getSelectedItemPosition());
                 editor.putInt("selfReportVarianceSpinnerPosition", selfReportVarianceSpinner.getSelectedItemPosition());
                 editor.putInt("questionnaireSpinnerPosition", questionnaireSpinner.getSelectedItemPosition());
+                editor.putInt("initialQuestionnaireSpinnerPosition", initialQuestionnaireSpinner.getSelectedItemPosition());
                 editor.putInt("selfReportInterval", Integer.valueOf(selfReportIntervalSpinner.getSelectedItem().toString()));
                 editor.putInt("selfReportVariance", Integer.valueOf(selfReportVarianceSpinner.getSelectedItem().toString()));
                 editor.putString("questionnaireValue", "questionnaires/" + questionnaireSpinner.getSelectedItem().toString());
+                editor.putString("initialQuestionnaireValue", "questionnaires/" + initialQuestionnaireSpinner.getSelectedItem().toString());
                 editor.putString("participantFirstName", participantFirstNameEditText.getText().toString());
                 editor.putString("participantLastName", participantLastNameEditText.getText().toString());
                 editor.putString("activityName", activityNameEditText.getText().toString());
+                editor.putBoolean("configureInterval", configureIntervalSwitch.isChecked());
                 editor.apply();
 
                 dialog.dismiss();
+            }
+        });
+
+        configureIntervalSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked) {
+                    dialog.findViewById(R.id.configure_interval_layout).setVisibility(View.VISIBLE);
+                    dialog.findViewById(R.id.configure_variance_layout).setVisibility(View.VISIBLE);
+                } else {
+                    dialog.findViewById(R.id.configure_interval_layout).setVisibility(View.GONE);
+                    dialog.findViewById(R.id.configure_variance_layout).setVisibility(View.GONE);
+                }
             }
         });
         dialog.show();
@@ -743,7 +779,7 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
     void showQuestionnaire(boolean initialQuestionnaire) {
         final Questionnaire questionnaire;
         if(initialQuestionnaire) {
-            questionnaire = new Questionnaire(this, "questionnaires/initial-questions.json");
+            questionnaire = new Questionnaire(this, initialQuestionnaireFileName);
         } else {
             questionnaire = new Questionnaire(this, questionnaireFileName);
         }
