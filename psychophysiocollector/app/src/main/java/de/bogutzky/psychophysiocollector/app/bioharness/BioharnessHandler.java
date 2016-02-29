@@ -28,6 +28,7 @@ public class BioHarnessHandler extends Handler {
 
     private long startTimestamp;
     private Double incrementedTimestamp;
+    private Double lastValidEcgVoltage;
     private boolean[] isFirstDataRow = {true, true, true};
     private boolean isLogging = false;
 
@@ -150,42 +151,43 @@ public class BioHarnessHandler extends Handler {
                 break;
 
             case BioHarnessConstants.ECG_MSG_ID:
-                if(isLogging) {
+                if (isLogging) {
                     long timestamp = msg.getData().getLong("Timestamp");
                     short voltage = msg.getData().getShort("Voltage");
-                    double mv = voltage * 0.013405;
-                    //if (mv < 10.0) {
-                        this.buffer[BioHarnessConstants.ECG_STORE_ID][batchRowCounts[BioHarnessConstants.ECG_STORE_ID]][0] = mv;
+                    double ecgVoltage = voltage * 0.013405;
+                    if (ecgVoltage < 10.0) {
+                        lastValidEcgVoltage = ecgVoltage;
+                    }
+                    this.buffer[BioHarnessConstants.ECG_STORE_ID][batchRowCounts[BioHarnessConstants.ECG_STORE_ID]][0] = lastValidEcgVoltage;
 
-                        if (this.isFirstDataRow[BioHarnessConstants.ECG_STORE_ID]) {
+                    if (this.isFirstDataRow[BioHarnessConstants.ECG_STORE_ID]) {
 
-                            // Time difference between start the evaluation and here
-                            Double bioHarnessStartTimestamp = timestamp / 1.0;
-                            //Double timeDifference = bioHarnessStartTimestamp - this.startTimestamp;
-                            Double timeDifference = System.currentTimeMillis() - this.startTimestamp / 1.0;
+                        // Time difference between start the evaluation and here
+                        Double bioHarnessStartTimestamp = timestamp / 1.0;
+                        //Double timeDifference = bioHarnessStartTimestamp - this.startTimestamp;
+                        Double timeDifference = System.currentTimeMillis() - this.startTimestamp / 1.0;
 
-                            Log.d(TAG, "Time difference: " + timeDifference + " ms");
-                            Log.d(TAG, "Start timestamp: " + Utils.getDateString(this.startTimestamp, "dd/MM/yyyy hh:mm:ss.SSS"));
-                            Log.d(TAG, "First data row timestamp: " + Utils.getDateString(System.currentTimeMillis(), "dd/MM/yyyy hh:mm:ss.SSS"));
-                            Log.d(TAG, "BioHarness start timestamp: " + Utils.getDateString(bioHarnessStartTimestamp.longValue(), "dd/MM/yyyy hh:mm:ss.SSS"));
-                            //this.buffer[batchRowCounts][0] = timeDifference;
-                            writeHeader(activity.getString(R.string.file_name_ecg), new String[]{activity.getString(R.string.file_header_voltage)});
-                            this.isFirstDataRow[BioHarnessConstants.ECG_STORE_ID] = false;
+                        Log.d(TAG, "Time difference: " + timeDifference + " ms");
+                        Log.d(TAG, "Start timestamp: " + Utils.getDateString(this.startTimestamp, "dd/MM/yyyy hh:mm:ss.SSS"));
+                        Log.d(TAG, "First data row timestamp: " + Utils.getDateString(System.currentTimeMillis(), "dd/MM/yyyy hh:mm:ss.SSS"));
+                        Log.d(TAG, "BioHarness start timestamp: " + Utils.getDateString(bioHarnessStartTimestamp.longValue(), "dd/MM/yyyy hh:mm:ss.SSS"));
+                        //this.buffer[batchRowCounts][0] = timeDifference;
+                        writeHeader(activity.getString(R.string.file_name_ecg), new String[]{activity.getString(R.string.file_header_voltage)});
+                        this.isFirstDataRow[BioHarnessConstants.ECG_STORE_ID] = false;
+                    }
+
+                    //Log.d(TAG, "Voltage: " + this.buffer[BioHarnessConstants.ECG_STORE_ID][batchRowCounts[BioHarnessConstants.ECG_STORE_ID]][0] + " mV");
+
+                    batchRowCounts[BioHarnessConstants.ECG_STORE_ID]++;
+                    if (batchRowCounts[BioHarnessConstants.ECG_STORE_ID] == maxBatchCounts[BioHarnessConstants.ECG_STORE_ID]) {
+                        writeValues(activity.getString(R.string.file_name_ecg), this.buffer[BioHarnessConstants.ECG_STORE_ID], 1, batchRowCounts[BioHarnessConstants.ECG_STORE_ID], null); // "# BatchRowCount: " + batchRowCounts
+                        batchRowCounts[BioHarnessConstants.ECG_STORE_ID] = 0;
+                        if (this.buffer[BioHarnessConstants.ECG_STORE_ID] == this.buffer0[BioHarnessConstants.ECG_STORE_ID]) {
+                            this.buffer[BioHarnessConstants.ECG_STORE_ID] = this.buffer1[BioHarnessConstants.ECG_STORE_ID];
+                        } else {
+                            this.buffer[BioHarnessConstants.ECG_STORE_ID] = this.buffer0[BioHarnessConstants.ECG_STORE_ID];
                         }
-
-                        //Log.d(TAG, "Voltage: " + this.buffer[BioHarnessConstants.ECG_STORE_ID][batchRowCounts[BioHarnessConstants.ECG_STORE_ID]][0] + " mV");
-
-                        batchRowCounts[BioHarnessConstants.ECG_STORE_ID]++;
-                        if (batchRowCounts[BioHarnessConstants.ECG_STORE_ID] == maxBatchCounts[BioHarnessConstants.ECG_STORE_ID]) {
-                            writeValues(activity.getString(R.string.file_name_ecg), this.buffer[BioHarnessConstants.ECG_STORE_ID], 1, batchRowCounts[BioHarnessConstants.ECG_STORE_ID], null); // "# BatchRowCount: " + batchRowCounts
-                            batchRowCounts[BioHarnessConstants.ECG_STORE_ID] = 0;
-                            if (this.buffer[BioHarnessConstants.ECG_STORE_ID] == this.buffer0[BioHarnessConstants.ECG_STORE_ID]) {
-                                this.buffer[BioHarnessConstants.ECG_STORE_ID] = this.buffer1[BioHarnessConstants.ECG_STORE_ID];
-                            } else {
-                                this.buffer[BioHarnessConstants.ECG_STORE_ID] = this.buffer0[BioHarnessConstants.ECG_STORE_ID];
-                            }
-                        }
-                    //}
+                    }
                 }
                 break;
             /*
