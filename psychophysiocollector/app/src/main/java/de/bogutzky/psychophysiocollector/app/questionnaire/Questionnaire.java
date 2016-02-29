@@ -124,9 +124,6 @@ public class Questionnaire {
                     tmpid3 = rnd.nextInt(Integer.MAX_VALUE);
                     TextView textView = new TextView(activity);
                     textView.setId(tmpid);
-                    Drawable bottom = ContextCompat.getDrawable(activity, R.drawable.section_header);
-                    textView.setCompoundDrawables(null,null,null, bottom);
-                    textView.setCompoundDrawablePadding(4);
                     textView.setPadding(4, 0, 0, 0);
                     textView.setTextColor(Color.WHITE);
                     textView.setTextSize(16);
@@ -259,10 +256,12 @@ public class Questionnaire {
         nextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (questionsCount == questionsAmount - 1) {
+                if (questionsCount == questionsAmount - 2) {
                     v.setVisibility(View.INVISIBLE);
-                    relativeLayout.getChildAt(questionsCount - 1).setVisibility(View.INVISIBLE);
                     saveButton.setVisibility(View.VISIBLE);
+                }
+                if (questionsCount == questionsAmount - 1) {
+                    relativeLayout.getChildAt(questionsCount - 1).setVisibility(View.INVISIBLE);
                     questionsCount = 0;
                     questionsAmount = 0;
                 } else {
