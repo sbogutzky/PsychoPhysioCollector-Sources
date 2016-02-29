@@ -96,7 +96,7 @@ public class Questionnaire {
                 RelativeLayout.LayoutParams.MATCH_PARENT);
         RelativeLayout.LayoutParams rlp = new RelativeLayout.LayoutParams(
                 RelativeLayout.LayoutParams.MATCH_PARENT,
-                RelativeLayout.LayoutParams.WRAP_CONTENT);
+                RelativeLayout.LayoutParams.MATCH_PARENT);
         RelativeLayout.LayoutParams saveParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         RelativeLayout.LayoutParams nextParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         Random rnd = new Random();
@@ -233,11 +233,13 @@ public class Questionnaire {
             }
             //saveParams.addRule(RelativeLayout.BELOW, relativeLayout.getId());
             saveParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+            saveParams.setMargins(0, 400, 0, 0);
             saveButton.setLayoutParams(saveParams);
             saveButton.setText(activity.getText(R.string.save));
             saveButton.setVisibility(View.INVISIBLE);
             //nextParams.addRule(RelativeLayout.BELOW, relativeLayout.getId());
             nextParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+            nextParams.setMargins(0, 400, 0, 0);
             nextButton.setLayoutParams(nextParams);
             nextButton.setText(activity.getString(R.string.next));
 
