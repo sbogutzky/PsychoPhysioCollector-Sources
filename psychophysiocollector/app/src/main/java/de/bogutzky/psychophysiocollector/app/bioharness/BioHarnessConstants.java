@@ -1,6 +1,7 @@
 package de.bogutzky.psychophysiocollector.app.bioharness;
 
 public class BioHarnessConstants {
+    public static final int BH_READY = 101;
     public static final int RtoR_MSG_ID = 0x24;
     public static final int GP_MSG_ID = 0x20;
     public static final int BREATHING_MSG_ID = 0x21;

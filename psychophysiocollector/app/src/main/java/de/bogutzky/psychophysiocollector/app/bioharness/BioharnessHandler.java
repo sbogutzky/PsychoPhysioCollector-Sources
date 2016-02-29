@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -107,6 +108,10 @@ public class BioHarnessHandler extends Handler {
     public void handleMessage(Message msg) {
 
         switch (msg.what) {
+            case BioHarnessConstants.BH_READY:
+                Toast.makeText(activity, "BioHarness " + activity.getString(R.string.is_ready), Toast.LENGTH_LONG).show();
+                break;
+
             case BioHarnessConstants.RtoR_MSG_ID:
                 if(isLogging) {
                     long timestamp = msg.getData().getLong("Timestamp");
