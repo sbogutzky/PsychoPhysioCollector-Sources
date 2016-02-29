@@ -164,6 +164,7 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
     private String activityName = "";
     private String probandPreName = "";
     private String probandSurName = "";
+    private boolean showingInitialQuestionnaire = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -316,10 +317,8 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
         }
 
         if (id == R.id.action_start_streaming) {
-            resetTime();
             this.isSessionStarted = true;
             this.isFirstSelfReportRequest = true;
-
 
             this.startStreamMenuItem.setEnabled(false);
             this.stopStreamMenuItem.setEnabled(true);
@@ -329,9 +328,9 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
                 createRootDirectory();
             }
 
-            startStreamingOfAllShimmerImus();
-            startStreamingBioHarness();
-            startTimerThread();
+            showQuestionnaire();
+            showingInitialQuestionnaire = true;
+
             //startStreamingInternalSensorData();
         }
 
@@ -750,9 +749,16 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
 
             @Override
             public void onClick(View view) {
-                if (isSessionStarted) {
+                if (showingInitialQuestionnaire) {
+                    resetTime();
                     questionnaire.saveQuestionnaireItems(root, isFirstSelfReportRequest, getHeaderComments(), null, startTimestamp);
+                    startTimerThread();
+                    startStreamingOfAllShimmerImus();
+                    startStreamingBioHarness();
+                    showingInitialQuestionnaire = false;
                     isFirstSelfReportRequest = false;
+                } else if (isSessionStarted) {
+                    questionnaire.saveQuestionnaireItems(root, isFirstSelfReportRequest, getHeaderComments(), null, startTimestamp);
                     startTimerThread();
                 } else {
                     questionnaire.saveQuestionnaireItems(root, isFirstSelfReportRequest, null, getFooterComments(), startTimestamp);
