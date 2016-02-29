@@ -73,13 +73,18 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
 
     private static final String TAG = "MainActivity";
     private static final int MSG_BLUETOOTH_ADDRESS = 1;
-    private final static int REQUEST_ENABLE_BT = 707;
-    private final static int PERMISSIONS_REQUEST = 900;
+    private static final int REQUEST_ENABLE_BT = 707;
+    private static final int PERMISSIONS_REQUEST = 900;
     private static final int TIMER_UPDATE = 1;
     private static final int TIMER_END = 2;
-    //private static final int INTERNAL_SENSOR_CACHE_LENGTH = 1000;
-    //private static final int DATA_ARRAY_SIZE = 1000;
+    private static final int REQUEST_MAIN_COMMAND_SHIMMER = 3;
 
+    /*
+    private static final int INTERNAL_SENSOR_CACHE_LENGTH = 1000;
+    private static final int DATA_ARRAY_SIZE = 1000;
+    */
+
+    private BluetoothAdapter bluetoothAdapter;
     private ArrayAdapter arrayAdapter;
     private ArrayList<String> bluetoothAddresses;
     private ArrayList<String> deviceNames;
@@ -88,27 +93,34 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
     private Handler timerHandler;
     private Thread timerThread;
     private boolean timerThreadShouldContinue = false;
-    private double timerCycleInMin;
+
     private String directoryName;
     private File root;
+    private long startTimestamp;
+    private long stopTimestamp;
+
     /*
     private SensorManager sensorManager;
     private android.hardware.Sensor accelerometer;
     private android.hardware.Sensor gyroscope;
+    private Sensor linearAccelerationSensor;
+    private int sensorDataDelay = 20000; // ca. 50 Hz
     private LocationManager locationManager;
     private LocationListener locationListener;
+    private float lastLocationAccuracy;
     */
+
     private String gpsStatusText;
-    //private float lastLocationAccuracy;
 
     private Vibrator vibrator;
     private long[] vibratorPatternFeedback = {0, 500, 200, 100, 100, 100, 100, 100};
 
-    private Spinner scale_timerSpinner;
-    private Spinner scale_timerVarianceSpinner;
+    private Spinner selfReportIntervalSpinner;
+    private Spinner selfReportVarianceSpinner;
     private Spinner questionnaireSpinner;
-    private int scaleTimerValue;
-    private int scaleTimerVarianceValue;
+    private int selfReportInterval;
+    private int selfReportVariance;
+    private String questionnaireFileName = "questionnaires/flow-short-scale.json";
 
     /*
     private Double[][] accelerometerValues;
@@ -119,13 +131,6 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
     private int linearAccelerationValueCount;
     */
 
-    private String questionnaireFileName = "questionnaires/fks.json";
-
-    /* min api 9*/
-    //private Sensor linearAccelerationSensor;
-
-    private long startTimestamp;
-    private long stopTimestamp;
     /*
     private long gyroscopeEventStartTimestamp;
     private long gyroscopeStartTimestamp;
@@ -135,13 +140,6 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
     private long linearAccelerationSensorStartTimestamp;
     */
 
-    private BluetoothAdapter btAdapter = null;
-
-    public final static int REQUEST_MAIN_COMMAND_SHIMMER=3;
-    public final static int REQUEST_COMMANDS_SHIMMER=4;
-    public static final int REQUEST_CONFIGURE_SHIMMER = 5;
-    public static final int SHOW_GRAPH = 13;
-
     private MenuItem addMenuItem;
     private MenuItem connectMenuItem;
     private MenuItem disconnectMenuItem;
@@ -150,11 +148,11 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
 
     ShimmerImuService shimmerImuService;
     BioHarnessService bioHarnessService;
+
     //private GraphView graphView;
     //private boolean graphShowing = false;
     //private String graphAdress = "";
 
-    //private int sensorDataDelay = 20000; // ca. 50 Hz
     private boolean isSessionStarted = false;
     private boolean isFirstSelfReportRequest;
 
@@ -162,9 +160,8 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
     //private boolean secondWritingData = false;
 
     private String activityName = "";
-    private String probandPreName = "";
-    private String probandSurName = "";
-    private boolean showingInitialQuestionnaire = false;
+    private String participantFirstName = "";
+    private String participantLastName = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -188,19 +185,16 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
 
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
-        timerCycleInMin = 15;
-
         textViewTimer = (TextView) findViewById(R.id.text_view_timer);
         textViewTimer.setVisibility(View.INVISIBLE);
 
         final SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
-        scaleTimerValue = sharedPref.getInt("scaleTimerValue", 15);
-        scaleTimerVarianceValue = sharedPref.getInt("scaleTimerVarianceValue", 30);
-        questionnaireFileName = sharedPref.getString("questionnaireValue", "questionnaires/fks.json");
-        activityName = sharedPref.getString("activity", "");
-        probandPreName = sharedPref.getString("prename", "");
-        probandSurName = sharedPref.getString("surname", "");
-        timerCycleInMin = scaleTimerValue;
+        selfReportInterval = sharedPref.getInt("selfReportInterval", 15);
+        selfReportVariance = sharedPref.getInt("selfReportVariance", 30);
+        questionnaireFileName = sharedPref.getString("questionnaireValue", "questionnaires/flow-short-scale.json");
+        activityName = sharedPref.getString("activityName", "");
+        participantFirstName = sharedPref.getString("participantFirstName", "");
+        participantLastName = sharedPref.getString("participantLastName", "");
 
         getListView().setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
@@ -240,10 +234,10 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
     }
 
     private void checkBtEnabled() {
-        btAdapter = BluetoothAdapter.getDefaultAdapter();
-        if(btAdapter == null) {
+        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if(bluetoothAdapter == null) {
             Toast.makeText(this, getString(R.string.bluetooth_not_supported), Toast.LENGTH_LONG).show();
-        } else if(!btAdapter.isEnabled()) {
+        } else if(!bluetoothAdapter.isEnabled()) {
             AlertDialog dialog;
             AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
             builder.setCancelable(true);
@@ -320,8 +314,8 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
         }
 
         if (id == R.id.action_start_streaming) {
-            this.isSessionStarted = true;
             this.isFirstSelfReportRequest = true;
+            showQuestionnaire();
 
             this.startStreamMenuItem.setEnabled(false);
             this.stopStreamMenuItem.setEnabled(true);
@@ -330,9 +324,6 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
             if (this.directoryName == null) {
                 createRootDirectory();
             }
-
-            showQuestionnaire();
-            showingInitialQuestionnaire = true;
 
             //startStreamingInternalSensorData();
         }
@@ -427,12 +418,12 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
 
     private void showSettings() {
         final SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
-        int selectedTimePos = sharedPref.getInt("scaleTimerValuePos", 2);
-        int selectedVariancePos = sharedPref.getInt("scaleTimerVarianceValuePos", 0);
-        int questionnairePos = sharedPref.getInt("questionnairePos", 0);
-        final String activity = sharedPref.getString("activity", "");
-        String  prename = sharedPref.getString("prename", "");
-        String  surname = sharedPref.getString("surname", "");
+        int selfReportIntervalSpinnerPosition = sharedPref.getInt("selfReportIntervalSpinnerPosition", 2);
+        int selfReportVarianceSpinnerPosition = sharedPref.getInt("selfReportVarianceSpinnerPosition", 0);
+        int questionnaireSpinnerPosition = sharedPref.getInt("questionnaireSpinnerPosition", 0);
+        String activityName = sharedPref.getString("activityName", "");
+        String participantFirstName = sharedPref.getString("participantFirstName", "");
+        String participantLastName = sharedPref.getString("participantLastName", "");
         final Dialog dialog = new Dialog(this);
         dialog.setContentView(R.layout.settings);
         dialog.setTitle(getString(R.string.action_settings));
@@ -442,16 +433,16 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
         lp.width = WindowManager.LayoutParams.MATCH_PARENT;
         lp.height = WindowManager.LayoutParams.MATCH_PARENT;
         dialog.getWindow().setAttributes(lp);
-        scale_timerSpinner = (Spinner) dialog.findViewById(R.id.scala_timer_spinner);
+        selfReportIntervalSpinner = (Spinner) dialog.findViewById(R.id.self_report_interval_spinner);
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
-                R.array.test_protocol_settings_interval_values, android.R.layout.simple_spinner_item);
-        scale_timerSpinner.setAdapter(adapter);
-        scale_timerSpinner.setSelection(selectedTimePos);
-        scale_timerVarianceSpinner = (Spinner) dialog.findViewById(R.id.scala_variance_spinner);
+                R.array.study_protocol_settings_self_report_interval_values, android.R.layout.simple_spinner_item);
+        selfReportIntervalSpinner.setAdapter(adapter);
+        selfReportIntervalSpinner.setSelection(selfReportIntervalSpinnerPosition);
+        selfReportVarianceSpinner = (Spinner) dialog.findViewById(R.id.self_report_variance_spinner);
         ArrayAdapter<CharSequence> adapter2 = ArrayAdapter.createFromResource(this,
-                R.array.test_protocol_settings_interval_variance_values, android.R.layout.simple_spinner_item);
-        scale_timerVarianceSpinner.setAdapter(adapter2);
-        scale_timerVarianceSpinner.setSelection(selectedVariancePos);
+                R.array.study_protocol_settings_self_report_variance_values, android.R.layout.simple_spinner_item);
+        selfReportVarianceSpinner.setAdapter(adapter2);
+        selfReportVarianceSpinner.setSelection(selfReportVarianceSpinnerPosition);
 
         questionnaireSpinner = (Spinner) dialog.findViewById(R.id.questionnaireSpinner);
         AssetManager assetManager = getApplicationContext().getAssets();
@@ -463,41 +454,39 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
         }
         ArrayAdapter<String> qSpinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, questionnaires);
         questionnaireSpinner.setAdapter(qSpinnerAdapter);
-        questionnaireSpinner.setSelection(questionnairePos);
+        questionnaireSpinner.setSelection(questionnaireSpinnerPosition);
 
-        final EditText probandPreEditText = (EditText) dialog.findViewById(R.id.probandPreEditText);
-        final EditText probandSurEditText = (EditText) dialog.findViewById(R.id.probandSurEditText);
-        final EditText activityEditText = (EditText) dialog.findViewById(R.id.activityEditText);
-        probandPreEditText.setText(prename);
-        probandSurEditText.setText(surname);
-        activityEditText.setText(activity);
-
+        final EditText participantFirstNameEditText = (EditText) dialog.findViewById(R.id.participant_first_name_edit_text);
+        final EditText participantLastNameEditText = (EditText) dialog.findViewById(R.id.participant_last_name_edit_text);
+        final EditText activityNameEditText = (EditText) dialog.findViewById(R.id.activity_name_edit_text);
+        participantFirstNameEditText.setText(participantFirstName);
+        participantLastNameEditText.setText(participantLastName);
+        activityNameEditText.setText(activityName);
 
         Button saveButton = (Button) dialog.findViewById(R.id.saveButton);
         saveButton.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View view) {
-                scaleTimerValue = Integer.valueOf(scale_timerSpinner.getSelectedItem().toString());
-                scaleTimerVarianceValue = Integer.valueOf(scale_timerVarianceSpinner.getSelectedItem().toString());
-                timerCycleInMin = scaleTimerValue;
+                selfReportInterval = Integer.valueOf(selfReportIntervalSpinner.getSelectedItem().toString());
+                selfReportVariance = Integer.valueOf(selfReportVarianceSpinner.getSelectedItem().toString());
+                questionnaireFileName = "questionnaires/" + questionnaireSpinner.getSelectedItem().toString();
+                MainActivity.this.participantFirstName = participantFirstNameEditText.getText().toString();
+                MainActivity.this.participantLastName = participantLastNameEditText.getText().toString();
+                MainActivity.this.activityName = activityNameEditText.getText().toString();
 
                 SharedPreferences.Editor editor = sharedPref.edit();
-                editor.putInt("scaleTimerValuePos", scale_timerSpinner.getSelectedItemPosition());
-                editor.putInt("scaleTimerVarianceValuePos", scale_timerVarianceSpinner.getSelectedItemPosition());
-                editor.putInt("questionnairePos", questionnaireSpinner.getSelectedItemPosition());
-                editor.putInt("scaleTimerValue", Integer.valueOf(scale_timerSpinner.getSelectedItem().toString()));
-                editor.putInt("scaleTimerVarianceValue", Integer.valueOf(scale_timerVarianceSpinner.getSelectedItem().toString()));
+                editor.putInt("selfReportIntervalSpinnerPosition", selfReportIntervalSpinner.getSelectedItemPosition());
+                editor.putInt("selfReportVarianceSpinnerPosition", selfReportVarianceSpinner.getSelectedItemPosition());
+                editor.putInt("questionnaireSpinnerPosition", questionnaireSpinner.getSelectedItemPosition());
+                editor.putInt("selfReportInterval", Integer.valueOf(selfReportIntervalSpinner.getSelectedItem().toString()));
+                editor.putInt("selfReportVariance", Integer.valueOf(selfReportVarianceSpinner.getSelectedItem().toString()));
                 editor.putString("questionnaireValue", "questionnaires/" + questionnaireSpinner.getSelectedItem().toString());
-                editor.putString("prename", probandPreEditText.getText().toString());
-                editor.putString("surname", probandSurEditText.getText().toString());
-                editor.putString("activity", activityEditText.getText().toString());
+                editor.putString("participantFirstName", participantFirstNameEditText.getText().toString());
+                editor.putString("participantLastName", participantLastNameEditText.getText().toString());
+                editor.putString("activityName", activityNameEditText.getText().toString());
                 editor.apply();
-                questionnaireFileName = "questionnaires/" + questionnaireSpinner.getSelectedItem().toString();
 
-                probandPreName = probandPreEditText.getText().toString();
-                probandSurName = probandSurEditText.getText().toString();
-                activityName = activityEditText.getText().toString();
                 dialog.dismiss();
             }
         });
@@ -524,9 +513,9 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
         String dateString = simpleDateFormat.format(new Date());
         String timeString = simpleTimeFormat.format(new Date());
         if(activityName.equals("")) activityName = getString(R.string.settings_undefined);
-        if(probandSurName.equals("")) probandSurName = getString(R.string.settings_undefined);
-        if(probandPreName.equals("")) probandPreName = getString(R.string.settings_undefined);
-        this.directoryName = "PsychoPhysioCollector/" + activityName.toLowerCase() + "/" + probandSurName.toLowerCase() + "-" + probandPreName.toLowerCase() + "/" + dateString + "--" + timeString;
+        if(participantLastName.equals("")) participantLastName = getString(R.string.settings_undefined);
+        if(participantFirstName.equals("")) participantFirstName = getString(R.string.settings_undefined);
+        this.directoryName = "PsychoPhysioCollector/" + activityName.toLowerCase() + "/" + participantLastName.toLowerCase() + "-" + participantFirstName.toLowerCase() + "/" + dateString + "--" + timeString;
         this.root = getStorageDirectory(this.directoryName);
     }
 
@@ -580,8 +569,8 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
                         Log.d(TAG, "Bluetooth address of a new device");
                         addBluetoothAddress(bluetoothAddress);
 
-                        btAdapter = BluetoothAdapter.getDefaultAdapter();
-                        BluetoothDevice device = btAdapter.getRemoteDevice(bluetoothAddress);
+                        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+                        BluetoothDevice device = bluetoothAdapter.getRemoteDevice(bluetoothAddress);
 
                         String deviceName = device.getName();
                         if(deviceName == null) {
@@ -594,7 +583,7 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
                         arrayAdapter.notifyDataSetChanged();
 
                         // Check, if device is paired
-                        Set<BluetoothDevice> pairedDevices = btAdapter.getBondedDevices();
+                        Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
                         boolean paired = false;
                         for(BluetoothDevice pairedDevice:pairedDevices) {
                             if(pairedDevice.getAddress().equals(bluetoothAddress)) {
@@ -656,10 +645,10 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
     }
 
     private void connectAllShimmerImus() {
-        if(btAdapter == null)
-            btAdapter = BluetoothAdapter.getDefaultAdapter();
+        if(bluetoothAdapter == null)
+            bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
-        Set<BluetoothDevice> pairedDevices = btAdapter.getBondedDevices();
+        Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
         int count = 0;
         if (pairedDevices.size() > 0) {
             for (BluetoothDevice device : pairedDevices) {
@@ -691,10 +680,10 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
     }
 
     private void connectBioHarness() {
-        if (btAdapter == null)
-            btAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (bluetoothAdapter == null)
+            bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
-        Set<BluetoothDevice> pairedDevices = btAdapter.getBondedDevices();
+        Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
         if (pairedDevices.size() > 0) {
             for (BluetoothDevice device : pairedDevices) {
                 if (device.getName().startsWith("BH")) {
@@ -758,19 +747,19 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
 
             @Override
             public void onClick(View view) {
-                if (showingInitialQuestionnaire) {
+                if (isFirstSelfReportRequest) {
                     resetTime();
                     questionnaire.saveQuestionnaireItems(root, isFirstSelfReportRequest, getHeaderComments(), null, startTimestamp);
                     startTimerThread();
                     startStreamingOfAllShimmerImus();
                     startStreamingBioHarness();
-                    showingInitialQuestionnaire = false;
+                    isSessionStarted = true;
                     isFirstSelfReportRequest = false;
                 } else if (isSessionStarted) {
-                    questionnaire.saveQuestionnaireItems(root, isFirstSelfReportRequest, getHeaderComments(), null, startTimestamp);
+                    questionnaire.saveQuestionnaireItems(root, false, getHeaderComments(), null, startTimestamp);
                     startTimerThread();
                 } else {
-                    questionnaire.saveQuestionnaireItems(root, isFirstSelfReportRequest, null, getFooterComments(), startTimestamp);
+                    questionnaire.saveQuestionnaireItems(root, false, null, getFooterComments(), startTimestamp);
                 }
                 questionnaire.getQuestionnaireDialog().dismiss();
             }
@@ -783,9 +772,9 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
 
         Random r = new Random();
         int variance = 0;
-        if(scaleTimerVarianceValue != 0)
-            variance = r.nextInt(scaleTimerVarianceValue*2) - scaleTimerVarianceValue;
-        long timerInterval = (long) (1000 * 60 * timerCycleInMin) - (1000 * variance);
+        if(selfReportVariance != 0)
+            variance = r.nextInt(selfReportVariance *2) - selfReportVariance;
+        long timerInterval = (long) (1000 * 60 * selfReportInterval) - (1000 * variance);
         final long endTime = System.currentTimeMillis() + timerInterval;
 
         timerThread = new Thread(new Runnable() {

@@ -1,0 +1,85 @@
+{
+  "questionnaire": {
+    "title": "Flow-Kurzskala (modifiziert)",
+    "questions": [
+      {
+        "type": "rating",
+        "stars": 7,
+        "question": "Du warst beim Laufen optimal beansprucht.",
+        "ratings": ["Trifft nicht zu", "Trifft zu"]
+      },
+      {
+        "type": "rating",
+        "stars": 7,
+        "question": "Deine Bewegungen war beim Laufen flüssig und glatt.",
+        "ratings": ["Trifft nicht zu", "Trifft zu"]
+      },
+      {
+        "type": "rating",
+        "stars": 7,
+        "question": "Du hast beim Laufen gar nicht gemerkt, wie die Zeit vergeht.",
+        "ratings": ["Trifft nicht zu", "Trifft zu"]
+      },
+      {
+        "type": "rating",
+        "stars": 7,
+        "question": "Du hattest keine Mühe, dich auf das Laufen zu konzentrieren.",
+        "ratings": ["Trifft nicht zu", "Trifft zu"]
+      },
+      {
+        "type": "rating",
+        "stars": 7,
+        "question": "Dein Kopf war beim Laufen völlig klar.",
+        "ratings": ["Trifft nicht zu", "Trifft zu"]
+      },
+      {
+        "type": "rating",
+        "stars": 7,
+        "question": "Du warst ganz vertieft in das Laufen.",
+        "ratings": ["Trifft nicht zu", "Trifft zu"]
+      },
+      {
+        "type": "rating",
+        "stars": 7,
+        "question": "Die richtige Bewegungen beim Laufen kam wie von selbst.",
+        "ratings": ["Trifft nicht zu", "Trifft zu"]
+      },
+      {
+        "type": "rating",
+        "stars": 7,
+        "question": "Bitte einfach weiter drücken",
+        "ratings": ["Trifft nicht zu", "Trifft zu"]
+      },
+      {
+        "type": "rating",
+        "stars": 7,
+        "question": "Du hattest das Gefühl, den Ablauf beim Laufen unter Kontrolle zu haben.",
+        "ratings": ["Trifft nicht zu", "Trifft zu"]
+      },
+      {
+        "type": "rating",
+        "stars": 7,
+        "question": "Du warst beim Laufen völlig selbstvergessen.",
+        "ratings": ["Trifft nicht zu", "Trifft zu"]
+      },
+      {
+        "type": "rating",
+        "stars": 9,
+        "question": "Verglichen mit anderen Läufen, die ich sonst gemacht habe, war dieser...",
+        "ratings": ["leicht", "schwer"]
+      },
+      {
+        "type": "rating",
+        "stars": 9,
+        "question": "Ich denke, ich besitzr eine optimale Lauftechnik ...",
+        "ratings": ["Trifft nicht zu", "Trifft zu"]
+      },
+      {
+        "type": "rating",
+        "stars": 9,
+        "question": "Für mich persönlich war die Anforderungen des Laufs ...",
+        "ratings": ["zu gering", "zu hoch"]
+      }
+    ]
+  }
+}

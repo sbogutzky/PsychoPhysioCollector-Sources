@@ -1,0 +1,117 @@
+{
+  "questionnaire": {
+    "title": "Flow-Kurzskala",
+    "questions": [
+      {
+        "type": "truefalse",
+        "question": "Warst du eben gerade im Flow?"
+      },
+      {
+        "type": "rating",
+        "stars": 7,
+        "question": "Wie würdest du das auf einer Skala von 1 bis 7 einordnen?",
+        "ratings": ["gar nicht", "total"]
+      },
+      {
+        "type": "text",
+        "question": "Woran machst du das fest?"
+      },
+      {
+        "type": "rating",
+        "stars": 7,
+        "question": "Ich fühle mich optimal beansprucht.",
+        "ratings": ["Trifft nicht zu", "Trifft zu"]
+      },
+      {
+        "type": "rating",
+        "stars": 7,
+        "question": "Meine Gedanken bzw. Aktivitäten laufen flüssig und glatt.",
+        "ratings": ["Trifft nicht zu", "Trifft zu"]
+      },
+      {
+        "type": "rating",
+        "stars": 7,
+        "question": "Ich merke gar nicht, wie die Zeit vergeht.",
+        "ratings": ["Trifft nicht zu", "Trifft zu"]
+      },
+      {
+        "type": "rating",
+        "stars": 7,
+        "question": "Ich habe keine Mühe, mich zu konzentrieren.",
+        "ratings": ["Trifft nicht zu", "Trifft zu"]
+      },
+      {
+        "type": "rating",
+        "stars": 7,
+        "question": "Mein Kopf ist völlig klar.",
+        "ratings": ["Trifft nicht zu", "Trifft zu"]
+      },
+      {
+        "type": "rating",
+        "stars": 7,
+        "question": "Ich bin ganz vertieft in das, was ich gerade mache.",
+        "ratings": ["Trifft nicht zu", "Trifft zu"]
+      },
+      {
+        "type": "rating",
+        "stars": 7,
+        "question": "Die richtigen Gedanken/Bewegungen kommen wie von selbst.",
+        "ratings": ["Trifft nicht zu", "Trifft zu"]
+      },
+      {
+        "type": "rating",
+        "stars": 7,
+        "question": "Ich weiß bei jedem Schritt, was ich zu tun habe.",
+        "ratings": ["Trifft nicht zu", "Trifft zu"]
+      },
+      {
+        "type": "rating",
+        "stars": 7,
+        "question": "Ich habe das Gefühl, den Ablauf unter Kontrolle zu haben.",
+        "ratings": ["Trifft nicht zu", "Trifft zu"]
+      },
+      {
+        "type": "rating",
+        "stars": 7,
+        "question": "Ich bin völlig selbstvergessen.",
+        "ratings": ["Trifft nicht zu", "Trifft zu"]
+      },
+      {
+        "type": "rating",
+        "stars": 7,
+        "question": "Es steht etwas für mich Wichtiges auf dem Spiel.",
+        "ratings": ["Trifft nicht zu", "Trifft zu"]
+      },
+      {
+        "type": "rating",
+        "stars": 7,
+        "question": "Ich darf jetzt keine Fehler machen.",
+        "ratings": ["Trifft nicht zu", "Trifft zu"]
+      },
+      {
+        "type": "rating",
+        "stars": 7,
+        "question": "Ich mache mir Sorgen über einen Misserfolg.",
+        "ratings": ["Trifft nicht zu", "Trifft zu"]
+      },
+      {
+        "type": "rating",
+        "stars": 9,
+        "question": "Verglichen mit allen anderen Tätigkeiten, die ich sonst mache, ist die jetzige Tätigkeit...",
+        "ratings": ["leicht", "schwer"]
+      },
+      {
+        "type": "rating",
+        "stars": 9,
+        "question": "Ich denke, meine Fähigkeiten auf diesem Gebiet sind...",
+        "ratings": ["niedrig", "hoch"]
+      },
+      {
+        "type": "rating",
+        "stars": 9,
+        "question": "Für mich persönlich sind die jetzigen Anforderungen...",
+        "ratings": ["zu gering", "zu hoch"]
+      }
+    ]
+  }
+}

@@ -21,12 +21,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
-import de.bogutzky.psychophysiocollector.app.MainActivity;
 import de.bogutzky.psychophysiocollector.app.R;
 
 
 public class ShimmerImuMainConfigurationActivity extends Activity {
     private static final String TAG = "ShimmerMConfigActivity";
+    private static final int REQUEST_COMMANDS_SHIMMER = 4;
+    private static final int REQUEST_CONFIGURE_SHIMMER = 5;
+    private static final int REQUEST_SHOW_GRAPH = 13;
 
     private String mCurrentBluetoothDeviceAddress;
 
@@ -64,7 +66,7 @@ public class ShimmerImuMainConfigurationActivity extends Activity {
                     case 0:
                         Intent intent0 = new Intent(ShimmerImuMainConfigurationActivity.this, ShimmerImuSensorActivationActivity.class);
                         intent0.putExtra("enabledSensors", mService.getEnabledSensors(mCurrentBluetoothDeviceAddress));
-                        startActivityForResult(intent0, MainActivity.REQUEST_CONFIGURE_SHIMMER);
+                        startActivityForResult(intent0, REQUEST_CONFIGURE_SHIMMER);
                         break;
 
                     case 1:
@@ -78,7 +80,7 @@ public class ShimmerImuMainConfigurationActivity extends Activity {
                         intent1.putExtra("AccelerometerRange", mAccelerometerRange);
                         intent1.putExtra("GyroscopeRange", mGyroscopeRange);
 
-                        startActivityForResult(intent1, MainActivity.REQUEST_COMMANDS_SHIMMER);
+                        startActivityForResult(intent1, REQUEST_COMMANDS_SHIMMER);
                         break;
 
                     case 2:
@@ -115,7 +117,7 @@ public class ShimmerImuMainConfigurationActivity extends Activity {
                                         Log.v("Commands Activity", "set result show graph");
                                         Intent intent = new Intent();
                                         intent.putExtra("mac", mCurrentBluetoothDeviceAddress);
-                                        intent.putExtra("action", MainActivity.SHOW_GRAPH);
+                                        intent.putExtra("action", REQUEST_SHOW_GRAPH);
                                         intent.putExtra("datastart", which);
                                         setResult(Activity.RESULT_OK, intent);
                                         finish();
@@ -130,7 +132,7 @@ public class ShimmerImuMainConfigurationActivity extends Activity {
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
-            case MainActivity.REQUEST_COMMANDS_SHIMMER:
+            case REQUEST_COMMANDS_SHIMMER:
                 Log.d(TAG, "Commands Received");
                 if (resultCode == Activity.RESULT_OK) {
                     if (data.getExtras().getBoolean("ToggleLED", false)) {
@@ -153,7 +155,7 @@ public class ShimmerImuMainConfigurationActivity extends Activity {
                     }
                 }
                 break;
-            case MainActivity.REQUEST_CONFIGURE_SHIMMER:
+            case REQUEST_CONFIGURE_SHIMMER:
                 if (resultCode == Activity.RESULT_OK) {
                     Log.d(TAG, "Current device set sensors: " + mCurrentBluetoothDeviceAddress + ", " + data.getExtras().getInt(ShimmerImuSensorActivationActivity.mDone));
                     mService.setEnabledSensors(data.getExtras().getInt(ShimmerImuSensorActivationActivity.mDone), mCurrentBluetoothDeviceAddress);

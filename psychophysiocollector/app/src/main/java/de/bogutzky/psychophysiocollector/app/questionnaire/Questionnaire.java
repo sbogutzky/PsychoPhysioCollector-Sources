@@ -56,7 +56,7 @@ public class Questionnaire {
         this.questionnaireFileName = questionnaireFileName;
         this.questionnaire = readQuestionnaireFromJSON();
         this.questionnaireDialog = new Dialog(activity);
-        this.questionnaireDialog.setTitle(activity.getString(R.string.feedback));
+        this.questionnaireDialog.setTitle(activity.getString(R.string.questionnaire));
         this.questionnaireDialog.setCancelable(false);
 
         this.showTimestamp = System.currentTimeMillis();

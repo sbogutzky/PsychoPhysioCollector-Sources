@@ -14,7 +14,7 @@
     <string name="non_paired">Keine gekoppelt</string>
     <string name="scanning">Scanning</string>
     <string name="none_found">Keine gefunden</string>
-    <string name="feedback">Feedback</string>
+    <string name="questionnaire">Fragebogen</string>
     <string name="gps_not_available">GPS ist nicht verfügbar.</string>
     <string name="save">Speichern</string>
     <string name="low">niedrig</string>
@@ -53,12 +53,12 @@
     <string name="info_connected_fix_received">verbunden und Fix erhalten</string>
     <string name="info_could_not_read">konnte nicht gelesen werde.</string>
 
-    <string name="test_protocol_settings">Einstellung des Untersuchungsprotokolls</string>
-    <string name="test_protocol_settings_questionnaire">Fragebogen</string>
-    <string name="test_protocol_settings_interval">Interval in Minuten</string>
-    <string name="test_protocol_settings_interval_variance">Intervalvarianz in Sekunden</string>
-    <string-array name="test_protocol_settings_interval_values">
-        <item>1</item>
+    <string name="study_protocol_settings">Einstellung des Untersuchungsprotokolls</string>
+    <string name="study_protocol_settings_questionnaire">Fragebogen</string>
+    <string name="study_protocol_settings_self_report_interval">Interval in Minuten</string>
+    <string name="study_protocol_settings_self_report_variance">Intervalvarianz in Sekunden</string>
+    <string-array name="study_protocol_settings_self_report_interval_values">
+        <item>5</item>
         <item>10</item>
         <item>15</item>
         <item>20</item>
@@ -67,7 +67,7 @@
         <item>45</item>
         <item>60</item>
     </string-array>
-    <string-array name="test_protocol_settings_interval_variance_values">
+    <string-array name="study_protocol_settings_self_report_variance_values">
         <item>0</item>
         <item>30</item>
         <item>60</item>
