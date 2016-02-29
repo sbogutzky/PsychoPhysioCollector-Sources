@@ -242,8 +242,6 @@ public class Questionnaire {
             nextButton.setText(activity.getString(R.string.next));
 
             relativeLayout.addView(nextButton);
-            if (saveButton.getParent() != null)
-                ((RelativeLayout) saveButton.getParent()).removeView(saveButton);
             relativeLayout.addView(saveButton);
             relativeLayout.setLayoutParams(rlp);
 

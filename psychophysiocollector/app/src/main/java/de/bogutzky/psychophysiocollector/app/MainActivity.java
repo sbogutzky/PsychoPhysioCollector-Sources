@@ -49,7 +49,6 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Random;
@@ -118,24 +117,6 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
     private int gyroscopeValueCount;
     private Double[][] linearAccelerationValues;
     private int linearAccelerationValueCount;
-    private Double[][] bhHeartRateValues;
-    private int bhHeartRateValueCount;
-    private Double[][] bhRespirationRateValues;
-    private int bhRespirationRateValueCount;
-    private Double[][] bhSkinTemperatureValues;
-    private int bhSkinTemperatureValueCount;
-    private Double[][] bhPostureValues;
-    private int bhPostureValueCount;
-    private Double[][] bhPeakAccelerationValues;
-    private int bhPeakAccelerationValueCount;
-    private Double[][] bhRRIntervalValues;
-    private int bhRRIntervalValueCount;
-    private Double[][] bhAxisAccelerationValues;
-    private int bhAxisAccelerationValueCount;
-    private Double[][] bhBreathingValues;
-    private int bhBreathingValueCount;
-    private Double[][] bhEcgValues;
-    private int bhEcgValueCount;
     */
 
     private String questionnaireFileName = "questionnaires/fks.json";
@@ -152,35 +133,9 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
     private long accelerometerStartTimestamp;
     private long linearAccelerationSensorEventStartTimestamp;
     private long linearAccelerationSensorStartTimestamp;
-    private Long firstbhHeartRateTimestamp;
-    private Long firstRespirationRateTimestamp;
-    private Long firstSkinTemperatureTimestamp;
-    private Long firstbhPostureTimestamp;
-    private Long firstPeakAccelerationTimestamp;
-    private Long firstRRIntervalTimestamp;
-    private Long firstAxisAccelerationTimestamp;
-    private Long firstBreathingTimestamp;
-    private Long firstEcgTimestamp;
-    private Long bhStartTimestamp;
     */
 
-    //private DecimalFormat decimalFormat;
-
-    //bth arrayAdapter
     private BluetoothAdapter btAdapter = null;
-
-    /*
-    private final int BREATHING_MSG_ID = 0x21;
-    private final int ECG_MSG_ID = 0x22;
-    private final int RtoR_MSG_ID = 0x24;
-    private final int ACCEL_100mg_MSG_ID = 0x2A;
-
-    private final int POSTURE = 0x103;
-    private final int HEART_RATE = 0x100;
-    private final int RESPIRATION_RATE = 0x101;
-    private final int SKIN_TEMPERATURE = 0x102;
-    private final int PEAK_ACCLERATION = 0x104;
-    */
 
     public final static int REQUEST_MAIN_COMMAND_SHIMMER=3;
     public final static int REQUEST_COMMANDS_SHIMMER=4;
@@ -233,13 +188,6 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
         timerCycleInMin = 15;
-
-        /*
-        DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols();
-        otherSymbols.setDecimalSeparator('.');
-        decimalFormat = new DecimalFormat("#.###", otherSymbols);
-        decimalFormat.setMinimumFractionDigits(3);
-        */
 
         textViewTimer = (TextView) findViewById(R.id.text_view_timer);
         textViewTimer.setVisibility(View.INVISIBLE);
@@ -318,16 +266,6 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
         this.gyroscopeEventStartTimestamp = 0L;
         this.accelerometerEventStartTimestamp = 0L;
         this.linearAccelerationSensorEventStartTimestamp = 0L;
-        this.firstbhHeartRateTimestamp = 0L;
-        this.firstRespirationRateTimestamp = 0L;
-        this.firstSkinTemperatureTimestamp = 0L;
-        this.firstbhPostureTimestamp = 0L;
-        this.firstPeakAccelerationTimestamp = 0L;
-        this.firstRRIntervalTimestamp = 0L;
-        this.firstAxisAccelerationTimestamp = 0L;
-        this.firstBreathingTimestamp = 0L;
-        this.firstEcgTimestamp = 0L;
-        this.bhStartTimestamp = 0L;
         */
     }
 
@@ -355,9 +293,6 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         if (id == R.id.action_add_bluetooth_device) {
             addBluetoothDevice();
@@ -462,44 +397,15 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
     }
 
     private void writeLeftOverData() {
-        /*writingData = false;
+        /*
+        writingData = false;
         secondWritingData = false;
         //internal sensor data
         writeAccelerometerValues(true,1);
         writeGyroscopeValues(true,1);
         writeLinearAccelerationValues(true,1);
         ((GPSListener)locationListener).writeGpsValues(true,1);
-
-        if(shimmerImuService != null) {
-            if(bioHarnessConnected) {
-                //bh data
-                writeData(bhRRIntervalValues, getString(R.string.file_name_rr_interval), 2, true, getFooterComments(), 1);
-                writeData(bhRespirationRateValues, getString(R.string.file_name_respiration_rate), 2, true, getFooterComments(), 1);
-                writeData(bhPostureValues, getString(R.string.file_name_posture), 2, true, getFooterComments(), 1);
-                writeData(bhPeakAccelerationValues, getString(R.string.file_name_peak_acceleration), 2, true, getFooterComments(), 1);
-                writeData(bhAxisAccelerationValues, getString(R.string.file_name_axis_acceleration), 2, true, getFooterComments(), 1);
-                writeData(bhBreathingValues, getString(R.string.file_name_breathing), 2, true, getFooterComments(), 1);
-                writeData(bhEcgValues, getString(R.string.file_name_ecg), 2, true, getFooterComments(), 1);
-            }
-        }
-        */
-    }
-
-    /**
-     * Return date in specified format.
-     * @param millis Date in milliseconds
-     * @param dateFormat Date format
-     * @return String representing date in specified format
-     */
-    public static String getDate(long millis, String dateFormat)
-    {
-        // Create a DateFormatter object for displaying date in specified format.
-        SimpleDateFormat formatter = new SimpleDateFormat(dateFormat, Locale.GERMANY);
-
-        // Create a calendar object that will convert the date and time value in milliseconds to date.
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(millis);
-        return formatter.format(calendar.getTime());
+         */
     }
 
     @Override
@@ -509,13 +415,12 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
     }
 
     public String getHeaderComments() {
-        //TODO: Change
-        return "# StartTime: " + getDate(this.startTimestamp, "yyyy/MM/dd HH:mm:ss") + "\n";
+        return "# StartTime: " + Utils.getDateString(this.startTimestamp, "yyyy/MM/dd HH:mm:ss") + "\n";
 
     }
 
     public String getFooterComments() {
-        return "# StopTime: " + getDate(this.stopTimestamp, "yyyy/MM/dd HH:mm:ss");
+        return "# StopTime: " + Utils.getDateString(this.stopTimestamp, "yyyy/MM/dd HH:mm:ss");
     }
 
     private void showSettings() {
@@ -604,29 +509,6 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
             }
         }
     }
-
-    /*
-    private void resetBioharnessStorage() {
-        bhPeakAccelerationValueCount = 0;
-        bhRespirationRateValueCount = 0;
-        bhHeartRateValueCount = 0;
-        bhPostureValueCount = 0;
-        bhSkinTemperatureValueCount = 0;
-        bhRRIntervalValueCount = 0;
-        bhAxisAccelerationValueCount = 0;
-        bhBreathingValueCount = 0;
-        bhEcgValueCount = 0;
-        bhHeartRateValues = new Double[DATA_ARRAY_SIZE][2];
-        bhPostureValues = new Double[DATA_ARRAY_SIZE][2];
-        bhPeakAccelerationValues = new Double[DATA_ARRAY_SIZE][2];
-        bhSkinTemperatureValues = new Double[DATA_ARRAY_SIZE][2];
-        bhRespirationRateValues = new Double[DATA_ARRAY_SIZE][2];
-        bhRRIntervalValues = new Double[DATA_ARRAY_SIZE][2];
-        bhAxisAccelerationValues = new Double[DATA_ARRAY_SIZE][4];
-        bhBreathingValues = new Double[DATA_ARRAY_SIZE][2];
-        bhEcgValues = new Double[DATA_ARRAY_SIZE][2];
-    }
-    */
 
     private void createRootDirectory() {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.GERMAN);
@@ -873,7 +755,7 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
                     isFirstSelfReportRequest = false;
                     startTimerThread();
                 } else {
-                    questionnaire.saveQuestionnaireItems(root, false, null, getFooterComments(), startTimestamp);
+                    questionnaire.saveQuestionnaireItems(root, isFirstSelfReportRequest, null, getFooterComments(), startTimestamp);
                 }
                 questionnaire.getQuestionnaireDialog().dismiss();
             }
