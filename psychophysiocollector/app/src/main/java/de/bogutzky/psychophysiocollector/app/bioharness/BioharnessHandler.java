@@ -21,7 +21,7 @@ public class BioHarnessHandler extends Handler {
 
     private Activity activity;
     private File root;
-    private int[] batchRowCounts = {0, 0, 0};
+    private int[] batchRowCounts = {0, 0};
     private int[] maxBatchCounts;
     private Double[][][] buffer;
     private Double[][][] buffer0;
@@ -30,7 +30,7 @@ public class BioHarnessHandler extends Handler {
     private long startTimestamp;
     private Double incrementedTimestamp;
     private Double lastValidEcgVoltage;
-    private boolean[] isFirstDataRow = {true, true, true};
+    private boolean[] isFirstDataRow = {true, true};
     private boolean isLogging = false;
 
     public BioHarnessHandler(Activity activity, int[] maxBatchCounts) {
@@ -78,9 +78,9 @@ public class BioHarnessHandler extends Handler {
     }
 
     public void startStreaming() {
-        this.buffer0 = new Double[3][][];
-        this.buffer1 = new Double[3][][];
-        this.buffer = new Double[3][][];
+        this.buffer0 = new Double[2][][];
+        this.buffer1 = new Double[2][][];
+        this.buffer = new Double[2][][];
 
         this.buffer0[BioHarnessConstants.RtoR_STORE_ID] = new Double[this.maxBatchCounts[BioHarnessConstants.RtoR_STORE_ID]][2];
         this.buffer1[BioHarnessConstants.RtoR_STORE_ID] = new Double[this.maxBatchCounts[BioHarnessConstants.RtoR_STORE_ID]][2];
@@ -195,14 +195,6 @@ public class BioHarnessHandler extends Handler {
                     }
                 }
                 break;
-            /*
-            case BioHarnessConstants.BREATHING_MSG_ID:
-                if(isLogging) {
-                    long timestamp = msg.getData().getLong("Timestamp");
-                    short interval = msg.getData().getShort("Interval");
-                }
-                break;
-                */
         }
     }
 

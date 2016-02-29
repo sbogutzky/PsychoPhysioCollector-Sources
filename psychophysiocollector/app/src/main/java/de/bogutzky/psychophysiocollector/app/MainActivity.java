@@ -689,7 +689,7 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
                 if (device.getName().startsWith("BH")) {
                     if (bluetoothAddresses.contains(device.getAddress())) {
                         if (bioHarnessService != null) {
-                            bioHarnessService.connectBioHarness(device.getAddress(), new BioHarnessHandler(this, new int[]{100, 1000, 1000}));
+                            bioHarnessService.connectBioHarness(device.getAddress(), new BioHarnessHandler(this, new int[]{100, 1000}));
                         }
                     }
                 }
