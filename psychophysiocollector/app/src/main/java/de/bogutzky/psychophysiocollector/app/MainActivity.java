@@ -197,6 +197,9 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
         scaleTimerValue = sharedPref.getInt("scaleTimerValue", 15);
         scaleTimerVarianceValue = sharedPref.getInt("scaleTimerVarianceValue", 30);
         questionnaireFileName = sharedPref.getString("questionnaireValue", "questionnaires/fks.json");
+        activityName = sharedPref.getString("activity", "");
+        probandPreName = sharedPref.getString("prename", "");
+        probandSurName = sharedPref.getString("surname", "");
         timerCycleInMin = scaleTimerValue;
 
         getListView().setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
@@ -427,6 +430,9 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
         int selectedTimePos = sharedPref.getInt("scaleTimerValuePos", 2);
         int selectedVariancePos = sharedPref.getInt("scaleTimerVarianceValuePos", 0);
         int questionnairePos = sharedPref.getInt("questionnairePos", 0);
+        final String activity = sharedPref.getString("activity", "");
+        String  prename = sharedPref.getString("prename", "");
+        String  surname = sharedPref.getString("surname", "");
         final Dialog dialog = new Dialog(this);
         dialog.setContentView(R.layout.settings);
         dialog.setTitle(getString(R.string.action_settings));
@@ -462,9 +468,9 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
         final EditText probandPreEditText = (EditText) dialog.findViewById(R.id.probandPreEditText);
         final EditText probandSurEditText = (EditText) dialog.findViewById(R.id.probandSurEditText);
         final EditText activityEditText = (EditText) dialog.findViewById(R.id.activityEditText);
-        probandPreEditText.setText(probandPreName);
-        probandSurEditText.setText(probandSurName);
-        activityEditText.setText(activityName);
+        probandPreEditText.setText(prename);
+        probandSurEditText.setText(surname);
+        activityEditText.setText(activity);
 
 
         Button saveButton = (Button) dialog.findViewById(R.id.saveButton);
@@ -483,6 +489,9 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
                 editor.putInt("scaleTimerValue", Integer.valueOf(scale_timerSpinner.getSelectedItem().toString()));
                 editor.putInt("scaleTimerVarianceValue", Integer.valueOf(scale_timerVarianceSpinner.getSelectedItem().toString()));
                 editor.putString("questionnaireValue", "questionnaires/" + questionnaireSpinner.getSelectedItem().toString());
+                editor.putString("prename", probandPreEditText.getText().toString());
+                editor.putString("surname", probandSurEditText.getText().toString());
+                editor.putString("activity", activityEditText.getText().toString());
                 editor.apply();
                 questionnaireFileName = "questionnaires/" + questionnaireSpinner.getSelectedItem().toString();
 
