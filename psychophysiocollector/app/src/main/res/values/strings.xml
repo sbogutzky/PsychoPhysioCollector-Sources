@@ -118,7 +118,7 @@
     <string name="file_header_ecg_ra_ll">"ecg.ra.ll"</string>
     <string name="file_header_ecg_la_ll">"ecg.la.ll"</string>
     <string name="file_header_interval">"breathing.interval.s"</string>
-    <string name="file_header_voltage">"voltage"</string>
+    <string name="file_header_voltage">"voltage.mv"</string>
 
 
     <string name="imu_config_enable_sensors">Sensoren aktivieren</string>
