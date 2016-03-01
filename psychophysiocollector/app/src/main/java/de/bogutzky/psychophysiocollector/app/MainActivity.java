@@ -21,6 +21,9 @@ import android.content.res.AssetManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
+import android.location.GpsStatus;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Environment;
@@ -59,6 +62,7 @@ import java.util.Set;
 import de.bogutzky.psychophysiocollector.app.bioharness.BioHarnessHandler;
 import de.bogutzky.psychophysiocollector.app.bioharness.BioHarnessHandlerInterface;
 import de.bogutzky.psychophysiocollector.app.bioharness.BioHarnessService;
+import de.bogutzky.psychophysiocollector.app.internalsensor.GPSListener;
 import de.bogutzky.psychophysiocollector.app.questionnaire.Questionnaire;
 import de.bogutzky.psychophysiocollector.app.shimmer.imu.ShimmerImuHandler;
 import de.bogutzky.psychophysiocollector.app.shimmer.imu.ShimmerImuHandlerInterface;
@@ -66,8 +70,6 @@ import de.bogutzky.psychophysiocollector.app.shimmer.imu.ShimmerImuMainConfigura
 import de.bogutzky.psychophysiocollector.app.shimmer.imu.ShimmerImuService;
 
 //import android.hardware.SensorManager;
-//import android.location.LocationListener;
-//import android.location.LocationManager;
 //import java.text.DecimalFormat;
 //import java.text.DecimalFormatSymbols;
 
@@ -107,10 +109,10 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
     private android.hardware.Sensor gyroscope;
     private Sensor linearAccelerationSensor;
     private int sensorDataDelay = 20000; // ca. 50 Hz
+    */
+
     private LocationManager locationManager;
     private LocationListener locationListener;
-    private float lastLocationAccuracy;
-    */
 
     private String gpsStatusText;
 
@@ -184,9 +186,8 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         gyroscope = sensorManager.getDefaultSensor(android.hardware.Sensor.TYPE_GYROSCOPE);
         this.linearAccelerationSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        this.lastLocationAccuracy = 0;
         */
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
@@ -234,7 +235,7 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
                 Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this,Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.BLUETOOTH_ADMIN},
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.BLUETOOTH_ADMIN, Manifest.permission.ACCESS_COARSE_LOCATION},
                     PERMISSIONS_REQUEST);
 
         }
@@ -331,8 +332,6 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
             if (this.directoryName == null) {
                 createRootDirectory();
             }
-
-            //startStreamingInternalSensorData();
         }
 
         if (id == R.id.action_stop_streaming) {
@@ -347,8 +346,8 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
                 feedbackNotification();
                 showQuestionnaire(false);
             }
-            //stopStreamingInternalSensorData();
-            writeLeftOverData();
+            stopStreamingInternalSensorData();
+            //writeLeftOverData();
 
             this.directoryName = null;
             this.startStreamMenuItem.setEnabled(true);
@@ -409,7 +408,6 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
         writeAccelerometerValues(true,1);
         writeGyroscopeValues(true,1);
         writeLinearAccelerationValues(true,1);
-        ((GPSListener)locationListener).writeGpsValues(true,1);
          */
     }
 
@@ -756,6 +754,16 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
             bioHarnessService.stopStreamingBioHarness();
     }
 
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+    }
+
     class TimerHandlerCallback implements Handler.Callback {
 
         @Override
@@ -804,6 +812,7 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
                     }
                     startStreamingOfAllShimmerImus();
                     startStreamingBioHarness();
+                    startStreamingInternalSensorData();
                     isSessionStarted = true;
                     isFirstSelfReportRequest = false;
                 } else if (isSessionStarted) {
@@ -863,8 +872,8 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
         timerThread = null;
     }
 
-   /* private void startStreamingInternalSensorData() {
-
+   private void startStreamingInternalSensorData() {
+/*
         this.accelerometerValues = new Double[INTERNAL_SENSOR_CACHE_LENGTH][4];
         this.accelerometerValueCount = 0;
         this.gyroscopeValues = new Double[INTERNAL_SENSOR_CACHE_LENGTH][4];
@@ -912,42 +921,47 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
         sensorManager.registerListener(this, gyroscope, sensorDataDelay);
         sensorManager.registerListener(this, linearAccelerationSensor, sensorDataDelay);
 
-        locationListener = new GPSListener(getString(R.string.file_name_gps_position), this.directoryName, 100);
-        if(ContextCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
-            locationManager.addGpsStatusListener(new GpsStatus.Listener() {
-                @Override
-                public void onGpsStatusChanged(int event) {
-                    switch (event) {
-                        case GpsStatus.GPS_EVENT_STARTED:
-                            gpsStatusText = "GPS " + getString(R.string.info_connected);
-                            break;
-                        case GpsStatus.GPS_EVENT_STOPPED:
-                            gpsStatusText = "GPS " + getString(R.string.info_not_connected);
-                            break;
-                        case GpsStatus.GPS_EVENT_FIRST_FIX:
-                            gpsStatusText = "GPS " + getString(R.string.info_connected_fix_received);
-                            break;
-                    }
-                }
-            });
-        }
     } */
-/*
-    private void stopStreamingInternalSensorData() {
-        sensorManager.unregisterListener(this);
-        if(locationManager != null)
-            if(ContextCompat.checkSelfPermission(this,
-                    Manifest.permission.ACCESS_FINE_LOCATION)
-                    != PackageManager.PERMISSION_GRANTED) {
-                locationManager.removeUpdates(locationListener);
-            }
-    }*/
+       locationListener = new GPSListener(getString(R.string.file_name_gps_position), this.directoryName, 25, this);
+       if (ContextCompat.checkSelfPermission(this,
+               Manifest.permission.ACCESS_FINE_LOCATION)
+               != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this,
+               Manifest.permission.ACCESS_COARSE_LOCATION)
+               != PackageManager.PERMISSION_GRANTED) {
+           ActivityCompat.requestPermissions( this, new String[] {  android.Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION  },
+                   PERMISSIONS_REQUEST);
 
-    @Override
-    public void onSensorChanged(SensorEvent event) {
+       } else {
+           locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+           locationManager.addGpsStatusListener(new GpsStatus.Listener() {
+               @Override
+               public void onGpsStatusChanged(int event) {
+                   switch (event) {
+                       case GpsStatus.GPS_EVENT_STARTED:
+                           gpsStatusText = "GPS " + getString(R.string.info_connected);
+                           break;
+                       case GpsStatus.GPS_EVENT_STOPPED:
+                           gpsStatusText = "GPS " + getString(R.string.info_not_connected);
+                           break;
+                       case GpsStatus.GPS_EVENT_FIRST_FIX:
+                           gpsStatusText = "GPS " + getString(R.string.info_connected_fix_received);
+                           break;
+                   }
+               }
+           });
+       }
+   }
+
+    private void stopStreamingInternalSensorData() {
+        ((GPSListener)locationListener).stopStreaming();
+        if(locationManager != null) {
+            try {
+                locationManager.removeUpdates(locationListener);
+            } catch (SecurityException e) {
+                Log.v(TAG, e.toString());
+            }
+        }
+
     }
 
     /*
@@ -1091,10 +1105,6 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
         }
     } */
 
-    @Override
-    public void onAccuracyChanged(Sensor sensor, int i) {
-    }
-
     private void feedbackNotification() {
         vibrator.vibrate(vibratorPatternFeedback, -1);
         playSound(R.raw.notifcation);
@@ -1131,90 +1141,6 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
         return null;
     }
 
-    /*
-    public class GPSListener implements LocationListener {
-        private static final String TAG = "GPSListener";
-        private String filename;
-        private String directoryName;
-        private File root;
-        private int i = 0;
-        private int maxValueCount;
-        private Double[][] values;
-
-        public GPSListener(String filename, String directoryName, int maxValueCount) {
-            this.filename = filename;
-            this.directoryName = directoryName;
-
-            this.root = getStorageDirectory(this.directoryName);
-
-            this.maxValueCount = maxValueCount;
-            this.values = new Double[maxValueCount][4];
-
-            try {
-                BufferedWriter writer = new BufferedWriter(new FileWriter(new File(this.root, this.filename), true));
-                String outputString = getHeaderComments();
-                outputString += "" + getString(R.string.file_header_timestamp) + "," + getString(R.string.file_header_gps_latitude) + "," + getString(R.string.file_header_gps_longitude) + "," + getString(R.string.file_header_gps_altitude);
-                writer.write(outputString);
-                writer.newLine();
-                writer.flush();
-                writer.close();
-            } catch (IOException e) {
-                Log.e(TAG, "Error while writing in file", e);
-            }
-        }
-
-        @Override
-        public void onLocationChanged(Location location) {
-            if (loggingEnabled) {
-                double time = location.getTime() - startTimestamp;
-                values[i][0] = time;
-                values[i][1] = location.getLatitude();
-                values[i][2] = location.getLongitude();
-                values[i][3] = location.getAltitude();
-
-                i++;
-                if(i > maxValueCount - 1) {
-                    if(!writingData) {
-                        i = 0;
-                        setWritingData(true);
-                        writeGpsValues(false, 1);
-                        values = new Double[maxValueCount][4];
-                    } else if(!secondWritingData) {
-                        i = 0;
-                        setSecondWritingData(true);
-                        writeGpsValues(false, 2);
-                        values = new Double[maxValueCount][4];
-                    } else {
-                        values = resizeArray(values);
-                    }
-                }
-                if(lastLocationAccuracy - location.getAccuracy() > 5.0) {
-                    gpsStatusText = "GPS " + getText(R.string.info_connected_fix_received) + getString(R.string.accuracy) + location.getAccuracy();
-                    lastLocationAccuracy = location.getAccuracy();
-                }
-            }
-        }
-
-        public void writeGpsValues(boolean footer, int slot) {
-            if(footer)
-                writeData(values,this.filename,4, values.length, getFooterComments());
-            else
-                writeData(values,this.filename,4, values.length, "");
-        }
-
-        @Override
-        public void onProviderDisabled(String provider) {
-            Toast.makeText(MainActivity.this, getString(R.string.gps_not_available), Toast.LENGTH_SHORT).show();
-        }
-
-        @Override
-        public void onProviderEnabled(String provider) {
-        }
-
-        @Override
-        public void onStatusChanged(String provider, int status, Bundle extras) {
-        }
-    } */
 
     private void pairBluetoothDevice(BluetoothDevice device) {
         try {
@@ -1328,4 +1254,13 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
         dialog.show();
     }
     */
+
+    public void setGpsStatusText(String gpsStatusText) {
+        this.gpsStatusText = gpsStatusText;
+    }
+
+    public long getStartTimestamp() {
+        return this.startTimestamp;
+    }
+
 }
