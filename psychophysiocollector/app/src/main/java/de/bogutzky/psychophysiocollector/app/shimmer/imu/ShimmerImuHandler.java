@@ -45,6 +45,7 @@ public class ShimmerImuHandler extends Handler {
     private Double imuStartTimestamp;
     private boolean isFirstDataRow = true;
     private GraphView graphView;
+    private boolean saveData;
 
     public ShimmerImuHandler(Activity activity, String filename, int maxBatchCount) {
         this.activity = activity;
@@ -59,6 +60,10 @@ public class ShimmerImuHandler extends Handler {
 
     public void setGraphView(GraphView graphView) {
         this.graphView = graphView;
+    }
+
+    public void setSaveData(boolean saveData) {
+        this.saveData = saveData;
     }
 
     public void writeHeader(String[] header) {
@@ -120,24 +125,28 @@ public class ShimmerImuHandler extends Handler {
                             }
                         }
                     }
-                    if(this.isFirstDataRow) {
-                        // Time difference between start the evaluation and here
-                        this.timeDifference = System.currentTimeMillis() - this.startTimestamp;
-                        this.imuStartTimestamp = this.buffer[batchRowCount][0];
-                        Log.d(TAG, "Time difference: " + timeDifference + " ms");
-                        Log.d(TAG, "Start timestamp: " + Utils.getDateString(this.startTimestamp, "dd/MM/yyyy hh:mm:ss.SSS"));
-                        Log.d(TAG, "Shimmer IMU start timestamp: " + Utils.getDateString(this.imuStartTimestamp.longValue(), "dd/MM/yyyy hh:mm:ss.SSS"));
-                        this.isFirstDataRow = false;
-                    }
 
-                    this.buffer[batchRowCount][0] = (this.buffer[batchRowCount][0] - this.imuStartTimestamp) + this.timeDifference;
-
-                    if(graphView != null)
+                    if (graphView != null)
                         graphView.setDataWithAdjustment(buffer[batchRowCount], filename, "i8");
+
+                    if (this.saveData) {
+                        if (this.isFirstDataRow) {
+                            // Time difference between start the evaluation and here
+                            this.timeDifference = System.currentTimeMillis() - this.startTimestamp;
+                            this.imuStartTimestamp = this.buffer[batchRowCount][0];
+                            Log.d(TAG, "Time difference: " + timeDifference + " ms");
+                            Log.d(TAG, "Start timestamp: " + Utils.getDateString(this.startTimestamp, "dd/MM/yyyy hh:mm:ss.SSS"));
+                            Log.d(TAG, "Shimmer IMU start timestamp: " + Utils.getDateString(this.imuStartTimestamp.longValue(), "dd/MM/yyyy hh:mm:ss.SSS"));
+                            this.isFirstDataRow = false;
+                        }
+
+                        this.buffer[batchRowCount][0] = (this.buffer[batchRowCount][0] - this.imuStartTimestamp) + this.timeDifference;
+                    }
 
                     batchRowCount++;
                     if (batchRowCount == maxBatchCount) {
-                        writeValues(null); // "# BatchRowCount: " + batchRowCount
+                        if (this.saveData)
+                            writeValues(null); // "# BatchRowCount: " + batchRowCount
                         batchRowCount = 0;
                         if (this.buffer == this.buffer0) {
                             this.buffer = this.buffer1;
@@ -185,11 +194,13 @@ public class ShimmerImuHandler extends Handler {
                         break;
                     case Shimmer.MSG_STATE_STOP_STREAMING:
                         Log.d(TAG, "Stop streaming: " + bluetoothAddress);
-                        String footerComments = null;
-                        if(activity instanceof ShimmerImuHandlerInterface) {
-                            footerComments = ((ShimmerImuHandlerInterface) activity).getFooterComments();
+                        if(saveData) {
+                            String footerComments = null;
+                            if (activity instanceof ShimmerImuHandlerInterface) {
+                                footerComments = ((ShimmerImuHandlerInterface) activity).getFooterComments();
+                            }
+                            writeValues(footerComments);
                         }
-                        writeValues(footerComments);
                         this.isFirstDataRow = true;
                         break;
                     case Shimmer.MESSAGE_STOP_STREAMING_COMPLETE:

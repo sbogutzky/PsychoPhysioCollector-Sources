@@ -644,9 +644,9 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
             shimmerImuService.disconnectAllShimmerImus();
     }
 
-    private void startStreamingOfAllShimmerImus() {
+    private void startStreamingOfAllShimmerImus(boolean saveData) {
         if(shimmerImuService != null)
-            shimmerImuService.startStreamingAllShimmerImus(this.root, this.directoryName, this.startTimestamp);
+            shimmerImuService.startStreamingAllShimmerImus(this.root, this.directoryName, this.startTimestamp, saveData);
     }
 
     private void stopAllStreamingOfAllShimmerImus() {
@@ -733,7 +733,7 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
                     if (intervalConfigured) {
                         startTimerThread();
                     }
-                    startStreamingOfAllShimmerImus();
+                    startStreamingOfAllShimmerImus(true);
                     startStreamingBioHarness();
                     startStreamingInternalSensorData();
                     isSessionStarted = true;
@@ -958,8 +958,11 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
         }
 
         GraphView graphView = new GraphView(this, beginAtField);
-        if(this.shimmerImuService != null)
+        if(this.shimmerImuService != null) {
+            if(!isSessionStarted)
+                this.startStreamingOfAllShimmerImus(false);
             this.shimmerImuService.visualizeData(bluetoothDeviceAddress, graphView);
+        }
         final Dialog dialog = new Dialog(this);
         dialog.setContentView(graphView);
         dialog.setTitle(getString(R.string.graph));
@@ -972,6 +975,9 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
         dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override
             public void onDismiss(DialogInterface dialog) {
+                if(!isSessionStarted) {
+                    stopAllStreamingOfAllShimmerImus();
+                }
             }
         });
 

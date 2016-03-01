@@ -18,7 +18,7 @@ import de.bogutzky.psychophysiocollector.app.GraphView;
 import de.bogutzky.psychophysiocollector.app.R;
 
 public class ShimmerImuService extends Service {
-    //private static final String TAG = "ShimmerService";
+    //private static final String TAG = "ShimmerImuService";
     private final IBinder binder = new LocalBinder();
     public HashMap<String, Object> shimmerImuMap = new HashMap<>(7);
 
@@ -47,7 +47,6 @@ public class ShimmerImuService extends Service {
             Shimmer shimmerImu = (Shimmer) shimmerImu1;
             shimmerImu.stop();
         }
-
     }
 
     @Override
@@ -84,16 +83,11 @@ public class ShimmerImuService extends Service {
         }
     }
 
-    public void startStreamingAllShimmerImus(File root, String directoryName, long startTimestamp) {
+    public void startStreamingAllShimmerImus(File root, String directoryName, long startTimestamp, boolean saveData) {
         Collection<Object> shimmerImus = shimmerImuMap.values();
         for (Object shimmerImu1 : shimmerImus) {
             Shimmer shimmerImu = (Shimmer) shimmerImu1;
-            ((ShimmerImuHandler) shimmerImu.mHandler).setRoot(root);
-            ((ShimmerImuHandler) shimmerImu.mHandler).setDirectoryName(directoryName);
-            ((ShimmerImuHandler) shimmerImu.mHandler).setStartTimestamp(startTimestamp);
             if (shimmerImu.getShimmerState() == Shimmer.STATE_CONNECTED) {
-                shimmerImu.startStreaming();
-
                 long mEnabledSensors = shimmerImu.getEnabledSensors();
                 ArrayList<String> fields = new ArrayList<>();
                 ArrayList<String> header = new ArrayList<>();
@@ -146,10 +140,17 @@ public class ShimmerImuService extends Service {
                 }
                 */
 
+                if (saveData) {
+                    ((ShimmerImuHandler) shimmerImu.mHandler).setRoot(root);
+                    ((ShimmerImuHandler) shimmerImu.mHandler).setDirectoryName(directoryName);
+                    ((ShimmerImuHandler) shimmerImu.mHandler).setStartTimestamp(startTimestamp);
+                    String[] handlerHeaders = header.toArray(new String[header.size()]);
+                    ((ShimmerImuHandler) shimmerImu.mHandler).writeHeader(handlerHeaders);
+                }
                 String[] handlerFields = fields.toArray(new String[fields.size()]);
                 ((ShimmerImuHandler) shimmerImu.mHandler).setFields(handlerFields);
-                String[] handlerHeaders = header.toArray(new String[header.size()]);
-                ((ShimmerImuHandler) shimmerImu.mHandler).writeHeader(handlerHeaders);
+                ((ShimmerImuHandler) shimmerImu.mHandler).setSaveData(saveData);
+                shimmerImu.startStreaming();
             }
         }
     }
