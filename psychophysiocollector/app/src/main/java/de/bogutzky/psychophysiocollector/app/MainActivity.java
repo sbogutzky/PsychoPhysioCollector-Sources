@@ -166,6 +166,7 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
     private String activityName = "";
     private String participantFirstName = "";
     private String participantLastName = "";
+    private boolean intervalConfigured = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -200,6 +201,7 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
         activityName = sharedPref.getString("activityName", "");
         participantFirstName = sharedPref.getString("participantFirstName", "");
         participantLastName = sharedPref.getString("participantLastName", "");
+        intervalConfigured = sharedPref.getBoolean("configureInterval", false);
 
         getListView().setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
@@ -495,6 +497,7 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
                 MainActivity.this.participantFirstName = participantFirstNameEditText.getText().toString();
                 MainActivity.this.participantLastName = participantLastNameEditText.getText().toString();
                 MainActivity.this.activityName = activityNameEditText.getText().toString();
+                MainActivity.this.intervalConfigured = configureIntervalSwitch.isChecked();
 
                 SharedPreferences.Editor editor = sharedPref.edit();
                 editor.putInt("selfReportIntervalSpinnerPosition", selfReportIntervalSpinner.getSelectedItemPosition());
@@ -791,14 +794,18 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
                 if (isFirstSelfReportRequest) {
                     resetTime();
                     questionnaire.saveQuestionnaireItems(root, isFirstSelfReportRequest, getHeaderComments(), null, startTimestamp);
-                    startTimerThread();
+                    if(intervalConfigured) {
+                        startTimerThread();
+                    }
                     startStreamingOfAllShimmerImus();
                     startStreamingBioHarness();
                     isSessionStarted = true;
                     isFirstSelfReportRequest = false;
                 } else if (isSessionStarted) {
                     questionnaire.saveQuestionnaireItems(root, false, getHeaderComments(), null, startTimestamp);
-                    startTimerThread();
+                    if(intervalConfigured) {
+                        startTimerThread();
+                    }
                 } else {
                     questionnaire.saveQuestionnaireItems(root, false, null, getFooterComments(), startTimestamp);
                 }
