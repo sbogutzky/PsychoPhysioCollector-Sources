@@ -45,9 +45,9 @@
         "ratings": ["Trifft nicht zu", "Trifft zu"]
       },
       {
-        "type": "rating",
+        "type": "hidden",
         "stars": 7,
-        "question": "Bitte einfach weiter drücken",
+        "question": "Ich weiß bei jedem Schritt, was ich zu tun habe.",
         "ratings": ["Trifft nicht zu", "Trifft zu"]
       },
       {
@@ -60,6 +60,24 @@
         "type": "rating",
         "stars": 7,
         "question": "Du warst beim Laufen völlig selbstvergessen.",
+        "ratings": ["Trifft nicht zu", "Trifft zu"]
+      },
+      {
+        "type": "hidden",
+        "stars": 7,
+        "question": "Es steht etwas für mich Wichtiges auf dem Spiel.",
+        "ratings": ["Trifft nicht zu", "Trifft zu"]
+      },
+      {
+        "type": "hidden",
+        "stars": 7,
+        "question": "Ich darf jetzt keine Fehler machen.",
+        "ratings": ["Trifft nicht zu", "Trifft zu"]
+      },
+      {
+        "type": "hidden",
+        "stars": 7,
+        "question": "Ich mache mir Sorgen über einen Misserfolg.",
         "ratings": ["Trifft nicht zu", "Trifft zu"]
       },
       {

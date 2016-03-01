@@ -1,83 +1,101 @@
 {
   "questionnaire": {
-    "title": "Flow-Kurzskala (Baseline)",
+    "title": "Flow-Kurzskala",
     "questions": [
       {
         "type": "rating",
         "stars": 7,
-        "question": "Du warst beim Laufen optimal beansprucht.",
+        "question": "Ich fühle mich optimal beansprucht.",
         "ratings": ["Trifft nicht zu", "Trifft zu"]
       },
       {
         "type": "rating",
         "stars": 7,
-        "question": "Deine Bewegungen waren beim Laufen flüssig und glatt.",
+        "question": "Meine Gedanken bzw. Aktivitäten laufen flüssig und glatt.",
         "ratings": ["Trifft nicht zu", "Trifft zu"]
       },
       {
         "type": "rating",
         "stars": 7,
-        "question": "Du hast beim Laufen gar nicht gemerkt, wie die Zeit vergeht.",
+        "question": "Ich merke gar nicht, wie die Zeit vergeht.",
         "ratings": ["Trifft nicht zu", "Trifft zu"]
       },
       {
         "type": "rating",
         "stars": 7,
-        "question": "Du hattest keine Mühe, dich auf das Laufen zu konzentrieren.",
+        "question": "Ich habe keine Mühe, mich zu konzentrieren.",
         "ratings": ["Trifft nicht zu", "Trifft zu"]
       },
       {
         "type": "rating",
         "stars": 7,
-        "question": "Dein Kopf war beim Laufen völlig klar.",
+        "question": "Mein Kopf ist völlig klar.",
         "ratings": ["Trifft nicht zu", "Trifft zu"]
       },
       {
         "type": "rating",
         "stars": 7,
-        "question": "Du warst ganz vertieft in das Laufen.",
+        "question": "Ich bin ganz vertieft in das, was ich gerade mache.",
         "ratings": ["Trifft nicht zu", "Trifft zu"]
       },
       {
         "type": "rating",
         "stars": 7,
-        "question": "Die richtige Bewegungen beim Laufen kam wie von selbst.",
+        "question": "Die richtigen Gedanken/Bewegungen kommen wie von selbst.",
+        "ratings": ["Trifft nicht zu", "Trifft zu"]
+      },
+      {
+        "type": "hidden",
+        "stars": 7,
+        "question": "Ich weiß bei jedem Schritt, was ich zu tun habe.",
+        "ratings": ["Trifft nicht zu", "Trifft zu"]
+      },
+      {
+        "type": "hidden",
+        "stars": 7,
+        "question": "Ich habe das Gefühl, den Ablauf unter Kontrolle zu haben.",
         "ratings": ["Trifft nicht zu", "Trifft zu"]
       },
       {
         "type": "rating",
         "stars": 7,
-        "question": "Bitte einfach weiter drücken",
+        "question": "Ich bin völlig selbstvergessen.",
         "ratings": ["Trifft nicht zu", "Trifft zu"]
       },
       {
-        "type": "rating",
+        "type": "hidden",
         "stars": 7,
-        "question": "Du hattest das Gefühl, den Ablauf beim Laufen unter Kontrolle zu haben.",
+        "question": "Es steht etwas für mich Wichtiges auf dem Spiel.",
         "ratings": ["Trifft nicht zu", "Trifft zu"]
       },
       {
-        "type": "rating",
+        "type": "hidden",
         "stars": 7,
-        "question": "Du warst beim Laufen völlig selbstvergessen.",
+        "question": "Ich darf jetzt keine Fehler machen.",
         "ratings": ["Trifft nicht zu", "Trifft zu"]
       },
       {
-        "type": "rating",
+        "type": "hidden",
+        "stars": 7,
+        "question": "Ich mache mir Sorgen über einen Misserfolg.",
+        "ratings": ["Trifft nicht zu", "Trifft zu"]
+      },
+      {
+        "type": "hidden",
         "stars": 9,
-        "question": "Verglichen mit anderen Läufen, die ich sonst gemacht habe, war dieser...",
+        "question": "Verglichen mit allen anderen Tätigkeiten, die ich sonst mache, ist die jetzige Tätigkeit...",
         "ratings": ["leicht", "schwer"]
       },
       {
-        "type": "rating",
+        "type": "hidden",
         "stars": 9,
-        "question": "Ich denke, ich besitze eine optimale Lauftechnik...",
-        "ratings": ["Trifft nicht zu", "Trifft zu"]
+        "question": "Ich denke, meine Fähigkeiten auf diesem Gebiet sind...",
+        "ratings": ["niedrig", "hoch"]
       },
       {
-        "type": "rating",
+        "type": "hidden",
         "stars": 9,
-        "question": "Für mich persönlich war die Anforderungen des Laufs...",
+        "question": "Für mich persönlich sind die jetzigen Anforderungen...",
         "ratings": ["zu gering", "zu hoch"]
       }
     ]
