@@ -67,9 +67,6 @@ import de.bogutzky.psychophysiocollector.app.shimmer.imu.ShimmerImuHandlerInterf
 import de.bogutzky.psychophysiocollector.app.shimmer.imu.ShimmerImuMainConfigurationActivity;
 import de.bogutzky.psychophysiocollector.app.shimmer.imu.ShimmerImuService;
 
-//import java.text.DecimalFormat;
-//import java.text.DecimalFormatSymbols;
-
 public class MainActivity extends ListActivity implements ShimmerImuHandlerInterface, BioHarnessHandlerInterface {
 
     private static final String TAG = "MainActivity";
@@ -79,11 +76,6 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
     private static final int TIMER_UPDATE = 1;
     private static final int TIMER_END = 2;
     private static final int REQUEST_MAIN_COMMAND_SHIMMER = 3;
-
-    /*
-    private static final int INTERNAL_SENSOR_CACHE_LENGTH = 1000;
-    private static final int DATA_ARRAY_SIZE = 1000;
-    */
 
     private BluetoothAdapter bluetoothAdapter;
     private ArrayAdapter arrayAdapter;
@@ -117,24 +109,6 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
     private String questionnaireFileName = "questionnaires/flow-short-scale.json";
     private String initialQuestionnaireFileName = "questionnaires/flow-short-scale.json";
 
-    /*
-    private Double[][] accelerometerValues;
-    private int accelerometerValueCount;
-    private Double[][] gyroscopeValues;
-    private int gyroscopeValueCount;
-    private Double[][] linearAccelerationValues;
-    private int linearAccelerationValueCount;
-    */
-
-    /*
-    private long gyroscopeEventStartTimestamp;
-    private long gyroscopeStartTimestamp;
-    private long accelerometerEventStartTimestamp;
-    private long accelerometerStartTimestamp;
-    private long linearAccelerationSensorEventStartTimestamp;
-    private long linearAccelerationSensorStartTimestamp;
-    */
-
     private MenuItem addMenuItem;
     private MenuItem connectMenuItem;
     private MenuItem disconnectMenuItem;
@@ -146,9 +120,6 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
 
     private boolean isSessionStarted = false;
     private boolean isFirstSelfReportRequest;
-
-    //private boolean writingData = false;
-    //private boolean secondWritingData = false;
 
     private String activityName = "";
     private String participantFirstName = "";
@@ -977,25 +948,6 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
             }
         }
     };
-/*
-    private Double[][] resizeArray(Double[][] original) {
-        Double[][] copy = new Double[original.length + INTERNAL_SENSOR_CACHE_LENGTH][original[0].length];
-        System.arraycopy(original,0,copy,0,original.length);
-        Log.v(TAG, "original length: " + original.length + ", copy length: " + copy.length);
-        return copy;
-    }
-
-    public void setSecondWritingData(boolean d) {
-        this.secondWritingData = d;
-        //Log.v(TAG, "secondWritingData: " + secondWritingData);
-    }
-
-    public void setWritingData(boolean d) {
-        this.writingData = d;
-        //Log.v(TAG, "writingdata: " + writingData);
-    }
-    */
-
 
     private void showGraph(int which, String bluetoothDeviceAddress) {
         int beginAtField = 1;
@@ -1033,5 +985,4 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
     public long getStartTimestamp() {
         return this.startTimestamp;
     }
-
 }
