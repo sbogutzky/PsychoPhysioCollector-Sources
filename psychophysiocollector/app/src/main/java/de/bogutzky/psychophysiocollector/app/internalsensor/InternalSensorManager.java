@@ -14,23 +14,19 @@ import java.io.IOException;
 
 import de.bogutzky.psychophysiocollector.app.MainActivity;
 import de.bogutzky.psychophysiocollector.app.R;
-import de.bogutzky.psychophysiocollector.app.bioharness.BioHarnessConstants;
 import de.bogutzky.psychophysiocollector.app.data.management.WriteDataTask;
 import de.bogutzky.psychophysiocollector.app.data.management.WriteDataTaskParams;
 
-/**
- * Created by Jan Schrader on 01.03.16.
- */
 public class InternalSensorManager implements SensorEventListener {
 
     private MainActivity activity;
     private static final String TAG = "InternalSensorManager";
+    private static final int SENSOR_DATA_DELAY = 10000; // ca. 100 Hz
 
-    public static final int ACCEL_STORE_ID = 0;
-    public static final int GYRO_STORE_ID = 1;
-    public static final int LINEAR_ACCELL_STORE_ID = 2;
+    public static final int ACCELEROMETER_STORE_ID = 0;
+    public static final int GYROSCOPE_STORE_ID = 1;
+    public static final int LINEAR_ACCELERATION_SENSOR_STORE_ID = 2;
 
-    private String directoryName;
     private File root;
 
     private int[] maxBatchCounts;
@@ -40,7 +36,6 @@ public class InternalSensorManager implements SensorEventListener {
     private android.hardware.Sensor accelerometer;
     private android.hardware.Sensor gyroscope;
     private Sensor linearAccelerationSensor;
-    private int sensorDataDelay = 20000; // ca. 50 Hz
 
     private Double[][][] buffer;
     private Double[][][] buffer0;
@@ -53,9 +48,8 @@ public class InternalSensorManager implements SensorEventListener {
     private long linearAccelerationSensorEventStartTimestamp;
     private long linearAccelerationSensorStartTimestamp;
 
-    public InternalSensorManager(String directoryName, File root, int[] maxBatchCounts, MainActivity mainActivity) {
+    public InternalSensorManager(File root, int[] maxBatchCounts, MainActivity mainActivity) {
         this.activity = mainActivity;
-        this.directoryName = directoryName;
         this.root = root;
 
         this.maxBatchCounts = maxBatchCounts;
@@ -75,30 +69,30 @@ public class InternalSensorManager implements SensorEventListener {
         this.buffer1 = new Double[3][][];
         this.buffer = new Double[3][][];
 
-        this.buffer0[ACCEL_STORE_ID] = new Double[this.maxBatchCounts[ACCEL_STORE_ID]][4];
-        this.buffer1[ACCEL_STORE_ID] = new Double[this.maxBatchCounts[ACCEL_STORE_ID]][4];
-        this.buffer[ACCEL_STORE_ID] = buffer0[ACCEL_STORE_ID];
+        this.buffer0[ACCELEROMETER_STORE_ID] = new Double[this.maxBatchCounts[ACCELEROMETER_STORE_ID]][4];
+        this.buffer1[ACCELEROMETER_STORE_ID] = new Double[this.maxBatchCounts[ACCELEROMETER_STORE_ID]][4];
+        this.buffer[ACCELEROMETER_STORE_ID] = buffer0[ACCELEROMETER_STORE_ID];
 
-        this.buffer0[GYRO_STORE_ID] = new Double[this.maxBatchCounts[GYRO_STORE_ID]][4];
-        this.buffer1[GYRO_STORE_ID] = new Double[this.maxBatchCounts[GYRO_STORE_ID]][4];
-        this.buffer[GYRO_STORE_ID] = buffer0[GYRO_STORE_ID];
+        this.buffer0[GYROSCOPE_STORE_ID] = new Double[this.maxBatchCounts[GYROSCOPE_STORE_ID]][4];
+        this.buffer1[GYROSCOPE_STORE_ID] = new Double[this.maxBatchCounts[GYROSCOPE_STORE_ID]][4];
+        this.buffer[GYROSCOPE_STORE_ID] = buffer0[GYROSCOPE_STORE_ID];
 
-        this.buffer0[LINEAR_ACCELL_STORE_ID] = new Double[this.maxBatchCounts[LINEAR_ACCELL_STORE_ID]][4];
-        this.buffer1[LINEAR_ACCELL_STORE_ID] = new Double[this.maxBatchCounts[LINEAR_ACCELL_STORE_ID]][4];
-        this.buffer[LINEAR_ACCELL_STORE_ID] = buffer0[LINEAR_ACCELL_STORE_ID];
+        this.buffer0[LINEAR_ACCELERATION_SENSOR_STORE_ID] = new Double[this.maxBatchCounts[LINEAR_ACCELERATION_SENSOR_STORE_ID]][4];
+        this.buffer1[LINEAR_ACCELERATION_SENSOR_STORE_ID] = new Double[this.maxBatchCounts[LINEAR_ACCELERATION_SENSOR_STORE_ID]][4];
+        this.buffer[LINEAR_ACCELERATION_SENSOR_STORE_ID] = buffer0[LINEAR_ACCELERATION_SENSOR_STORE_ID];
 
         writeFileHeader();
-        sensorManager.registerListener(this, accelerometer, sensorDataDelay);
-        sensorManager.registerListener(this, gyroscope, sensorDataDelay);
-        sensorManager.registerListener(this, linearAccelerationSensor, sensorDataDelay);
+        sensorManager.registerListener(this, accelerometer, SENSOR_DATA_DELAY);
+        sensorManager.registerListener(this, gyroscope, SENSOR_DATA_DELAY);
+        sensorManager.registerListener(this, linearAccelerationSensor, SENSOR_DATA_DELAY);
     }
 
     public void stopStreaming() {
         sensorManager.unregisterListener(this);
         String footerComments = activity.getFooterComments();
-        writeValues(activity.getString(R.string.file_name_acceleration), this.buffer[ACCEL_STORE_ID], 4, batchRowCounts[ACCEL_STORE_ID], footerComments);
-        writeValues(activity.getString(R.string.file_name_angular_velocity), this.buffer[GYRO_STORE_ID], 4, batchRowCounts[GYRO_STORE_ID], footerComments);
-        writeValues(activity.getString(R.string.file_name_linear_acceleration), this.buffer[LINEAR_ACCELL_STORE_ID], 4, batchRowCounts[LINEAR_ACCELL_STORE_ID], footerComments);
+        writeValues(activity.getString(R.string.file_name_acceleration), this.buffer[ACCELEROMETER_STORE_ID], 4, batchRowCounts[ACCELEROMETER_STORE_ID], footerComments);
+        writeValues(activity.getString(R.string.file_name_angular_velocity), this.buffer[GYROSCOPE_STORE_ID], 4, batchRowCounts[GYROSCOPE_STORE_ID], footerComments);
+        writeValues(activity.getString(R.string.file_name_linear_acceleration), this.buffer[LINEAR_ACCELERATION_SENSOR_STORE_ID], 4, batchRowCounts[LINEAR_ACCELERATION_SENSOR_STORE_ID], footerComments);
 
     }
 
@@ -111,20 +105,20 @@ public class InternalSensorManager implements SensorEventListener {
                 this.accelerometerStartTimestamp = System.currentTimeMillis() - activity.getStartTimestamp(); // Millis
             }
             double relativeTimestamp = this.accelerometerStartTimestamp + (event.timestamp - this.accelerometerEventStartTimestamp) / 1000000.0;
-            this.buffer[ACCEL_STORE_ID][batchRowCounts[ACCEL_STORE_ID]][0] = relativeTimestamp;
-            this.buffer[ACCEL_STORE_ID][batchRowCounts[ACCEL_STORE_ID]][1] = Double.parseDouble(Float.toString(event.values[0]));
-            this.buffer[ACCEL_STORE_ID][batchRowCounts[ACCEL_STORE_ID]][2] = Double.parseDouble(Float.toString(event.values[1]));
-            this.buffer[ACCEL_STORE_ID][batchRowCounts[ACCEL_STORE_ID]][3] = Double.parseDouble(Float.toString(event.values[2]));
+            this.buffer[ACCELEROMETER_STORE_ID][batchRowCounts[ACCELEROMETER_STORE_ID]][0] = relativeTimestamp;
+            this.buffer[ACCELEROMETER_STORE_ID][batchRowCounts[ACCELEROMETER_STORE_ID]][1] = Double.parseDouble(Float.toString(event.values[0]));
+            this.buffer[ACCELEROMETER_STORE_ID][batchRowCounts[ACCELEROMETER_STORE_ID]][2] = Double.parseDouble(Float.toString(event.values[1]));
+            this.buffer[ACCELEROMETER_STORE_ID][batchRowCounts[ACCELEROMETER_STORE_ID]][3] = Double.parseDouble(Float.toString(event.values[2]));
 
-            batchRowCounts[ACCEL_STORE_ID]++;
+            batchRowCounts[ACCELEROMETER_STORE_ID]++;
 
-            if (batchRowCounts[ACCEL_STORE_ID] == maxBatchCounts[ACCEL_STORE_ID]) {
-                writeValues(activity.getString(R.string.file_name_acceleration), this.buffer[ACCEL_STORE_ID], 4, batchRowCounts[ACCEL_STORE_ID], null); // "# BatchRowCount: " + batchRowCounts
-                batchRowCounts[ACCEL_STORE_ID] = 0;
-                if (this.buffer[ACCEL_STORE_ID] == this.buffer0[ACCEL_STORE_ID]) {
-                    this.buffer[ACCEL_STORE_ID] = this.buffer1[ACCEL_STORE_ID];
+            if (batchRowCounts[ACCELEROMETER_STORE_ID] == maxBatchCounts[ACCELEROMETER_STORE_ID]) {
+                writeValues(activity.getString(R.string.file_name_acceleration), this.buffer[ACCELEROMETER_STORE_ID], 4, batchRowCounts[ACCELEROMETER_STORE_ID], null); // "# BatchRowCount: " + batchRowCounts
+                batchRowCounts[ACCELEROMETER_STORE_ID] = 0;
+                if (this.buffer[ACCELEROMETER_STORE_ID] == this.buffer0[ACCELEROMETER_STORE_ID]) {
+                    this.buffer[ACCELEROMETER_STORE_ID] = this.buffer1[ACCELEROMETER_STORE_ID];
                 } else {
-                    this.buffer[ACCEL_STORE_ID] = this.buffer0[ACCEL_STORE_ID];
+                    this.buffer[ACCELEROMETER_STORE_ID] = this.buffer0[ACCELEROMETER_STORE_ID];
                 }
             }
 
@@ -136,20 +130,20 @@ public class InternalSensorManager implements SensorEventListener {
             }
             double relativeTimestamp = this.gyroscopeStartTimestamp + (event.timestamp - this.gyroscopeEventStartTimestamp) / 1000000.0;
 
-            this.buffer[GYRO_STORE_ID][batchRowCounts[GYRO_STORE_ID]][0] = relativeTimestamp;
-            this.buffer[GYRO_STORE_ID][batchRowCounts[GYRO_STORE_ID]][1] = Double.parseDouble(Float.toString((float) (event.values[0] * 180.0 / Math.PI)));
-            this.buffer[GYRO_STORE_ID][batchRowCounts[GYRO_STORE_ID]][2] = Double.parseDouble(Float.toString((float) (event.values[1] * 180.0 / Math.PI)));
-            this.buffer[GYRO_STORE_ID][batchRowCounts[GYRO_STORE_ID]][3] = Double.parseDouble(Float.toString((float) (event.values[2] * 180.0 / Math.PI)));
+            this.buffer[GYROSCOPE_STORE_ID][batchRowCounts[GYROSCOPE_STORE_ID]][0] = relativeTimestamp;
+            this.buffer[GYROSCOPE_STORE_ID][batchRowCounts[GYROSCOPE_STORE_ID]][1] = Double.parseDouble(Float.toString((float) (event.values[0] * 180.0 / Math.PI)));
+            this.buffer[GYROSCOPE_STORE_ID][batchRowCounts[GYROSCOPE_STORE_ID]][2] = Double.parseDouble(Float.toString((float) (event.values[1] * 180.0 / Math.PI)));
+            this.buffer[GYROSCOPE_STORE_ID][batchRowCounts[GYROSCOPE_STORE_ID]][3] = Double.parseDouble(Float.toString((float) (event.values[2] * 180.0 / Math.PI)));
 
-            batchRowCounts[GYRO_STORE_ID]++;
+            batchRowCounts[GYROSCOPE_STORE_ID]++;
 
-            if (batchRowCounts[GYRO_STORE_ID] == maxBatchCounts[GYRO_STORE_ID]) {
-                writeValues(activity.getString(R.string.file_name_angular_velocity), this.buffer[GYRO_STORE_ID], 4, batchRowCounts[GYRO_STORE_ID], null); // "# BatchRowCount: " + batchRowCounts
-                batchRowCounts[GYRO_STORE_ID] = 0;
-                if (this.buffer[GYRO_STORE_ID] == this.buffer0[GYRO_STORE_ID]) {
-                    this.buffer[GYRO_STORE_ID] = this.buffer1[GYRO_STORE_ID];
+            if (batchRowCounts[GYROSCOPE_STORE_ID] == maxBatchCounts[GYROSCOPE_STORE_ID]) {
+                writeValues(activity.getString(R.string.file_name_angular_velocity), this.buffer[GYROSCOPE_STORE_ID], 4, batchRowCounts[GYROSCOPE_STORE_ID], null); // "# BatchRowCount: " + batchRowCounts
+                batchRowCounts[GYROSCOPE_STORE_ID] = 0;
+                if (this.buffer[GYROSCOPE_STORE_ID] == this.buffer0[GYROSCOPE_STORE_ID]) {
+                    this.buffer[GYROSCOPE_STORE_ID] = this.buffer1[GYROSCOPE_STORE_ID];
                 } else {
-                    this.buffer[GYRO_STORE_ID] = this.buffer0[GYRO_STORE_ID];
+                    this.buffer[GYROSCOPE_STORE_ID] = this.buffer0[GYROSCOPE_STORE_ID];
                 }
             }
 
@@ -162,20 +156,20 @@ public class InternalSensorManager implements SensorEventListener {
             }
             double relativeTimestamp = this.linearAccelerationSensorStartTimestamp + (event.timestamp - this.linearAccelerationSensorEventStartTimestamp) / 1000000.0;
 
-            this.buffer[LINEAR_ACCELL_STORE_ID][batchRowCounts[LINEAR_ACCELL_STORE_ID]][0] = relativeTimestamp;
-            this.buffer[LINEAR_ACCELL_STORE_ID][batchRowCounts[LINEAR_ACCELL_STORE_ID]][1] = Double.parseDouble(Float.toString(event.values[0]));
-            this.buffer[LINEAR_ACCELL_STORE_ID][batchRowCounts[LINEAR_ACCELL_STORE_ID]][2] = Double.parseDouble(Float.toString(event.values[1]));
-            this.buffer[LINEAR_ACCELL_STORE_ID][batchRowCounts[LINEAR_ACCELL_STORE_ID]][3] = Double.parseDouble(Float.toString(event.values[2]));
+            this.buffer[LINEAR_ACCELERATION_SENSOR_STORE_ID][batchRowCounts[LINEAR_ACCELERATION_SENSOR_STORE_ID]][0] = relativeTimestamp;
+            this.buffer[LINEAR_ACCELERATION_SENSOR_STORE_ID][batchRowCounts[LINEAR_ACCELERATION_SENSOR_STORE_ID]][1] = Double.parseDouble(Float.toString(event.values[0]));
+            this.buffer[LINEAR_ACCELERATION_SENSOR_STORE_ID][batchRowCounts[LINEAR_ACCELERATION_SENSOR_STORE_ID]][2] = Double.parseDouble(Float.toString(event.values[1]));
+            this.buffer[LINEAR_ACCELERATION_SENSOR_STORE_ID][batchRowCounts[LINEAR_ACCELERATION_SENSOR_STORE_ID]][3] = Double.parseDouble(Float.toString(event.values[2]));
 
-            batchRowCounts[LINEAR_ACCELL_STORE_ID]++;
+            batchRowCounts[LINEAR_ACCELERATION_SENSOR_STORE_ID]++;
 
-            if (batchRowCounts[LINEAR_ACCELL_STORE_ID] == maxBatchCounts[LINEAR_ACCELL_STORE_ID]) {
-                writeValues(activity.getString(R.string.file_name_linear_acceleration), this.buffer[LINEAR_ACCELL_STORE_ID], 4, batchRowCounts[LINEAR_ACCELL_STORE_ID], null); // "# BatchRowCount: " + batchRowCounts
-                batchRowCounts[LINEAR_ACCELL_STORE_ID] = 0;
-                if (this.buffer[LINEAR_ACCELL_STORE_ID] == this.buffer0[LINEAR_ACCELL_STORE_ID]) {
-                    this.buffer[LINEAR_ACCELL_STORE_ID] = this.buffer1[LINEAR_ACCELL_STORE_ID];
+            if (batchRowCounts[LINEAR_ACCELERATION_SENSOR_STORE_ID] == maxBatchCounts[LINEAR_ACCELERATION_SENSOR_STORE_ID]) {
+                writeValues(activity.getString(R.string.file_name_linear_acceleration), this.buffer[LINEAR_ACCELERATION_SENSOR_STORE_ID], 4, batchRowCounts[LINEAR_ACCELERATION_SENSOR_STORE_ID], null); // "# BatchRowCount: " + batchRowCounts
+                batchRowCounts[LINEAR_ACCELERATION_SENSOR_STORE_ID] = 0;
+                if (this.buffer[LINEAR_ACCELERATION_SENSOR_STORE_ID] == this.buffer0[LINEAR_ACCELERATION_SENSOR_STORE_ID]) {
+                    this.buffer[LINEAR_ACCELERATION_SENSOR_STORE_ID] = this.buffer1[LINEAR_ACCELERATION_SENSOR_STORE_ID];
                 } else {
-                    this.buffer[LINEAR_ACCELL_STORE_ID] = this.buffer0[LINEAR_ACCELL_STORE_ID];
+                    this.buffer[LINEAR_ACCELERATION_SENSOR_STORE_ID] = this.buffer0[LINEAR_ACCELERATION_SENSOR_STORE_ID];
                 }
             }
 

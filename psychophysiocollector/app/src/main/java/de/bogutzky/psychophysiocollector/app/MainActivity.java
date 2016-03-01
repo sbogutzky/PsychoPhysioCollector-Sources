@@ -796,7 +796,7 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
     }
 
    private void startStreamingInternalSensorData() {
-       internalSensorManager = new InternalSensorManager(directoryName, root, new int[]{1000, 1000, 1000}, this);
+       internalSensorManager = new InternalSensorManager(root, new int[]{1000, 1000, 1000}, this);
        internalSensorManager.startStreaming();
 
        locationListener = new GPSListener(getString(R.string.file_name_gps_position), this.directoryName, 25, this);
@@ -829,7 +829,7 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
        }
    }
 
-    private void stopStreamingInternalSensorData() {
+    private void  stopStreamingInternalSensorData() {
         internalSensorManager.stopStreaming();
         ((GPSListener)locationListener).stopStreaming();
         if(locationManager != null) {
