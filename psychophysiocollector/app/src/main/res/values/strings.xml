@@ -27,13 +27,13 @@
     <string name="enable_sensors_done">Done</string>
 
     <string name="settings_activity">Aktivität</string>
-    <string name="settings_proband_pre">Vorname</string>
-    <string name="settings_proband_sur">Nachname</string>
-    <string name="settings_undefined">undefined</string>
+    <string name="settings_participant_first_name">Vorname</string>
+    <string name="settings_participant_last_name">Nachname</string>
+    <string name="settings_undefined">nicht definiert</string>
     <string name="settings_save">Speichern</string>
 
     <string name="graph">Graph</string>
-    <string name="startQuestionnaire">Fragebogen starten</string>
+    <string name="start_questionnaire">Fragebogen starten</string>
     <string name="yes">Ja</string>
     <string name="no">Nein</string>
 
@@ -55,7 +55,7 @@
 
     <string name="study_protocol_settings">Einstellung des Untersuchungsprotokolls</string>
     <string name="study_protocol_settings_questionnaire">Fragebogen</string>
-    <string name="study_protocol_settings_initial_questionnaire">Initial-Fragebogen</string>
+    <string name="study_protocol_settings_baseline_questionnaire">Baselibe-Fragebogen</string>
     <string name="study_protocol_settings_configure_interval">Interval konfigurieren</string>
     <string name="study_protocol_settings_self_report_interval">Interval in Minuten</string>
     <string name="study_protocol_settings_self_report_variance">Intervalvarianz in Sekunden</string>
@@ -79,10 +79,9 @@
         <item>180</item>
     </string-array>
 
-
     <!-- File names -->
     <string name="file_name_acceleration">acceleration.csv</string>
-    <string name="file_name_axis_acceleration">axisacceleration.csv</string> <!--TODO: RENAME-->
+    <string name="file_name_axis_acceleration">axis-acceleration.csv</string>
     <string name="file_name_breathing">breathing.csv</string>
     <string name="file_name_ecg">ecg.csv</string>
     <string name="file_name_linear_acceleration">linear-acceleration.csv</string>
@@ -105,11 +104,11 @@
     <string name="file_header_angular_velocity_x">"angular.velocity.x.deg.s"</string>
     <string name="file_header_angular_velocity_y">"angular.velocity.y.deg.s"</string>
     <string name="file_header_angular_velocity_z">"angular.velocity.z.deg.s"</string>
-    <string name="file_header_heartrate">heartrate</string>
-    <string name="file_header_respirationrate">respiration.rate</string>
+    <string name="file_header_heart_rate">heart.rate</string>
+    <string name="file_header_respiration_rate">respiration.rate</string>
     <string name="file_header_posture">posture.deg</string>
-    <string name="file_header_skintemperature">skin.temperature</string>
-    <string name="file_header_peakacceleration">peak.acceleration.g.s</string>
+    <string name="file_header_skin_temperature">skin.temperature</string>
+    <string name="file_header_peak_acceleration">peak.acceleration.g.s</string>
     <string name="file_header_rr_interval">"rr.interval.s"</string>
     <string name="file_header_timestamp_show">"timestamp.show.ms"</string>
     <string name="file_header_timestamp_start">"timestamp.start.ms"</string>
@@ -122,22 +121,20 @@
     <string name="file_header_interval">"breathing.interval.s"</string>
     <string name="file_header_voltage">"voltage.mv"</string>
 
-
     <string name="imu_config_enable_sensors">Sensoren aktivieren</string>
-    <string name="imu_config_configurate_sensors">Sensoren konfigurieren</string>
+    <string name="imu_config_configure_sensors">Sensoren konfigurieren</string>
     <string name="imu_config_show_sensor_data">Sensoren Daten anzeigen</string>
     <string name="imu_config_imu_configuration">Shimmer IMU Konfiguration</string>
-
 
     <string name="bluetooth_activated">Bluetooth wurde aktiviert</string>
     <string name="bluetooth_not_supported">Bluetooth wird von diesem Gerät nicht unterstützt</string>
     <string name="activate_bluetooth">Bluetooth aktivieren?</string>
 
-    <string name="accuracy"> Genauigkeit: </string>
-    <string name="gyro_name">Gyroskop</string>
-    <string name="accel_name">Accelerometer</string>
+    <string name="accuracy">Genauigkeit:</string>
+    <string name="gyroscope">Gyroskop</string>
+    <string name="acceleration">Accelerometer</string>
     <string name="ecg_name">ECG</string>
-    <string name="select_graph_gata">Sensor wählen</string>
+    <string name="select_graph_data">Sensor wählen</string>
 
     <string name="delete">Löschen?</string>
 
@@ -151,8 +148,8 @@
 
     <string name="permission_granted">Berechtigung gegeben</string>
     <string name="next">Weiter</string>
-    <string name="bioharness_removed">BioHarness entfernt</string>
-    <string name="bioharness_paired">BioHarness gepaired</string>
+    <string name="bio_harness_removed">BioHarness entfernt</string>
+    <string name="bio_harness_paired">BioHarness gepaired</string>
     <string name="shimmer_imu_paired">Shimmer IMU gepaired</string>
     <string name="shimmer_imu_removed">Shimmer IMU entfernt</string>
     <string name="shimmer_imu_service_stopped">Shimmer IMU Service gestoppt</string>

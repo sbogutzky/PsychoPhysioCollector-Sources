@@ -124,7 +124,7 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
     private int selfReportInterval;
     private int selfReportVariance;
     private String questionnaireFileName = "questionnaires/flow-short-scale.json";
-    private String initialQuestionnaireFileName = "questionnaires/initial-questions.json";
+    private String initialQuestionnaireFileName = "questionnaires/flow-short-scale.json";
 
     /*
     private Double[][] accelerometerValues;
@@ -1266,9 +1266,9 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
                 final int prevState = arg1.getIntExtra(BluetoothDevice.EXTRA_PREVIOUS_BOND_STATE, BluetoothDevice.ERROR);
 
                 if (state == BluetoothDevice.BOND_BONDED && prevState == BluetoothDevice.BOND_BONDING) {
-                    Toast.makeText(getApplicationContext(), R.string.bioharness_paired, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), R.string.bio_harness_paired, Toast.LENGTH_SHORT).show();
                 } else if (state == BluetoothDevice.BOND_NONE && prevState == BluetoothDevice.BOND_BONDED){
-                    Toast.makeText(getApplicationContext(), R.string.bioharness_removed, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), R.string.bio_harness_removed, Toast.LENGTH_SHORT).show();
                 }
 
             }

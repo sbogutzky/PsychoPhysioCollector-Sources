@@ -19,7 +19,7 @@
         <TextView
             android:layout_width="200dp"
             android:layout_height="wrap_content"
-            android:text="@string/settings_proband_pre"
+            android:text="@string/settings_participant_first_name"
             />
 
         <EditText
@@ -38,7 +38,7 @@
         <TextView
             android:layout_width="200dp"
             android:layout_height="wrap_content"
-            android:text="@string/settings_proband_sur"
+            android:text="@string/settings_participant_last_name"
             />
 
         <EditText
@@ -96,7 +96,7 @@
         <TextView
             android:layout_width="200dp"
             android:layout_height="wrap_content"
-            android:text="@string/study_protocol_settings_initial_questionnaire"
+            android:text="@string/study_protocol_settings_baseline_questionnaire"
             />
 
         <Spinner

@@ -52,7 +52,7 @@ public class ShimmerImuMainConfigurationActivity extends Activity {
 
         final ListView listViewCommands = (ListView) findViewById(R.id.listViewSamplingRates);
 
-        String[] commands = new String[]{getString(R.string.imu_config_enable_sensors), getString(R.string.imu_config_configurate_sensors), getString(R.string.imu_config_show_sensor_data)};
+        String[] commands = new String[]{getString(R.string.imu_config_enable_sensors), getString(R.string.imu_config_configure_sensors), getString(R.string.imu_config_show_sensor_data)};
 
         ArrayList<String> commandsList = new ArrayList<>();
         commandsList.addAll(Arrays.asList(commands));
@@ -91,13 +91,13 @@ public class ShimmerImuMainConfigurationActivity extends Activity {
                             int enabledSensors = shimmerImu.getEnabledSensors();
                             String sensorName;
                             if ((enabledSensors & Shimmer.SENSOR_ACCEL) != 0) {
-                                sensorName = getString(R.string.accel_name);
+                                sensorName = getString(R.string.acceleration);
                                 if (!spinnerArray.contains(sensorName)) {
                                     spinnerArray.add(sensorName);
                                 }
                             }
                             if ((enabledSensors & Shimmer.SENSOR_GYRO) != 0) {
-                                sensorName = getString(R.string.gyro_name);
+                                sensorName = getString(R.string.gyroscope);
                                 if (!spinnerArray.contains(sensorName)) {
                                     spinnerArray.add(sensorName);
                                 }
@@ -111,7 +111,7 @@ public class ShimmerImuMainConfigurationActivity extends Activity {
                         }
                         AlertDialog.Builder builder = new AlertDialog.Builder(ShimmerImuMainConfigurationActivity.this);
                         CharSequence[] cs = spinnerArray.toArray(new CharSequence[spinnerArray.size()]);
-                        builder.setTitle(getString(R.string.select_graph_gata))
+                        builder.setTitle(getString(R.string.select_graph_data))
                                 .setItems(cs, new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog, int which) {
                                         Log.v("Commands Activity", "set result show graph");
