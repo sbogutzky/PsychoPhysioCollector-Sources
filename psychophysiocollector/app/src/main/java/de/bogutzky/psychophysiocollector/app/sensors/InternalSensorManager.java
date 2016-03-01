@@ -1,4 +1,4 @@
-package de.bogutzky.psychophysiocollector.app.internalsensor;
+package de.bogutzky.psychophysiocollector.app.sensors;
 
 import android.content.Context;
 import android.hardware.Sensor;
