@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import de.bogutzky.psychophysiocollector.app.GraphView;
 import de.bogutzky.psychophysiocollector.app.R;
 
 public class ShimmerImuService extends Service {
@@ -159,6 +160,16 @@ public class ShimmerImuService extends Service {
             Shimmer shimmerImu = (Shimmer) shimmerImu1;
             if (shimmerImu.getShimmerState() == Shimmer.STATE_CONNECTED && shimmerImu.getBluetoothAddress().equals(bluetoothAddress)) {
                 shimmerImu.writeEnabledSensors(enabledSensors);
+            }
+        }
+    }
+
+    public void visualizeData(String bluetoothAddress, GraphView graphView) {
+        Collection<Object> shimmerImus = shimmerImuMap.values();
+        for (Object shimmerImu1 : shimmerImus) {
+            Shimmer shimmerImu = (Shimmer) shimmerImu1;
+            if (shimmerImu.getShimmerState() == Shimmer.STATE_CONNECTED && shimmerImu.getBluetoothAddress().equals(bluetoothAddress)) {
+                ((ShimmerImuHandler) shimmerImu.mHandler).setGraphView(graphView);
             }
         }
     }

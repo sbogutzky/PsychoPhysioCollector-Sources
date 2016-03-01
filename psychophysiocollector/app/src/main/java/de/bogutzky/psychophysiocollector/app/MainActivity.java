@@ -144,10 +144,6 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
     ShimmerImuService shimmerImuService;
     BioHarnessService bioHarnessService;
 
-    //private GraphView graphView;
-    //private boolean graphShowing = false;
-    //private String graphAdress = "";
-
     private boolean isSessionStarted = false;
     private boolean isFirstSelfReportRequest;
 
@@ -399,7 +395,7 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
         int selfReportIntervalSpinnerPosition = sharedPref.getInt("selfReportIntervalSpinnerPosition", 2);
         int selfReportVarianceSpinnerPosition = sharedPref.getInt("selfReportVarianceSpinnerPosition", 0);
         int questionnaireSpinnerPosition = sharedPref.getInt("questionnaireSpinnerPosition", 0);
-        int initialQuestionnaireSpinnerPosition = sharedPref.getInt("initialQuestionnaireSpinnerPosition", 0);
+        int baselineQuestionnaireSpinnerPosition = sharedPref.getInt("baselineQuestionnaireSpinnerPosition", 0);
         String activityName = sharedPref.getString("activityName", "");
         String participantFirstName = sharedPref.getString("participantFirstName", "");
         String participantLastName = sharedPref.getString("participantLastName", "");
@@ -437,7 +433,7 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
         questionnaireSpinner.setAdapter(qSpinnerAdapter);
         questionnaireSpinner.setSelection(questionnaireSpinnerPosition);
         initialQuestionnaireSpinner.setAdapter(qSpinnerAdapter);
-        initialQuestionnaireSpinner.setSelection(initialQuestionnaireSpinnerPosition);
+        initialQuestionnaireSpinner.setSelection(baselineQuestionnaireSpinnerPosition);
 
         final EditText participantFirstNameEditText = (EditText) dialog.findViewById(R.id.participant_first_name_edit_text);
         final EditText participantLastNameEditText = (EditText) dialog.findViewById(R.id.participant_last_name_edit_text);
@@ -474,7 +470,7 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
                 editor.putInt("selfReportIntervalSpinnerPosition", selfReportIntervalSpinner.getSelectedItemPosition());
                 editor.putInt("selfReportVarianceSpinnerPosition", selfReportVarianceSpinner.getSelectedItemPosition());
                 editor.putInt("questionnaireSpinnerPosition", questionnaireSpinner.getSelectedItemPosition());
-                editor.putInt("initialQuestionnaireSpinnerPosition", initialQuestionnaireSpinner.getSelectedItemPosition());
+                editor.putInt("baselineQuestionnaireSpinnerPosition", initialQuestionnaireSpinner.getSelectedItemPosition());
                 editor.putInt("selfReportInterval", Integer.valueOf(selfReportIntervalSpinner.getSelectedItem().toString()));
                 editor.putInt("selfReportVariance", Integer.valueOf(selfReportVarianceSpinner.getSelectedItem().toString()));
                 editor.putString("questionnaireValue", "questionnaires/" + questionnaireSpinner.getSelectedItem().toString());
@@ -624,19 +620,17 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
                     }
                 }
                 break;
-            /*
             case REQUEST_MAIN_COMMAND_SHIMMER:
                 if(resultCode == Activity.RESULT_OK) {
                     int action = data.getIntExtra("action", 0);
-                    graphAdress = data.getStringExtra("mac");
-                    int which = data.getIntExtra("datastart", 0);
-                    if(action == MainActivity.SHOW_GRAPH) {
-                        showGraph(which);
+                    String bluetoothDeviceAddress = data.getStringExtra("bluetoothDeviceAddress");
+                    int which = data.getIntExtra("which", 0);
+                    if(action == 13) {
+                        showGraph(which, bluetoothDeviceAddress);
                     }
                 }
 
                 break;
-            */
         }
     }
 
@@ -765,7 +759,7 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
                 if (isFirstSelfReportRequest) {
                     resetTime();
                     questionnaire.saveQuestionnaireItems(root, isFirstSelfReportRequest, getHeaderComments(), null, startTimestamp);
-                    if(intervalConfigured) {
+                    if (intervalConfigured) {
                         startTimerThread();
                     }
                     startStreamingOfAllShimmerImus();
@@ -775,7 +769,7 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
                     isFirstSelfReportRequest = false;
                 } else if (isSessionStarted) {
                     questionnaire.saveQuestionnaireItems(root, false, getHeaderComments(), null, startTimestamp);
-                    if(intervalConfigured) {
+                    if (intervalConfigured) {
                         startTimerThread();
                     }
                 } else {
@@ -871,10 +865,9 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
             try {
                 locationManager.removeUpdates(locationListener);
             } catch (SecurityException e) {
-                Log.v(TAG, e.toString());
+                Log.e(TAG, e.toString());
             }
         }
-
     }
 
     private void feedbackNotification() {
@@ -1003,10 +996,18 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
     }
     */
 
-    /*
-    private void showGraph(int which) {
-        graphView = new GraphView(this, which);
-        graphShowing = true;
+
+    private void showGraph(int which, String bluetoothDeviceAddress) {
+        int beginAtField = 1;
+        switch (which) {
+            case 1:
+                beginAtField = 4;
+                break;
+        }
+
+        GraphView graphView = new GraphView(this, beginAtField);
+        if(this.shimmerImuService != null)
+            this.shimmerImuService.visualizeData(bluetoothDeviceAddress, graphView);
         final Dialog dialog = new Dialog(this);
         dialog.setContentView(graphView);
         dialog.setTitle(getString(R.string.graph));
@@ -1019,13 +1020,11 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
         dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override
             public void onDismiss(DialogInterface dialog) {
-                graphShowing = false;
             }
         });
 
         dialog.show();
     }
-    */
 
     public void setGpsStatusText(String gpsStatusText) {
         this.gpsStatusText = gpsStatusText;

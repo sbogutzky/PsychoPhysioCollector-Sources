@@ -114,11 +114,10 @@ public class ShimmerImuMainConfigurationActivity extends Activity {
                         builder.setTitle(getString(R.string.select_graph_data))
                                 .setItems(cs, new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog, int which) {
-                                        Log.v("Commands Activity", "set result show graph");
                                         Intent intent = new Intent();
-                                        intent.putExtra("mac", mCurrentBluetoothDeviceAddress);
+                                        intent.putExtra("bluetoothDeviceAddress", mCurrentBluetoothDeviceAddress);
                                         intent.putExtra("action", REQUEST_SHOW_GRAPH);
-                                        intent.putExtra("datastart", which);
+                                        intent.putExtra("which", which);
                                         setResult(Activity.RESULT_OK, intent);
                                         finish();
                                     }
