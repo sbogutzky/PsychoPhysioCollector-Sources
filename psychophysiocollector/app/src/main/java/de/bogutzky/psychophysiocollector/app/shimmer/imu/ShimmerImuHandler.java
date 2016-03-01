@@ -18,6 +18,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Collection;
+
+import de.bogutzky.psychophysiocollector.app.GraphView;
 import de.bogutzky.psychophysiocollector.app.R;
 import de.bogutzky.psychophysiocollector.app.Utils;
 import de.bogutzky.psychophysiocollector.app.data.management.WriteDataTask;
@@ -42,7 +44,7 @@ public class ShimmerImuHandler extends Handler {
     private long timeDifference;
     private Double imuStartTimestamp;
     private boolean isFirstDataRow = true;
-    //float[] dataArray;
+    private GraphView graphView;
 
     public ShimmerImuHandler(Activity activity, String filename, int maxBatchCount) {
         this.activity = activity;
@@ -53,6 +55,10 @@ public class ShimmerImuHandler extends Handler {
 
     public void setRoot(File root) {
         this.root = root;
+    }
+
+    public void setGraphView(GraphView graphView) {
+        this.graphView = graphView;
     }
 
     public void writeHeader(String[] header) {
@@ -105,21 +111,12 @@ public class ShimmerImuHandler extends Handler {
 
                 if (msg.obj instanceof ObjectCluster) {
                     ObjectCluster objectCluster = (ObjectCluster) msg.obj;
-
-                    //int graphDataCounter = 0;
                     for (int i = 0; i < fields.length; i++) {
                         Collection<FormatCluster> clusterCollection = objectCluster.mPropertyCluster.get(fields[i]);
                         if (i < fields.length) {
                             if (!clusterCollection.isEmpty()) {
                                 FormatCluster formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
                                 this.buffer[batchRowCount][i] = formatCluster.mData;
-
-                                //if(graphShowing && graphAdress.equals(this.bluetoothAdress)) {
-                                //if(j != 0 && j != fields.length) {
-                                //dataArray[graphDataCounter] = Float.valueOf(buffer[batchRowCount][j]);
-                                //graphDataCounter++;
-                                //}
-                                //}
                             }
                         }
                     }
@@ -135,10 +132,9 @@ public class ShimmerImuHandler extends Handler {
 
                     this.buffer[batchRowCount][0] = (this.buffer[batchRowCount][0] - this.imuStartTimestamp) + this.timeDifference;
 
-                    //buffer[batchRowCount][0] = decimalFormat.format(Double.valueOf(buffer[batchRowCount][0]));
-                    //if(graphShowing && graphAdress.equals(this.bluetoothAdress)) {
-                    //graphView.setDataWithAdjustment(dataArray, graphAdress, "i8");
-                    //}
+                    if(graphView != null)
+                        graphView.setDataWithAdjustment(buffer[batchRowCount], filename, "i8");
+
                     batchRowCount++;
                     if (batchRowCount == maxBatchCount) {
                         writeValues(null); // "# BatchRowCount: " + batchRowCount
