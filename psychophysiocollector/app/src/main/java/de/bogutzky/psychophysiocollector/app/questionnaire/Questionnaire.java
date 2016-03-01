@@ -100,6 +100,8 @@ public class Questionnaire {
         RelativeLayout.LayoutParams saveParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         RelativeLayout.LayoutParams nextParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         Random rnd = new Random();
+
+        int hidden = 0;
         try {
             JSONArray questions = questionnaire.getJSONObject("questionnaire").getJSONArray("questions");
 
@@ -127,6 +129,7 @@ public class Questionnaire {
                     textView.setPadding(4, 0, 0, 0);
                     textView.setTextColor(Color.WHITE);
                     textView.setTextSize(16);
+                    textView.setMinLines(3);
                     params1.setMargins(0, 10, 0, 0);
                     textView.setText(q.getString("question"));
                     if(i > 0) {
@@ -176,6 +179,7 @@ public class Questionnaire {
                     tmpid2 = rnd.nextInt(Integer.MAX_VALUE);
 
                     TextView textView = new TextView(activity);
+                    textView.setMinLines(3);
                     textView.setId(tmpid);
                     textView.setText(q.getString("question"));
                     if(i > 0) {
@@ -204,6 +208,7 @@ public class Questionnaire {
 
                     TextView textView = new TextView(activity);
                     textView.setId(tmpid);
+                    textView.setMinLines(3);
                     textView.setText(q.getString("question"));
                     if(i > 0) {
                         params1.addRule(RelativeLayout.BELOW, oldtmp);
@@ -226,6 +231,11 @@ public class Questionnaire {
 
                     scaleTypes.add(q.getString("type"));
                     scaleViewIds.add(tmpid2);
+                } else if(q.getString("type").equals("hidden")) {
+                    hidden++;
+                    scaleTypes.add(q.getString("type"));
+                    scaleViewIds.add(0);
+                    continue;
                 }
             }
             //saveParams.addRule(RelativeLayout.BELOW, relativeLayout.getId());
@@ -252,11 +262,12 @@ public class Questionnaire {
 
         //dialog.setContentView(R.layout.flow_short_scale);
         this.questionnaireDialog.setContentView(scrollView, slp);
+        final int amountHiddenQuestions = hidden;
 
         nextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (questionsCount == questionsAmount - 2) {
+                if (questionsCount == questionsAmount - 2 - amountHiddenQuestions) {
                     v.setVisibility(View.INVISIBLE);
                     saveButton.setVisibility(View.VISIBLE);
                 }
@@ -303,6 +314,8 @@ public class Questionnaire {
                     value = "1";
                 else
                     value = "0";
+            } else if(scaleTypes.get(i).equals("hidden")) {
+                value = activity.getString(R.string.questionnaire_not_available_item);
             }
             if(i != scaleTypes.size()-1) {
                 outputString += value + ",";

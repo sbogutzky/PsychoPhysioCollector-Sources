@@ -15,6 +15,7 @@
     <string name="scanning">Scanning</string>
     <string name="none_found">Keine gefunden</string>
     <string name="questionnaire">Fragebogen</string>
+    <string name="questionnaire_not_available_item">NA</string>
     <string name="gps_not_available">GPS ist nicht verfügbar.</string>
     <string name="save">Speichern</string>
     <string name="low">niedrig</string>
