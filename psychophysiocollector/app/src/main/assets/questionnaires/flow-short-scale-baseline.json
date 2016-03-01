@@ -1,6 +1,6 @@
 {
   "questionnaire": {
-    "title": "Flow-Kurzskala (modifiziert)",
+    "title": "Flow-Kurzskala (Baseline)",
     "questions": [
       {
         "type": "rating",
@@ -11,7 +11,7 @@
       {
         "type": "rating",
         "stars": 7,
-        "question": "Deine Bewegungen war beim Laufen flüssig und glatt.",
+        "question": "Deine Bewegungen waren beim Laufen flüssig und glatt.",
         "ratings": ["Trifft nicht zu", "Trifft zu"]
       },
       {
@@ -71,13 +71,13 @@
       {
         "type": "rating",
         "stars": 9,
-        "question": "Ich denke, ich besitze eine optimale Lauftechnik ...",
+        "question": "Ich denke, ich besitze eine optimale Lauftechnik...",
         "ratings": ["Trifft nicht zu", "Trifft zu"]
       },
       {
         "type": "rating",
         "stars": 9,
-        "question": "Für mich persönlich war die Anforderungen des Laufs ...",
+        "question": "Für mich persönlich war die Anforderungen des Laufs...",
         "ratings": ["zu gering", "zu hoch"]
       }
     ]
