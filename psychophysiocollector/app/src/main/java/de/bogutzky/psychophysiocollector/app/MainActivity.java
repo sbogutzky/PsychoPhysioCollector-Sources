@@ -433,7 +433,7 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
         int selfReportIntervalSpinnerPosition = sharedPref.getInt("selfReportIntervalSpinnerPosition", 2);
         int selfReportVarianceSpinnerPosition = sharedPref.getInt("selfReportVarianceSpinnerPosition", 0);
         int questionnaireSpinnerPosition = sharedPref.getInt("questionnaireSpinnerPosition", 0);
-        int initialQuestionnaireSpinnerPosition = sharedPref.getInt("initialQuestionnaireSpinnerPosition", 0);
+        int baselineQuestionnaireSpinnerPosition = sharedPref.getInt("baselineQuestionnaireSpinnerPosition", 0);
         String activityName = sharedPref.getString("activityName", "");
         String participantFirstName = sharedPref.getString("participantFirstName", "");
         String participantLastName = sharedPref.getString("participantLastName", "");
@@ -471,7 +471,7 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
         questionnaireSpinner.setAdapter(qSpinnerAdapter);
         questionnaireSpinner.setSelection(questionnaireSpinnerPosition);
         initialQuestionnaireSpinner.setAdapter(qSpinnerAdapter);
-        initialQuestionnaireSpinner.setSelection(initialQuestionnaireSpinnerPosition);
+        initialQuestionnaireSpinner.setSelection(baselineQuestionnaireSpinnerPosition);
 
         final EditText participantFirstNameEditText = (EditText) dialog.findViewById(R.id.participant_first_name_edit_text);
         final EditText participantLastNameEditText = (EditText) dialog.findViewById(R.id.participant_last_name_edit_text);
@@ -508,7 +508,7 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
                 editor.putInt("selfReportIntervalSpinnerPosition", selfReportIntervalSpinner.getSelectedItemPosition());
                 editor.putInt("selfReportVarianceSpinnerPosition", selfReportVarianceSpinner.getSelectedItemPosition());
                 editor.putInt("questionnaireSpinnerPosition", questionnaireSpinner.getSelectedItemPosition());
-                editor.putInt("initialQuestionnaireSpinnerPosition", initialQuestionnaireSpinner.getSelectedItemPosition());
+                editor.putInt("baselineQuestionnaireSpinnerPosition", initialQuestionnaireSpinner.getSelectedItemPosition());
                 editor.putInt("selfReportInterval", Integer.valueOf(selfReportIntervalSpinner.getSelectedItem().toString()));
                 editor.putInt("selfReportVariance", Integer.valueOf(selfReportVarianceSpinner.getSelectedItem().toString()));
                 editor.putString("questionnaireValue", "questionnaires/" + questionnaireSpinner.getSelectedItem().toString());
