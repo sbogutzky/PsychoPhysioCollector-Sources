@@ -197,7 +197,7 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
         selfReportInterval = sharedPref.getInt("selfReportInterval", 15);
         selfReportVariance = sharedPref.getInt("selfReportVariance", 30);
         questionnaireFileName = sharedPref.getString("questionnaireValue", "questionnaires/flow-short-scale.json");
-        initialQuestionnaireFileName = sharedPref.getString("initialQuestionnaireValue", "questionnaires/initial-questions.json");
+        initialQuestionnaireFileName = sharedPref.getString("initialQuestionnaireValue", "questionnaires/flow-short-scale.json");
         activityName = sharedPref.getString("activityName", "");
         participantFirstName = sharedPref.getString("participantFirstName", "");
         participantLastName = sharedPref.getString("participantLastName", "");
@@ -341,7 +341,12 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
             stopAllStreamingOfAllShimmerImus();
             stopStreamingBioHarness();
             this.isSessionStarted = false;
-            stopTimerThread();
+            if(intervalConfigured) {
+                stopTimerThread();
+            } else {
+                feedbackNotification();
+                showQuestionnaire(false);
+            }
             //stopStreamingInternalSensorData();
             writeLeftOverData();
 
@@ -428,7 +433,7 @@ public class MainActivity extends ListActivity implements SensorEventListener, S
         int selfReportIntervalSpinnerPosition = sharedPref.getInt("selfReportIntervalSpinnerPosition", 2);
         int selfReportVarianceSpinnerPosition = sharedPref.getInt("selfReportVarianceSpinnerPosition", 0);
         int questionnaireSpinnerPosition = sharedPref.getInt("questionnaireSpinnerPosition", 0);
-        int initialQuestionnaireSpinnerPosition = sharedPref.getInt("initialQuestionnaireSpinnerPosition", 3);
+        int initialQuestionnaireSpinnerPosition = sharedPref.getInt("initialQuestionnaireSpinnerPosition", 0);
         String activityName = sharedPref.getString("activityName", "");
         String participantFirstName = sharedPref.getString("participantFirstName", "");
         String participantLastName = sharedPref.getString("participantLastName", "");
