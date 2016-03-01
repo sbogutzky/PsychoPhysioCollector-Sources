@@ -55,7 +55,7 @@
 
     <string name="study_protocol_settings">Einstellung des Untersuchungsprotokolls</string>
     <string name="study_protocol_settings_questionnaire">Fragebogen</string>
-    <string name="study_protocol_settings_baseline_questionnaire">Baselibe-Fragebogen</string>
+    <string name="study_protocol_settings_baseline_questionnaire">Baseline-Fragebogen</string>
     <string name="study_protocol_settings_configure_interval">Interval konfigurieren</string>
     <string name="study_protocol_settings_self_report_interval">Interval in Minuten</string>
     <string name="study_protocol_settings_self_report_variance">Intervalvarianz in Sekunden</string>
