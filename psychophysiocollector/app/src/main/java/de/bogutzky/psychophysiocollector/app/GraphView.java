@@ -24,6 +24,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 public class GraphView extends View {
@@ -39,7 +40,7 @@ public class GraphView extends View {
     private float   mYOffset;
     private int[]   mColor = new int[3];
     private float   mWidth;
-    private float   maxValue = 1024f;
+    private float   maxValue = 2048f;
     public float mTempV;
     private int mBeginAtField;
     public GraphView(Context context) {
@@ -94,7 +95,7 @@ public class GraphView extends View {
         final Paint paintText = mPaintText;
         paintText.setTextSize(28.f);
         int offset=0;
-        if ("u8".equals(dataType)){setMaxValue(255);offset=0;}
+        if ("u8".equals(dataType)){setMaxValue(10);offset=0;}
         else if ("i8".equals(dataType)){setMaxValue(255);offset=127;} //center the graph, so the negative values will be displayed
         else if ("u12".equals(dataType)){setMaxValue(4095);offset=0;}
         else if ("u16".equals(dataType)){setMaxValue(65535);offset=0;}
@@ -113,6 +114,7 @@ public class GraphView extends View {
     }
     
     private void addDataPoint(float value, final int color, final float lastValue, final int pos){
+        Log.d("addDataPoint", "" + value);
         final Paint paint = mPaint;
 
         float newX = mLastX + mSpeed;

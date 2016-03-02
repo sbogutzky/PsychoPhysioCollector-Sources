@@ -50,14 +50,14 @@ public class ShimmerImuMainConfigurationActivity extends Activity {
         mCurrentBluetoothDeviceAddress = sender.getExtras().getString("BluetoothDeviceAddress");
         setTitle(getTitle() + ": " + currentDeviceName);
 
-        final ListView listViewCommands = (ListView) findViewById(R.id.listViewSamplingRates);
+        final ListView listViewCommands = (ListView) findViewById(R.id.listViewCommands);
 
         String[] commands = new String[]{getString(R.string.imu_config_enable_sensors), getString(R.string.imu_config_configure_sensors), getString(R.string.imu_config_show_sensor_data)};
 
         ArrayList<String> commandsList = new ArrayList<>();
         commandsList.addAll(Arrays.asList(commands));
-        ArrayAdapter<String> sR = new ArrayAdapter<>(this, R.layout.commands_name, commandsList);
-        listViewCommands.setAdapter(sR);
+        ArrayAdapter<String> stringArrayAdapter = new ArrayAdapter<>(this, R.layout.commands_name, commandsList);
+        listViewCommands.setAdapter(stringArrayAdapter);
 
         listViewCommands.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 

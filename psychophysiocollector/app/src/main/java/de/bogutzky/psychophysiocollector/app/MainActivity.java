@@ -57,6 +57,7 @@ import java.util.Set;
 
 import de.bogutzky.psychophysiocollector.app.bioharness.BioHarnessHandler;
 import de.bogutzky.psychophysiocollector.app.bioharness.BioHarnessHandlerInterface;
+import de.bogutzky.psychophysiocollector.app.bioharness.BioHarnessMainConfigurationActivity;
 import de.bogutzky.psychophysiocollector.app.bioharness.BioHarnessService;
 import de.bogutzky.psychophysiocollector.app.sensors.GPSListener;
 import de.bogutzky.psychophysiocollector.app.sensors.InternalSensorManager;
@@ -75,6 +76,7 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
     private static final int TIMER_UPDATE = 1;
     private static final int TIMER_END = 2;
     private static final int REQUEST_MAIN_COMMAND_SHIMMER = 3;
+    private static final int REQUEST_MAIN_COMMAND_BIOHARNESS = 4;
 
     private BluetoothAdapter bluetoothAdapter;
     private ArrayAdapter arrayAdapter;
@@ -480,6 +482,17 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
                 startActivityForResult(intent, REQUEST_MAIN_COMMAND_SHIMMER);
             }
         }
+        if(bioHarnessService != null) {
+            if(bioHarnessService.isBioHarnessConnected()) {
+                if(deviceNames.get(position).contains("BH")) {
+                    Object o = l.getItemAtPosition(position);
+                    Intent intent = new Intent(MainActivity.this, BioHarnessMainConfigurationActivity.class);
+                    intent.putExtra("DeviceName", o.toString());
+                    intent.putExtra("BluetoothDeviceAddress", getBluetoothAddresses().get(position));
+                    startActivityForResult(intent, REQUEST_MAIN_COMMAND_BIOHARNESS);
+                }
+            }
+        }
     }
 
     private void createRootDirectory() {
@@ -595,10 +608,18 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
                     String bluetoothDeviceAddress = data.getStringExtra("bluetoothDeviceAddress");
                     int which = data.getIntExtra("which", 0);
                     if(action == 13) {
-                        showGraph(which, bluetoothDeviceAddress);
+                        showGraph(bluetoothDeviceAddress, REQUEST_MAIN_COMMAND_SHIMMER, which);
                     }
                 }
-
+                break;
+            case REQUEST_MAIN_COMMAND_BIOHARNESS:
+                if(resultCode == Activity.RESULT_OK) {
+                    int action = data.getIntExtra("action", 0);
+                    String bluetoothDeviceAddress = data.getStringExtra("bluetoothDeviceAddress");
+                    if(action == 13) {
+                        showGraph(bluetoothDeviceAddress, REQUEST_MAIN_COMMAND_BIOHARNESS, -1);
+                    }
+                }
                 break;
         }
     }
@@ -943,21 +964,56 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
         }
     };
 
-    private void showGraph(int which, String bluetoothDeviceAddress) {
-        int beginAtField = 1;
-        switch (which) {
-            case 1:
-                beginAtField = 4;
+    private void showGraph(String bluetoothDeviceAddress, int requestCode, int which) {
+        int beginAtField = 0;
+        GraphView graphView = null;
+        Dialog dialog = null;
+        switch (requestCode) {
+            case REQUEST_MAIN_COMMAND_SHIMMER:
+                beginAtField = 1;
+                switch (which) {
+                    case 1:
+                        beginAtField = 4;
+                        break;
+                }
+
+                graphView = new GraphView(this, beginAtField);
+                if(this.shimmerImuService != null) {
+                    if(!isSessionStarted)
+                        this.startStreamingOfAllShimmerImus(false);
+                    this.shimmerImuService.startDataVisualization(bluetoothDeviceAddress, graphView);
+                }
+                dialog = new Dialog(this);
+                dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                    @Override
+                    public void onDismiss(DialogInterface dialog) {
+                        if(shimmerImuService != null) {
+                            shimmerImuService.stopDataVisualization();
+                        }
+                        if (!isSessionStarted) {
+                            stopAllStreamingOfAllShimmerImus();
+                        }
+                    }
+                });
+                break;
+            case REQUEST_MAIN_COMMAND_BIOHARNESS:
+                graphView = new GraphView(this, beginAtField);
+                if(this.bioHarnessService != null) {
+                    this.bioHarnessService.startDataVisualization(graphView);
+                }
+                dialog = new Dialog(this);
+                dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                    @Override
+                    public void onDismiss(DialogInterface dialog) {
+                        if(bioHarnessService != null) {
+                            bioHarnessService.stopDataVisualization();
+                        }
+                    }
+                });
                 break;
         }
 
-        GraphView graphView = new GraphView(this, beginAtField);
-        if(this.shimmerImuService != null) {
-            if(!isSessionStarted)
-                this.startStreamingOfAllShimmerImus(false);
-            this.shimmerImuService.visualizeData(bluetoothDeviceAddress, graphView);
-        }
-        final Dialog dialog = new Dialog(this);
+        assert dialog != null;
         dialog.setContentView(graphView);
         dialog.setTitle(getString(R.string.graph));
         dialog.setCancelable(true);
@@ -966,14 +1022,6 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
         lp.width = WindowManager.LayoutParams.MATCH_PARENT;
         lp.height = WindowManager.LayoutParams.MATCH_PARENT;
         dialog.getWindow().setAttributes(lp);
-        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialog) {
-                if(!isSessionStarted) {
-                    stopAllStreamingOfAllShimmerImus();
-                }
-            }
-        });
 
         dialog.show();
     }

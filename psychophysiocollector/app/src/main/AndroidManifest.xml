@@ -19,7 +19,8 @@
         <activity android:name=".DeviceListActivity" android:label="@string/select_device" android:theme="@android:style/Theme.Dialog" />
         <activity android:name=".shimmer.imu.ShimmerImuSensorConfigurationActivity" android:theme="@android:style/Theme.Dialog" android:label="@string/imu_config_configure_sensors" />
         <activity android:name=".shimmer.imu.ShimmerImuSensorActivationActivity" android:theme="@android:style/Theme.Dialog" android:label="@string/imu_config_enable_sensors" />
-        <activity android:name=".shimmer.imu.ShimmerImuMainConfigurationActivity" android:theme="@android:style/Theme.Dialog" android:label="@string/imu_config_imu_configuration" />
+        <activity android:name=".shimmer.imu.ShimmerImuMainConfigurationActivity" android:theme="@android:style/Theme.Dialog" android:label="@string/imu_config_shimmer_imu_configuration" />
+        <activity android:name=".bioharness.BioHarnessMainConfigurationActivity" android:theme="@android:style/Theme.Dialog" android:label="@string/imu_config_bio_harness_configuration" />
 
         <service android:enabled="true" android:name=".shimmer.imu.ShimmerImuService" />
         <service android:enabled="true" android:name=".bioharness.BioHarnessService" />

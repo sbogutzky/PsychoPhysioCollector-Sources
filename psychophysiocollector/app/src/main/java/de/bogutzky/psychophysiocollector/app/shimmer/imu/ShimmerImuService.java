@@ -165,12 +165,22 @@ public class ShimmerImuService extends Service {
         }
     }
 
-    public void visualizeData(String bluetoothAddress, GraphView graphView) {
+    public void startDataVisualization(String bluetoothAddress, GraphView graphView) {
         Collection<Object> shimmerImus = shimmerImuMap.values();
         for (Object shimmerImu1 : shimmerImus) {
             Shimmer shimmerImu = (Shimmer) shimmerImu1;
             if (shimmerImu.getShimmerState() == Shimmer.STATE_CONNECTED && shimmerImu.getBluetoothAddress().equals(bluetoothAddress)) {
                 ((ShimmerImuHandler) shimmerImu.mHandler).setGraphView(graphView);
+            }
+        }
+    }
+
+    public void stopDataVisualization() {
+        Collection<Object> shimmerImus = shimmerImuMap.values();
+        for (Object shimmerImu1 : shimmerImus) {
+            Shimmer shimmerImu = (Shimmer) shimmerImu1;
+            if (shimmerImu.getShimmerState() == Shimmer.STATE_CONNECTED) {
+                ((ShimmerImuHandler) shimmerImu.mHandler).setGraphView(null);
             }
         }
     }

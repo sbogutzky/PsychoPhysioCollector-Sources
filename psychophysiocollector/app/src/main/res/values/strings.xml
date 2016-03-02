@@ -126,7 +126,8 @@
     <string name="imu_config_enable_sensors">Sensoren aktivieren</string>
     <string name="imu_config_configure_sensors">Sensoren konfigurieren</string>
     <string name="imu_config_show_sensor_data">Sensoren Daten anzeigen</string>
-    <string name="imu_config_imu_configuration">Shimmer IMU Konfiguration</string>
+    <string name="imu_config_shimmer_imu_configuration">Shimmer IMU Konfiguration</string>
+    <string name="imu_config_bio_harness_configuration">BioHarness Konfiguration</string>
 
     <string name="bluetooth_activated">Bluetooth wurde aktiviert</string>
     <string name="bluetooth_not_supported">Bluetooth wird von diesem Gerät nicht unterstützt</string>

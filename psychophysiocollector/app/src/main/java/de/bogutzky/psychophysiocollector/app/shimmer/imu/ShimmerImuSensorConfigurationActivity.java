@@ -36,7 +36,7 @@ public class ShimmerImuSensorConfigurationActivity extends Activity {
     	int accelerometerRange = extras.getInt("AccelerometerRange");
     	int gyroscopeRange = extras.getInt("GyroscopeRange");
 
-    	final ListView listViewSamplingRate = (ListView) findViewById(R.id.listViewSamplingRates);
+    	final ListView listViewSamplingRate = (ListView) findViewById(R.id.listViewCommands);
         final ListView listViewAccelerometerRange = (ListView) findViewById(R.id.listViewAccelerometerRanges);
 		final ListView listViewGyroscopeRange = (ListView) findViewById(R.id.listViewGyroscopeRange);
         

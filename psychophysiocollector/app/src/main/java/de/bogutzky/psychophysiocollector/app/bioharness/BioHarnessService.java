@@ -7,9 +7,14 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.widget.Toast;
 
-import java.io.File;
+import com.shimmerresearch.android.Shimmer;
 
+import java.io.File;
+import java.util.Collection;
+
+import de.bogutzky.psychophysiocollector.app.GraphView;
 import de.bogutzky.psychophysiocollector.app.R;
+import de.bogutzky.psychophysiocollector.app.shimmer.imu.ShimmerImuHandler;
 import zephyr.android.BioHarnessBT.BTClient;
 
 public class BioHarnessService extends Service {
@@ -34,6 +39,18 @@ public class BioHarnessService extends Service {
     @Override
     public void onCreate() {
         Toast.makeText(this, R.string.bio_harness_service_started, Toast.LENGTH_LONG).show();
+    }
+
+    public void startDataVisualization(GraphView graphView) {
+        if (bioHarnessConnected) {
+            bioHarnessListener.bioHarnessHandler.setGraphView(graphView);
+        }
+    }
+
+    public void stopDataVisualization() {
+        if (bioHarnessConnected) {
+            bioHarnessListener.bioHarnessHandler.setGraphView(null);
+        }
     }
 
     public class LocalBinder extends Binder {

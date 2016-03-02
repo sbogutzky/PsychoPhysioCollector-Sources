@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import de.bogutzky.psychophysiocollector.app.GraphView;
 import de.bogutzky.psychophysiocollector.app.R;
 import de.bogutzky.psychophysiocollector.app.Utils;
 import de.bogutzky.psychophysiocollector.app.data.management.WriteDataTask;
@@ -32,6 +33,7 @@ public class BioHarnessHandler extends Handler {
     private Double lastValidEcgVoltage;
     private boolean[] isFirstDataRow = {true, true};
     private boolean isLogging = false;
+    private GraphView graphView;
 
     public BioHarnessHandler(Activity activity, int[] maxBatchCounts) {
         this.activity = activity;
@@ -156,13 +158,17 @@ public class BioHarnessHandler extends Handler {
                 break;
 
             case BioHarnessConstants.ECG_MSG_ID:
+
+                long timestamp = msg.getData().getLong("Timestamp");
+                short voltage = msg.getData().getShort("Voltage");
+                double ecgVoltage = voltage * 0.013405;
+                if (ecgVoltage < 10.0) {
+                    lastValidEcgVoltage = ecgVoltage;
+                }
+                if (graphView != null)
+                    graphView.setDataWithAdjustment(new Double[]{lastValidEcgVoltage}, activity.getString(R.string.file_name_ecg), "u8");
+
                 if (isLogging) {
-                    long timestamp = msg.getData().getLong("Timestamp");
-                    short voltage = msg.getData().getShort("Voltage");
-                    double ecgVoltage = voltage * 0.013405;
-                    if (ecgVoltage < 10.0) {
-                        lastValidEcgVoltage = ecgVoltage;
-                    }
                     this.buffer[BioHarnessConstants.ECG_STORE_ID][batchRowCounts[BioHarnessConstants.ECG_STORE_ID]][0] = lastValidEcgVoltage;
 
                     if (this.isFirstDataRow[BioHarnessConstants.ECG_STORE_ID]) {
@@ -200,5 +206,9 @@ public class BioHarnessHandler extends Handler {
 
     private void writeValues(String filename, Double[][] buffer, int fields, int batchRowCount, String batchComments) {
         new WriteDataTask().execute(new WriteDataTaskParams(this.root, filename, buffer, fields, batchRowCount, batchComments));
+    }
+
+    public void setGraphView(GraphView graphView) {
+        this.graphView = graphView;
     }
 }
