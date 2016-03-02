@@ -51,7 +51,6 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Locale;
 import java.util.Random;
 import java.util.Set;
@@ -218,10 +217,6 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
         }
     }
 
-    private void resetTime() {
-        this.startTimestamp = System.currentTimeMillis();
-    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -271,14 +266,6 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
         if (id == R.id.action_start_streaming) {
             this.isFirstSelfReportRequest = true;
             showQuestionnaire(true);
-
-            this.startStreamMenuItem.setEnabled(false);
-            this.stopStreamMenuItem.setEnabled(true);
-            this.disconnectMenuItem.setEnabled(false);
-
-            if (this.directoryName == null) {
-                createRootDirectory();
-            }
         }
 
         if (id == R.id.action_stop_streaming) {
@@ -315,13 +302,13 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
                 int shimmerImuCount = shimmerImuService.shimmerImuMap.values().size();
 
                 TextView infoShimmerImoConnectionStatus = (TextView) dialog.findViewById(R.id.textViewInfoShimmerImoConnectionStatus);
-                infoShimmerImoConnectionStatus.setText(getString(R.string.info_connected, shimmerImuCount));
+                infoShimmerImoConnectionStatus.setText(getString(R.string.info_number_connected, shimmerImuCount));
             }
 
             if(bioHarnessService != null) {
                 if(bioHarnessService.isBioHarnessConnected()) {
                     TextView infoBioHarnessConnectionStatus = (TextView) dialog.findViewById(R.id.textViewInfoBioHarnessConnectionStatus);
-                    infoBioHarnessConnectionStatus.setText(getString(R.string.info_connected, 1));
+                    infoBioHarnessConnectionStatus.setText(getString(R.string.info_number_connected, 1));
                 }
             }
 
@@ -339,8 +326,6 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
                 Log.e(TAG, "Could not read package info", e);
                 infoVersionName.setText(R.string.info_could_not_read);
             }
-
-
             dialog.show();
         }
         return super.onOptionsItemSelected(item);
@@ -350,6 +335,20 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
     public void connectionResetted() {
         disconnectDevices();
         Toast.makeText(this, getString(R.string.connection_to_shimmer_imu_resetted), Toast.LENGTH_LONG).show();
+    }
+
+    public void startSession() {
+        this.startStreamMenuItem.setEnabled(false);
+        this.stopStreamMenuItem.setEnabled(true);
+        this.disconnectMenuItem.setEnabled(false);
+
+        this.startTimestamp = System.currentTimeMillis();
+        createRootDirectory();
+
+        startStreamingOfAllShimmerImus(true);
+        startStreamingBioHarness();
+        startStreamingInternalSensorData();
+        this.isSessionStarted = true;
     }
 
     public String getHeaderComments() {
@@ -487,8 +486,8 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
     private void createRootDirectory() {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.GERMAN);
         SimpleDateFormat simpleTimeFormat = new SimpleDateFormat("HH-mm-ss", Locale.GERMAN);
-        String dateString = simpleDateFormat.format(new Date());
-        String timeString = simpleTimeFormat.format(new Date());
+        String dateString = simpleDateFormat.format(this.startTimestamp);
+        String timeString = simpleTimeFormat.format(this.startTimestamp);
         if(activityName.equals("")) activityName = getString(R.string.settings_undefined);
         if(participantLastName.equals("")) participantLastName = getString(R.string.settings_undefined);
         if(participantFirstName.equals("")) participantFirstName = getString(R.string.settings_undefined);
@@ -728,15 +727,11 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
             @Override
             public void onClick(View view) {
                 if (isFirstSelfReportRequest) {
-                    resetTime();
+                    startSession();
                     questionnaire.saveQuestionnaireItems(root, isFirstSelfReportRequest, getHeaderComments(), null, startTimestamp);
                     if (intervalConfigured) {
                         startTimerThread();
                     }
-                    startStreamingOfAllShimmerImus(true);
-                    startStreamingBioHarness();
-                    startStreamingInternalSensorData();
-                    isSessionStarted = true;
                     isFirstSelfReportRequest = false;
                 } else if (isSessionStarted) {
                     questionnaire.saveQuestionnaireItems(root, false, getHeaderComments(), null, startTimestamp);
@@ -815,13 +810,13 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
                public void onGpsStatusChanged(int event) {
                    switch (event) {
                        case GpsStatus.GPS_EVENT_STARTED:
-                           gpsStatusText = "GPS " + getString(R.string.info_connected);
+                           gpsStatusText = getString(R.string.info_connected);
                            break;
                        case GpsStatus.GPS_EVENT_STOPPED:
-                           gpsStatusText = "GPS " + getString(R.string.info_not_connected);
+                           gpsStatusText = getString(R.string.info_not_connected);
                            break;
                        case GpsStatus.GPS_EVENT_FIRST_FIX:
-                           gpsStatusText = "GPS " + getString(R.string.info_connected_fix_received);
+                           gpsStatusText = getString(R.string.info_connected_fix_received);
                            break;
                    }
                }

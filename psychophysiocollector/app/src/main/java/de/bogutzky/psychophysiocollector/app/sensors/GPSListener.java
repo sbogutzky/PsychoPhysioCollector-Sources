@@ -16,13 +16,9 @@ import de.bogutzky.psychophysiocollector.app.R;
 import de.bogutzky.psychophysiocollector.app.data.management.WriteDataTask;
 import de.bogutzky.psychophysiocollector.app.data.management.WriteDataTaskParams;
 
-/**
- * Created by Jan Schrader on 01.03.16.
- */
 public class GPSListener implements LocationListener {
     private static final String TAG = "GPSListener";
     private String filename;
-    private String directoryName;
     private File root;
     private int i = 0;
     private int maxValueCount;
@@ -33,10 +29,9 @@ public class GPSListener implements LocationListener {
 
     public GPSListener(String filename, String directoryName, int maxValueCount, MainActivity activity) {
         this.filename = filename;
-        this.directoryName = directoryName;
         this.activity = activity;
 
-        this.root = activity.getStorageDirectory(this.directoryName);
+        this.root = activity.getStorageDirectory(directoryName);
 
         this.maxValueCount = maxValueCount;
         this.values = new Double[maxValueCount][4];
@@ -71,7 +66,7 @@ public class GPSListener implements LocationListener {
             i = 0;
         }
         if (lastLocationAccuracy - location.getAccuracy() > 5.0) {
-            activity.setGpsStatusText("GPS " + activity.getText(R.string.info_connected_fix_received) + activity.getString(R.string.accuracy) + location.getAccuracy());
+            activity.setGpsStatusText(activity.getText(R.string.info_connected_fix_received) + activity.getString(R.string.accuracy) + location.getAccuracy());
             lastLocationAccuracy = location.getAccuracy();
         }
     }

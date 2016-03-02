@@ -49,7 +49,8 @@
     <string name="info_session">Sitzung: </string>
     <string name="info_started">gestartet</string>
     <string name="info_not_started">nicht gestartet</string>
-    <string name="info_connected">%1$d verbunden</string>
+    <string name="info_number_connected">%1$d verbunden</string>
+    <string name="info_connected">verbunden</string>
     <string name="info_not_connected">nicht verbunden</string>
     <string name="info_connected_fix_received">verbunden und Fix erhalten</string>
     <string name="info_could_not_read">konnte nicht gelesen werde.</string>
