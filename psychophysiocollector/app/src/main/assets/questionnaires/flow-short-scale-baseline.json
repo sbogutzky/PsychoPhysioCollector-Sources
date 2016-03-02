@@ -5,43 +5,43 @@
       {
         "type": "rating",
         "stars": 7,
-        "question": "Ich fühle mich optimal beansprucht.",
+        "question": "Ich bin motiviert zu laufen.",
         "ratings": ["Trifft nicht zu", "Trifft zu"]
       },
       {
         "type": "rating",
         "stars": 7,
-        "question": "Meine Gedanken bzw. Aktivitäten laufen flüssig und glatt.",
+        "question": "Ich habe keine Sorgen, über die ich mir gerade Gedanken mache.",
         "ratings": ["Trifft nicht zu", "Trifft zu"]
       },
       {
         "type": "rating",
         "stars": 7,
-        "question": "Ich merke gar nicht, wie die Zeit vergeht.",
+        "question": "Ich stehe gerade nicht unter Zeitdruck.",
         "ratings": ["Trifft nicht zu", "Trifft zu"]
       },
       {
         "type": "rating",
         "stars": 7,
-        "question": "Ich habe keine Mühe, mich zu konzentrieren.",
+        "question": "Es fällt mir leicht mich auf den anstehenden Lauf zu konzentrieren.",
         "ratings": ["Trifft nicht zu", "Trifft zu"]
       },
       {
         "type": "rating",
         "stars": 7,
-        "question": "Mein Kopf ist völlig klar.",
+        "question": "Mein Kopf fühlt sich frei an.",
         "ratings": ["Trifft nicht zu", "Trifft zu"]
       },
       {
         "type": "rating",
         "stars": 7,
-        "question": "Ich bin ganz vertieft in das, was ich gerade mache.",
+        "question": "Ich bin fokussiert.",
         "ratings": ["Trifft nicht zu", "Trifft zu"]
       },
       {
         "type": "rating",
         "stars": 7,
-        "question": "Die richtigen Gedanken/Bewegungen kommen wie von selbst.",
+        "question": "Meine Gedanken sind beim anstehenden Lauf.",
         "ratings": ["Trifft nicht zu", "Trifft zu"]
       },
       {
@@ -59,7 +59,7 @@
       {
         "type": "rating",
         "stars": 7,
-        "question": "Ich bin völlig selbstvergessen.",
+        "question": "Ich bin gerade Gedankenlos.",
         "ratings": ["Trifft nicht zu", "Trifft zu"]
       },
       {
