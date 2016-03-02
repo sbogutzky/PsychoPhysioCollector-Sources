@@ -102,7 +102,7 @@
         <Spinner
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/initial_questionnaireSpinner" />
+            android:id="@+id/baseline_questionnaireSpinner" />
     </LinearLayout>
 
     <RelativeLayout
