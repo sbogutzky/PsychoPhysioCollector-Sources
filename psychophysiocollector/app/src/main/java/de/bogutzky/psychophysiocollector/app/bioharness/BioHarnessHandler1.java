@@ -17,8 +17,8 @@ import de.bogutzky.psychophysiocollector.app.Utils;
 import de.bogutzky.psychophysiocollector.app.data.management.WriteDataTask;
 import de.bogutzky.psychophysiocollector.app.data.management.WriteDataTaskParams;
 
-public class BioHarnessHandler extends Handler {
-    private static final String TAG = "BioHarnessHandler";
+public class BioHarnessHandler1 extends Handler {
+    private static final String TAG = "BioHarnessHandler1";
 
     private Activity activity;
     private File root;
@@ -35,7 +35,7 @@ public class BioHarnessHandler extends Handler {
     private boolean isLogging = false;
     private GraphView graphView;
 
-    public BioHarnessHandler(Activity activity, int[] maxBatchCounts) {
+    public BioHarnessHandler1(Activity activity, int[] maxBatchCounts) {
         this.activity = activity;
         this.maxBatchCounts = maxBatchCounts;
     }
