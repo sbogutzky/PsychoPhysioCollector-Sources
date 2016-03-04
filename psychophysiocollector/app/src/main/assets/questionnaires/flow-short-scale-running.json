@@ -5,61 +5,61 @@
       {
         "type": "rating",
         "stars": 7,
-        "question": "Du warst beim Laufen optimal beansprucht.",
+        "question": "Ich fühle mich (beim Laufen) optimal beansprucht.",
         "ratings": ["Trifft nicht zu", "Trifft zu"]
       },
       {
         "type": "rating",
         "stars": 7,
-        "question": "Deine Bewegungen waren beim Laufen flüssig und glatt.",
+        "question": "Meine Bewegungen (beim Laufen) sind flüssig und glatt.",
         "ratings": ["Trifft nicht zu", "Trifft zu"]
       },
       {
         "type": "rating",
         "stars": 7,
-        "question": "Du hast beim Laufen gar nicht gemerkt, wie die Zeit verging.",
+        "question": "Ich merke (beim Laufen) gar nicht wie die Zeit vergeht.",
         "ratings": ["Trifft nicht zu", "Trifft zu"]
       },
       {
         "type": "rating",
         "stars": 7,
-        "question": "Du hattest keine Mühe, dich auf das Laufen zu konzentrieren.",
+        "question": "Ich habe keine Mühe, mich auf das Laufen zu konzentrieren.",
         "ratings": ["Trifft nicht zu", "Trifft zu"]
       },
       {
         "type": "rating",
         "stars": 7,
-        "question": "Dein Kopf war beim Laufen völlig frei.",
+        "question": "Mein Kopf ist (beim Laufen) völlig frei.",
         "ratings": ["Trifft nicht zu", "Trifft zu"]
       },
       {
         "type": "rating",
         "stars": 7,
-        "question": "Du warst ganz vertieft in das Laufen.",
+        "question": "Ich bin ganz vertieft in das Laufen.",
         "ratings": ["Trifft nicht zu", "Trifft zu"]
       },
       {
         "type": "rating",
         "stars": 7,
-        "question": "Die richtige Bewegungen beim Laufen kam wie von selbst.",
-        "ratings": ["Trifft nicht zu", "Trifft zu"]
-      },
-      {
-        "type": "hidden",
-        "stars": 7,
-        "question": "Ich weiß bei jedem Schritt, was ich zu tun habe.",
+        "question": "Die richtigen Bewegungen (beim Laufen) kommen wie von selbst.",
         "ratings": ["Trifft nicht zu", "Trifft zu"]
       },
       {
         "type": "rating",
         "stars": 7,
-        "question": "Du hattest das Gefühl, den Ablauf beim Laufen unter Kontrolle zu haben.",
+        "question": "Ich weiß bei jedem Schritt, was ich zu tun habe",
         "ratings": ["Trifft nicht zu", "Trifft zu"]
       },
       {
         "type": "rating",
         "stars": 7,
-        "question": "Du warst beim Laufen völlig selbstvergessen.",
+        "question": "Ich habe das Gefühl, den Ablauf beim Laufen unter Kontrolle zu haben.",
+        "ratings": ["Trifft nicht zu", "Trifft zu"]
+      },
+      {
+        "type": "rating",
+        "stars": 7,
+        "question": "Ich bin beim Laufen völlig selbstvergessen.",
         "ratings": ["Trifft nicht zu", "Trifft zu"]
       },
       {
@@ -89,7 +89,7 @@
       {
         "type": "rating",
         "stars": 9,
-        "question": "Ich denke, ich besitze eine optimale Lauftechnik...",
+        "question": "Ich denke, ich habe eine optimale Lauftechnik...",
         "ratings": ["Trifft nicht zu", "Trifft zu"]
       },
       {

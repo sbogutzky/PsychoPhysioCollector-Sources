@@ -5,19 +5,19 @@
       {
         "type": "rating",
         "stars": 7,
-        "question": "Ich bin motiviert zu laufen.",
+        "question": "Ich fühle mich optimal beansprucht.",
         "ratings": ["Trifft nicht zu", "Trifft zu"]
       },
       {
         "type": "rating",
         "stars": 7,
-        "question": "Ich habe keine Sorgen, über die ich mir gerade Gedanken mache.",
+        "question": "Meine Gedanken/Bewegungen zur Vorbereitung auf das Laufen sind flüssig und glatt.",
         "ratings": ["Trifft nicht zu", "Trifft zu"]
       },
       {
         "type": "rating",
         "stars": 7,
-        "question": "Ich stehe gerade nicht unter Zeitdruck.",
+        "question": "Ich merke gar nicht, wie die Zeit vergeht.",
         "ratings": ["Trifft nicht zu", "Trifft zu"]
       },
       {
@@ -29,37 +29,37 @@
       {
         "type": "rating",
         "stars": 7,
-        "question": "Mein Kopf fühlt sich frei an.",
+        "question": "Mein Kopf ist völlig frei.",
         "ratings": ["Trifft nicht zu", "Trifft zu"]
       },
       {
         "type": "rating",
         "stars": 7,
-        "question": "Ich bin fokussiert.",
+        "question": "Ich bin ganz fokussiert auf den anstehenden Lauf.",
         "ratings": ["Trifft nicht zu", "Trifft zu"]
       },
       {
         "type": "rating",
         "stars": 7,
-        "question": "Meine Gedanken sind beim anstehenden Lauf.",
-        "ratings": ["Trifft nicht zu", "Trifft zu"]
-      },
-      {
-        "type": "hidden",
-        "stars": 7,
-        "question": "Ich weiß bei jedem Schritt, was ich zu tun habe.",
-        "ratings": ["Trifft nicht zu", "Trifft zu"]
-      },
-      {
-        "type": "hidden",
-        "stars": 7,
-        "question": "Ich habe das Gefühl, den Ablauf unter Kontrolle zu haben.",
+        "question": "Die richtigen Bewegungen zur Vorbereitung auf das Laufen kommen wie von selbst.",
         "ratings": ["Trifft nicht zu", "Trifft zu"]
       },
       {
         "type": "rating",
         "stars": 7,
-        "question": "Ich bin gerade Gedankenlos.",
+        "question": "Ich weiß bei jedem Schritt was ich zu tun habe.",
+        "ratings": ["Trifft nicht zu", "Trifft zu"]
+      },
+      {
+        "type": "rating",
+        "stars": 7,
+        "question": "Ich habe das Gefühl, den anstehenden Lauf unter Kontrolle zu haben.",
+        "ratings": ["Trifft nicht zu", "Trifft zu"]
+      },
+      {
+        "type": "rating",
+        "stars": 7,
+        "question": "Ich denke gerade an nichts anderes als an den anstehenden Lauf.",
         "ratings": ["Trifft nicht zu", "Trifft zu"]
       },
       {
@@ -89,8 +89,8 @@
       {
         "type": "hidden",
         "stars": 9,
-        "question": "Ich denke, meine Fähigkeiten auf diesem Gebiet sind...",
-        "ratings": ["niedrig", "hoch"]
+        "question": " Ich denke, ich habe eine optimale Lauftechnik...",
+        "ratings": ["Trifft nicht zu", "Trifft zu"]
       },
       {
         "type": "hidden",
