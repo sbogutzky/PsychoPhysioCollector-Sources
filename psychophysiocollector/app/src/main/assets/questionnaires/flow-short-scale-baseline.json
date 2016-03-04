@@ -87,7 +87,7 @@
         "ratings": ["leicht", "schwer"]
       },
       {
-        "type": "hidden",
+        "type": "rating",
         "stars": 9,
         "question": " Ich denke, ich habe eine optimale Lauftechnik...",
         "ratings": ["Trifft nicht zu", "Trifft zu"]
