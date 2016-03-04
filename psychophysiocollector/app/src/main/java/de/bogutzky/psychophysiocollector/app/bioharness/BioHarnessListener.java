@@ -11,7 +11,7 @@ import zephyr.android.BioHarnessBT.*;
 public class BioHarnessListener extends ConnectListenerImpl {
     private static final String TAG = "BioHarnessListener";
 
-    public BioHarnessHandler1 bioHarnessHandler1;
+    public BioHarnessHandler bioHarnessHandler;
 
     /* Creating the different Objects for different types of Packets */
     //private GeneralPacketInfo generalPacketInfo = new GeneralPacketInfo();
@@ -23,16 +23,16 @@ public class BioHarnessListener extends ConnectListenerImpl {
 
     private PacketTypeRequest RqPacketType = new PacketTypeRequest();
 
-    public BioHarnessListener(Handler handler, BioHarnessHandler1 bioHarnessHandler1) {
+    public BioHarnessListener(Handler handler, BioHarnessHandler bioHarnessHandler) {
         super(handler, null);
-        this.bioHarnessHandler1 = bioHarnessHandler1;
+        this.bioHarnessHandler = bioHarnessHandler;
     }
 
     public void Connected(ConnectedEvent<BTClient> eventArgs) {
         Log.d(TAG, String.format("Connected to BioHarness %s.", eventArgs.getSource().getDevice().getName()));
         Message msg = new Message();
         msg.what = 101; //ready msg
-        bioHarnessHandler1.sendMessage(msg);
+        bioHarnessHandler.sendMessage(msg);
 
         /* Use this object to enable or disable the different Packet types */
         RqPacketType.GP_ENABLE = false;
@@ -103,7 +103,7 @@ public class BioHarnessListener extends ConnectListenerImpl {
                 bundle.putInt("rrInterval", rrInterval);
                 bundle.putLong("Timestamp", timestamp);
                 message.setData(bundle);
-                bioHarnessHandler1.sendMessage(message);
+                bioHarnessHandler.sendMessage(message);
             }
         }
         //Log.d(TAG,  "RR-Intervals at " + Utils.getDateString(timestamp, "dd/MM/yyyy hh:mm:ss.SSS"));
@@ -131,7 +131,7 @@ public class BioHarnessListener extends ConnectListenerImpl {
             bundle.putShort("Voltage", sample);
             bundle.putLong("Timestamp", timestamp);
             message.setData(bundle);
-            bioHarnessHandler1.sendMessage(message);
+            bioHarnessHandler.sendMessage(message);
         }
         //Log.d(TAG, samples.length + " ECG samples at " + Utils.getDateString(timestamp, "dd/MM/yyyy hh:mm:ss.SSS"));
     }
@@ -148,39 +148,39 @@ public class BioHarnessListener extends ConnectListenerImpl {
         Bundle bundle = new Bundle();
 
         int heartRate = generalPacketInfo.GetHeartRate(dataArray);
-        message = bioHarnessHandler1.obtainMessage(BioHarnessConstants.HEART_RATE);
+        message = bioHarnessHandler.obtainMessage(BioHarnessConstants.HEART_RATE);
         bundle.putString("HeartRate", String.valueOf(heartRate));
         bundle.putLong("Timestamp", timestamp);
         message.setData(bundle);
-        bioHarnessHandler1.sendMessage(message);
+        bioHarnessHandler.sendMessage(message);
 
         double RespRate = generalPacketInfo.GetRespirationRate(dataArray);
-        message = bioHarnessHandler1.obtainMessage(BioHarnessConstants.RESPIRATION_RATE);
+        message = bioHarnessHandler.obtainMessage(BioHarnessConstants.RESPIRATION_RATE);
         bundle.putString("RespirationRate", String.valueOf(RespRate));
         bundle.putLong("Timestamp", timestamp);
         message.setData(bundle);
-        bioHarnessHandler1.sendMessage(message);
+        bioHarnessHandler.sendMessage(message);
 
         double SkinTempDbl = generalPacketInfo.GetSkinTemperature(dataArray);
-        message = bioHarnessHandler1.obtainMessage(BioHarnessConstants.SKIN_TEMPERATURE);
+        message = bioHarnessHandler.obtainMessage(BioHarnessConstants.SKIN_TEMPERATURE);
         bundle.putLong("Timestamp", timestamp);
         bundle.putString("SkinTemperature", String.valueOf(SkinTempDbl));
         message.setData(bundle);
-        bioHarnessHandler1.sendMessage(message);
+        bioHarnessHandler.sendMessage(message);
 
         int PostureInt = generalPacketInfo.GetPosture(dataArray);
-        message = bioHarnessHandler1.obtainMessage(BioHarnessConstants.POSTURE);
+        message = bioHarnessHandler.obtainMessage(BioHarnessConstants.POSTURE);
         bundle.putString("Posture", String.valueOf(PostureInt));
         bundle.putLong("Timestamp", timestamp);
         message.setData(bundle);
-        bioHarnessHandler1.sendMessage(message);
+        bioHarnessHandler.sendMessage(message);
 
         double PeakAccDbl = generalPacketInfo.GetPeakAcceleration(dataArray);
-        message = bioHarnessHandler1.obtainMessage(BioHarnessConstants.PEAK_ACCLERATION);
+        message = bioHarnessHandler.obtainMessage(BioHarnessConstants.PEAK_ACCLERATION);
         bundle.putString("PeakAcceleration", String.valueOf(PeakAccDbl));
         bundle.putLong("Timestamp", timestamp);
         message.setData(bundle);
-        bioHarnessHandler1.sendMessage(message);
+        bioHarnessHandler.sendMessage(message);
     }
     */
 
@@ -207,7 +207,7 @@ public class BioHarnessListener extends ConnectListenerImpl {
             bundle.putShort("Interval", sample);
             bundle.putLong("Timestamp", timestamp);
             message.setData(bundle);
-            bioHarnessHandler1.sendMessage(message);
+            bioHarnessHandler.sendMessage(message);
         }
     } */
 
@@ -242,7 +242,7 @@ public class BioHarnessListener extends ConnectListenerImpl {
             bundle.putDouble("AccelerationZ", accelerationZ);
             bundle.putLong("Timestamp", timestamp);
             message.setData(bundle);
-            bioHarnessHandler1.sendMessage(message);
+            bioHarnessHandler.sendMessage(message);
         }
     }
     */

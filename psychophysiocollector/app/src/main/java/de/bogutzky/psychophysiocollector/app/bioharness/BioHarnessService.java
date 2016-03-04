@@ -39,13 +39,13 @@ public class BioHarnessService extends Service {
 
     public void startDataVisualization(GraphView graphView) {
         if (bioHarnessConnected) {
-            bioHarnessListener.bioHarnessHandler1.setGraphView(graphView);
+            bioHarnessListener.bioHarnessHandler.setGraphView(graphView);
         }
     }
 
     public void stopDataVisualization() {
         if (bioHarnessConnected) {
-            bioHarnessListener.bioHarnessHandler1.setGraphView(null);
+            bioHarnessListener.bioHarnessHandler.setGraphView(null);
         }
     }
 
@@ -66,9 +66,9 @@ public class BioHarnessService extends Service {
         return START_STICKY;
     }
 
-    public void connectBioHarness(String bluetoothAddress, BioHarnessHandler1 bioHarnessHandler1) {
+    public void connectBioHarness(String bluetoothAddress, BioHarnessHandler bioHarnessHandler) {
         btClient = new BTClient(BluetoothAdapter.getDefaultAdapter(), bluetoothAddress);
-        bioHarnessListener = new BioHarnessListener(bioHarnessHandler1, bioHarnessHandler1);
+        bioHarnessListener = new BioHarnessListener(bioHarnessHandler, bioHarnessHandler);
         btClient.addConnectedEventListener(bioHarnessListener);
         if(btClient.IsConnected()) {
             btClient.start();
@@ -86,16 +86,16 @@ public class BioHarnessService extends Service {
 
     public void startStreamingBioHarness(File root, String directoryName, long startTimestamp) { // File root, String directoryName,
         if (bioHarnessConnected) {
-            bioHarnessListener.bioHarnessHandler1.setRoot(root);
-            bioHarnessListener.bioHarnessHandler1.setDirectoryName(directoryName);
-            bioHarnessListener.bioHarnessHandler1.setStartTimestamp(startTimestamp);
-            bioHarnessListener.bioHarnessHandler1.startStreaming();
+            bioHarnessListener.bioHarnessHandler.setRoot(root);
+            bioHarnessListener.bioHarnessHandler.setDirectoryName(directoryName);
+            bioHarnessListener.bioHarnessHandler.setStartTimestamp(startTimestamp);
+            bioHarnessListener.bioHarnessHandler.startStreaming();
         }
     }
 
     public void stopStreamingBioHarness() {
         if(btClient != null && bioHarnessListener != null) {
-            bioHarnessListener.bioHarnessHandler1.stopStreaming();
+            bioHarnessListener.bioHarnessHandler.stopStreaming();
             btClient.removeConnectedEventListener(bioHarnessListener);
         }
     }

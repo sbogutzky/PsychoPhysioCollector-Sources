@@ -55,7 +55,7 @@ import java.util.Locale;
 import java.util.Random;
 import java.util.Set;
 
-import de.bogutzky.psychophysiocollector.app.bioharness.BioHarnessHandler1;
+import de.bogutzky.psychophysiocollector.app.bioharness.BioHarnessHandler;
 import de.bogutzky.psychophysiocollector.app.bioharness.BioHarnessHandlerInterface;
 import de.bogutzky.psychophysiocollector.app.bioharness.BioHarnessMainConfigurationActivity;
 import de.bogutzky.psychophysiocollector.app.bioharness.BioHarnessService;
@@ -683,7 +683,7 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
                 if (device.getName().startsWith("BH")) {
                     if (bluetoothAddresses.contains(device.getAddress())) {
                         if (bioHarnessService != null) {
-                            bioHarnessService.connectBioHarness(device.getAddress(), new BioHarnessHandler1(this, new int[]{100, 1000}));
+                            bioHarnessService.connectBioHarness(device.getAddress(), new BioHarnessHandler(this, new int[]{100, 1000}));
                         }
                     }
                 }
