@@ -113,8 +113,7 @@ public class GraphView extends View {
     	invalidate();
     }
     
-    private void addDataPoint(float value, final int color, final float lastValue, final int pos){
-        Log.d("addDataPoint", "" + value);
+    private void addDataPoint(float value, final int color, final float lastValue, final int pos) {
         final Paint paint = mPaint;
 
         float newX = mLastX + mSpeed;
