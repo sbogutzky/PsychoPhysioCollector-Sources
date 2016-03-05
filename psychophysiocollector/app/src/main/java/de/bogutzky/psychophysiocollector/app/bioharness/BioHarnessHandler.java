@@ -29,7 +29,7 @@ public class BioHarnessHandler extends Handler {
     private Double[][][] buffer1;
 
     private long startTimestamp;
-    private Double incrementedTimestamp;
+    private Double[] incrementedTimestamp;
     private Double lastValidEcgVoltage;
     private boolean[] isFirstDataRow = {true, true};
     private boolean isLogging = false;
@@ -88,10 +88,12 @@ public class BioHarnessHandler extends Handler {
         this.buffer1[BioHarnessConstants.RtoR_STORE_ID] = new Double[this.maxBatchCounts[BioHarnessConstants.RtoR_STORE_ID]][2];
         this.buffer[BioHarnessConstants.RtoR_STORE_ID] = buffer0[BioHarnessConstants.RtoR_STORE_ID];
 
-        this.buffer0[BioHarnessConstants.ECG_STORE_ID] = new Double[this.maxBatchCounts[BioHarnessConstants.ECG_STORE_ID]][1];
-        this.buffer1[BioHarnessConstants.ECG_STORE_ID] = new Double[this.maxBatchCounts[BioHarnessConstants.ECG_STORE_ID]][1];
+        this.buffer0[BioHarnessConstants.ECG_STORE_ID] = new Double[this.maxBatchCounts[BioHarnessConstants.ECG_STORE_ID]][2];
+        this.buffer1[BioHarnessConstants.ECG_STORE_ID] = new Double[this.maxBatchCounts[BioHarnessConstants.ECG_STORE_ID]][2];
         this.buffer[BioHarnessConstants.ECG_STORE_ID] = buffer0[BioHarnessConstants.ECG_STORE_ID];
         this.isLogging = true;
+
+        this.incrementedTimestamp = new Double[2];
     }
 
     public void stopStreaming() {
@@ -102,7 +104,7 @@ public class BioHarnessHandler extends Handler {
             footerComments = ((BioHarnessHandlerInterface) activity).getFooterComments();
         }
         writeValues(activity.getString(R.string.file_name_rr_interval), this.buffer[BioHarnessConstants.RtoR_STORE_ID], 2, batchRowCounts[BioHarnessConstants.RtoR_STORE_ID], footerComments);
-        writeValues(activity.getString(R.string.file_name_ecg), this.buffer[BioHarnessConstants.ECG_STORE_ID], 1, batchRowCounts[BioHarnessConstants.ECG_STORE_ID], footerComments);
+        writeValues(activity.getString(R.string.file_name_ecg), this.buffer[BioHarnessConstants.ECG_STORE_ID], 2, batchRowCounts[BioHarnessConstants.ECG_STORE_ID], footerComments);
 
         this.isFirstDataRow = new boolean[]{true, true, true};
     }
@@ -126,20 +128,19 @@ public class BioHarnessHandler extends Handler {
                         // Time difference between start the evaluation and here
                         Double bioHarnessStartTimestamp = timestamp / 1.0;
                         //Double timeDifference = bioHarnessStartTimestamp - this.startTimestamp;
-                        Double timeDifference = System.currentTimeMillis() - this.startTimestamp / 1.0;
-                        this.incrementedTimestamp = timeDifference;
+                        Double timeDifference = (System.currentTimeMillis() - rrInterval / 1000.0) - this.startTimestamp / 1.0;
+                        this.incrementedTimestamp[BioHarnessConstants.RtoR_STORE_ID] = timeDifference;
 
                         Log.d(TAG, "Time difference: " + timeDifference + " ms");
                         Log.d(TAG, "Start timestamp: " + Utils.getDateString(this.startTimestamp, "dd/MM/yyyy hh:mm:ss.SSS"));
                         Log.d(TAG, "First data row timestamp: " + Utils.getDateString(System.currentTimeMillis(), "dd/MM/yyyy hh:mm:ss.SSS"));
                         Log.d(TAG, "BioHarness start timestamp: " + Utils.getDateString(bioHarnessStartTimestamp.longValue(), "dd/MM/yyyy hh:mm:ss.SSS"));
-                        this.buffer[BioHarnessConstants.RtoR_STORE_ID][batchRowCounts[BioHarnessConstants.RtoR_STORE_ID]][0] = timeDifference;
                         writeHeader(activity.getString(R.string.file_name_rr_interval), new String[] {activity.getString(R.string.file_header_timestamp), activity.getString(R.string.file_header_rr_interval)});
                         this.isFirstDataRow[BioHarnessConstants.RtoR_STORE_ID] = false;
                     }
 
-                    this.buffer[BioHarnessConstants.RtoR_STORE_ID][batchRowCounts[BioHarnessConstants.RtoR_STORE_ID]][0] = this.incrementedTimestamp;
-                    this.incrementedTimestamp += this.buffer[BioHarnessConstants.RtoR_STORE_ID][batchRowCounts[BioHarnessConstants.RtoR_STORE_ID]][1];
+                    this.buffer[BioHarnessConstants.RtoR_STORE_ID][batchRowCounts[BioHarnessConstants.RtoR_STORE_ID]][0] = this.incrementedTimestamp[BioHarnessConstants.RtoR_STORE_ID];
+                    this.incrementedTimestamp[BioHarnessConstants.RtoR_STORE_ID] += this.buffer[BioHarnessConstants.RtoR_STORE_ID][batchRowCounts[BioHarnessConstants.RtoR_STORE_ID]][1];
                     this.buffer[BioHarnessConstants.RtoR_STORE_ID][batchRowCounts[BioHarnessConstants.RtoR_STORE_ID]][1] /= 1000.0;
 
                     //Log.d(TAG, "Timestamp: " + this.buffer[BioHarnessConstants.RtoR_STORE_ID][batchRowCounts[BioHarnessConstants.RtoR_STORE_ID]][0]  + " ms / RR-Interval: " + this.buffer[BioHarnessConstants.RtoR_STORE_ID][batchRowCounts[BioHarnessConstants.RtoR_STORE_ID]][1] + " s");
@@ -169,29 +170,32 @@ public class BioHarnessHandler extends Handler {
                     graphView.setDataWithAdjustment(new Double[]{lastValidEcgVoltage}, activity.getString(R.string.file_name_ecg), "u8");
 
                 if (isLogging) {
-                    this.buffer[BioHarnessConstants.ECG_STORE_ID][batchRowCounts[BioHarnessConstants.ECG_STORE_ID]][0] = lastValidEcgVoltage;
+                    this.buffer[BioHarnessConstants.ECG_STORE_ID][batchRowCounts[BioHarnessConstants.ECG_STORE_ID]][1] = lastValidEcgVoltage;
 
                     if (this.isFirstDataRow[BioHarnessConstants.ECG_STORE_ID]) {
 
                         // Time difference between start the evaluation and here
                         Double bioHarnessStartTimestamp = timestamp / 1.0;
                         //Double timeDifference = bioHarnessStartTimestamp - this.startTimestamp;
-                        Double timeDifference = System.currentTimeMillis() - this.startTimestamp / 1.0;
+                        Double timeDifference = (System.currentTimeMillis() - 25.2) - this.startTimestamp / 1.0;
+                        this.incrementedTimestamp[BioHarnessConstants.ECG_STORE_ID] = timeDifference;
 
                         Log.d(TAG, "Time difference: " + timeDifference + " ms");
                         Log.d(TAG, "Start timestamp: " + Utils.getDateString(this.startTimestamp, "dd/MM/yyyy hh:mm:ss.SSS"));
                         Log.d(TAG, "First data row timestamp: " + Utils.getDateString(System.currentTimeMillis(), "dd/MM/yyyy hh:mm:ss.SSS"));
                         Log.d(TAG, "BioHarness start timestamp: " + Utils.getDateString(bioHarnessStartTimestamp.longValue(), "dd/MM/yyyy hh:mm:ss.SSS"));
-                        //this.buffer[batchRowCounts][0] = timeDifference;
-                        writeHeader(activity.getString(R.string.file_name_ecg), new String[]{activity.getString(R.string.file_header_voltage)});
+                        writeHeader(activity.getString(R.string.file_name_ecg), new String[]{activity.getString(R.string.file_header_timestamp), activity.getString(R.string.file_header_voltage)});
                         this.isFirstDataRow[BioHarnessConstants.ECG_STORE_ID] = false;
                     }
 
-                    //Log.d(TAG, "Voltage: " + this.buffer[BioHarnessConstants.ECG_STORE_ID][batchRowCounts[BioHarnessConstants.ECG_STORE_ID]][0] + " mV");
+                    this.buffer[BioHarnessConstants.ECG_STORE_ID][batchRowCounts[BioHarnessConstants.ECG_STORE_ID]][0] = this.incrementedTimestamp[BioHarnessConstants.ECG_STORE_ID];
+                    this.incrementedTimestamp[BioHarnessConstants.ECG_STORE_ID] += 1000.0/250.0;
+
+                    //Log.d(TAG, "Timestamp: " + this.buffer[BioHarnessConstants.ECG_STORE_ID][batchRowCounts[BioHarnessConstants.ECG_STORE_ID]][0]  + " ms / Voltage: " + this.buffer[BioHarnessConstants.ECG_STORE_ID][batchRowCounts[BioHarnessConstants.ECG_STORE_ID]][1] + " mV");
 
                     batchRowCounts[BioHarnessConstants.ECG_STORE_ID]++;
                     if (batchRowCounts[BioHarnessConstants.ECG_STORE_ID] == maxBatchCounts[BioHarnessConstants.ECG_STORE_ID]) {
-                        writeValues(activity.getString(R.string.file_name_ecg), this.buffer[BioHarnessConstants.ECG_STORE_ID], 1, batchRowCounts[BioHarnessConstants.ECG_STORE_ID], null); // "# BatchRowCount: " + batchRowCounts
+                        writeValues(activity.getString(R.string.file_name_ecg), this.buffer[BioHarnessConstants.ECG_STORE_ID], 2, batchRowCounts[BioHarnessConstants.ECG_STORE_ID], null); // "# BatchRowCount: " + batchRowCounts
                         batchRowCounts[BioHarnessConstants.ECG_STORE_ID] = 0;
                         if (this.buffer[BioHarnessConstants.ECG_STORE_ID] == this.buffer0[BioHarnessConstants.ECG_STORE_ID]) {
                             this.buffer[BioHarnessConstants.ECG_STORE_ID] = this.buffer1[BioHarnessConstants.ECG_STORE_ID];
