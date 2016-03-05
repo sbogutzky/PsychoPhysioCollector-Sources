@@ -177,7 +177,7 @@ public class BioHarnessHandler extends Handler {
                         // Time difference between start the evaluation and here
                         Double bioHarnessStartTimestamp = timestamp / 1.0;
                         //Double timeDifference = bioHarnessStartTimestamp - this.startTimestamp;
-                        Double timeDifference = (System.currentTimeMillis() - 25.2) - this.startTimestamp / 1.0;
+                        Double timeDifference = (System.currentTimeMillis() - 252) - this.startTimestamp / 1.0;
                         this.incrementedTimestamp[BioHarnessConstants.ECG_STORE_ID] = timeDifference;
 
                         Log.d(TAG, "Time difference: " + timeDifference + " ms");
