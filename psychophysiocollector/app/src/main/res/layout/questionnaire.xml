@@ -1,7 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="fill_parent"
-    android:layout_height="fill_parent">
+    android:layout_height="fill_parent"
+    android:weightSum="1"
+    android:padding="10dp">
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Im Folgenden findest du einige Aussagen, die sich auf den eben beendeten Lauf beziehen. Bitte versetze dich nun nochmal in den eben beendeten Lauf hinein. Inwieweit treffen die folgenden Aussagen für dich zu? Entscheidend ist dabei deine persönliche Einschätzung, es gibt keine richtigen oder falschen Antworten. Dazu steht dir die folgende Antwortskala zur Verfügung:  Durch Anklicken einer der Antwortalternativen gebe an, wie sehr die jeweilige Aussage auf deine persönliche Einschätzung deines Erlebens während des Laufs zutrifft oder nicht. Je weiter links du anklickst, umso weniger trifft die Aussage für den eben durchgeführte Lauf zu. Umgekehrt trifft eine Aussage umso mehr zu, je weiter rechts du anklickst."
+        android:id="@+id/textViewDescription"
+        android:layout_gravity="center_horizontal"
+        android:layout_weight="0.84" />
 
     <Button
         android:layout_width="wrap_content"

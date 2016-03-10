@@ -56,7 +56,15 @@ public class Questionnaire {
         this.questionnaireFileName = questionnaireFileName;
         this.questionnaire = readQuestionnaireFromJSON();
         this.questionnaireDialog = new Dialog(activity);
-        this.questionnaireDialog.setTitle(activity.getString(R.string.questionnaire));
+        String title = activity.getString(R.string.questionnaire);
+        String description = "";
+        try {
+            title = questionnaire.getJSONObject("questionnaire").getString("title");
+            description = questionnaire.getJSONObject("questionnaire").getString("description");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        this.questionnaireDialog.setTitle(title);
         this.questionnaireDialog.setCancelable(false);
 
         this.showTimestamp = System.currentTimeMillis();
