@@ -66,8 +66,10 @@ public class GPSListener implements LocationListener {
             i = 0;
         }
         if (lastLocationAccuracy - location.getAccuracy() > 5.0) {
-            activity.setGpsStatusText(activity.getText(R.string.info_connected_fix_received) + activity.getString(R.string.accuracy) + location.getAccuracy());
+            activity.setGpsStatusText(activity.getString(R.string.info_connected_fix_received) + activity.getString(R.string.accuracy) + location.getAccuracy());
             lastLocationAccuracy = location.getAccuracy();
+        } else {
+            activity.setGpsStatusText(activity.getString(R.string.info_connected_fix_received));
         }
     }
 

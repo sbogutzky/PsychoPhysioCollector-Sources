@@ -129,6 +129,8 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
 
     private InternalSensorManager internalSensorManager;
 
+    private TextView infoGpsConnectionStatus;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -315,7 +317,7 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
                 }
             }
 
-            TextView infoGpsConnectionStatus = (TextView) dialog.findViewById(R.id.textViewInfoGpsConnectionStatus);
+            infoGpsConnectionStatus = (TextView) dialog.findViewById(R.id.textViewInfoGpsConnectionStatus);
             if(gpsStatusText == null) {
                 gpsStatusText = getString(R.string.info_not_connected);
             }
@@ -1026,6 +1028,9 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
 
     public void setGpsStatusText(String gpsStatusText) {
         this.gpsStatusText = gpsStatusText;
+        if(infoGpsConnectionStatus != null) {
+            infoGpsConnectionStatus.setText(gpsStatusText);
+        }
     }
 
     public long getStartTimestamp() {
