@@ -104,11 +104,11 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
     private Spinner selfReportIntervalSpinner;
     private Spinner selfReportVarianceSpinner;
     private Spinner questionnaireSpinner;
-    private Spinner baselineQuestionnaireSpinner;
+    //private Spinner baselineQuestionnaireSpinner;
     private int selfReportInterval;
     private int selfReportVariance;
     private String questionnaireFileName = "questionnaires/flow-short-scale.json";
-    private String baselineQuestionnaireFileName = "questionnaires/flow-short-scale.json";
+    //private String baselineQuestionnaireFileName = "questionnaires/flow-short-scale.json";
 
     private MenuItem addMenuItem;
     private MenuItem connectMenuItem;
@@ -151,7 +151,7 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
         selfReportInterval = sharedPref.getInt("selfReportInterval", 15);
         selfReportVariance = sharedPref.getInt("selfReportVariance", 30);
         questionnaireFileName = sharedPref.getString("questionnaireValue", "questionnaires/flow-short-scale.json");
-        baselineQuestionnaireFileName = sharedPref.getString("baselineQuestionnaireValue", "questionnaires/flow-short-scale.json");
+        //baselineQuestionnaireFileName = sharedPref.getString("baselineQuestionnaireValue", "questionnaires/flow-short-scale.json");
         activityName = sharedPref.getString("activityName", "");
         participantFirstName = sharedPref.getString("participantFirstName", "");
         participantLastName = sharedPref.getString("participantLastName", "");
@@ -267,22 +267,23 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
 
         if (id == R.id.action_start_streaming) {
             this.isFirstSelfReportRequest = true;
-            showQuestionnaire(true);
+            startSession();
+            //showQuestionnaire(true);
         }
 
         if (id == R.id.action_stop_streaming) {
+            this.isSessionStarted = false;
             this.stopTimestamp = System.currentTimeMillis();
-
             stopAllStreamingOfAllShimmerImus();
             stopStreamingBioHarness();
-            this.isSessionStarted = false;
+            stopStreamingInternalSensorData();
+
             if(intervalConfigured) {
                 stopTimerThread();
             } else {
                 feedbackNotification();
-                showQuestionnaire(false);
+                showQuestionnaire();
             }
-            stopStreamingInternalSensorData();
 
             this.directoryName = null;
             this.startStreamMenuItem.setEnabled(true);
@@ -366,7 +367,7 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
         int selfReportIntervalSpinnerPosition = sharedPref.getInt("selfReportIntervalSpinnerPosition", 2);
         int selfReportVarianceSpinnerPosition = sharedPref.getInt("selfReportVarianceSpinnerPosition", 0);
         int questionnaireSpinnerPosition = sharedPref.getInt("questionnaireSpinnerPosition", 0);
-        int baselineQuestionnaireSpinnerPosition = sharedPref.getInt("baselineQuestionnaireSpinnerPosition", 0);
+        //int baselineQuestionnaireSpinnerPosition = sharedPref.getInt("baselineQuestionnaireSpinnerPosition", 0);
         String activityName = sharedPref.getString("activityName", "");
         String participantFirstName = sharedPref.getString("participantFirstName", "");
         String participantLastName = sharedPref.getString("participantLastName", "");
@@ -392,7 +393,7 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
         selfReportVarianceSpinner.setSelection(selfReportVarianceSpinnerPosition);
 
         questionnaireSpinner = (Spinner) dialog.findViewById(R.id.questionnaireSpinner);
-        baselineQuestionnaireSpinner = (Spinner) dialog.findViewById(R.id.baseline_questionnaireSpinner);
+        //baselineQuestionnaireSpinner = (Spinner) dialog.findViewById(R.id.baseline_questionnaireSpinner);
         AssetManager assetManager = getApplicationContext().getAssets();
         String[] questionnaires = new String[0];
         try {
@@ -403,8 +404,8 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
         ArrayAdapter<String> qSpinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, questionnaires);
         questionnaireSpinner.setAdapter(qSpinnerAdapter);
         questionnaireSpinner.setSelection(questionnaireSpinnerPosition);
-        baselineQuestionnaireSpinner.setAdapter(qSpinnerAdapter);
-        baselineQuestionnaireSpinner.setSelection(baselineQuestionnaireSpinnerPosition);
+        //baselineQuestionnaireSpinner.setAdapter(qSpinnerAdapter);
+        //baselineQuestionnaireSpinner.setSelection(baselineQuestionnaireSpinnerPosition);
 
         final EditText participantFirstNameEditText = (EditText) dialog.findViewById(R.id.participant_first_name_edit_text);
         final EditText participantLastNameEditText = (EditText) dialog.findViewById(R.id.participant_last_name_edit_text);
@@ -431,7 +432,7 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
                 selfReportInterval = Integer.valueOf(selfReportIntervalSpinner.getSelectedItem().toString());
                 selfReportVariance = Integer.valueOf(selfReportVarianceSpinner.getSelectedItem().toString());
                 questionnaireFileName = "questionnaires/" + questionnaireSpinner.getSelectedItem().toString();
-                baselineQuestionnaireFileName = "questionnaires/" + baselineQuestionnaireSpinner.getSelectedItem().toString();
+                //baselineQuestionnaireFileName = "questionnaires/" + baselineQuestionnaireSpinner.getSelectedItem().toString();
                 MainActivity.this.participantFirstName = participantFirstNameEditText.getText().toString();
                 MainActivity.this.participantLastName = participantLastNameEditText.getText().toString();
                 MainActivity.this.activityName = activityNameEditText.getText().toString();
@@ -441,11 +442,11 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
                 editor.putInt("selfReportIntervalSpinnerPosition", selfReportIntervalSpinner.getSelectedItemPosition());
                 editor.putInt("selfReportVarianceSpinnerPosition", selfReportVarianceSpinner.getSelectedItemPosition());
                 editor.putInt("questionnaireSpinnerPosition", questionnaireSpinner.getSelectedItemPosition());
-                editor.putInt("baselineQuestionnaireSpinnerPosition", baselineQuestionnaireSpinner.getSelectedItemPosition());
+                //editor.putInt("baselineQuestionnaireSpinnerPosition", baselineQuestionnaireSpinner.getSelectedItemPosition());
                 editor.putInt("selfReportInterval", Integer.valueOf(selfReportIntervalSpinner.getSelectedItem().toString()));
                 editor.putInt("selfReportVariance", Integer.valueOf(selfReportVarianceSpinner.getSelectedItem().toString()));
                 editor.putString("questionnaireValue", "questionnaires/" + questionnaireSpinner.getSelectedItem().toString());
-                editor.putString("baselineQuestionnaireValue", "questionnaires/" + baselineQuestionnaireSpinner.getSelectedItem().toString());
+                //editor.putString("baselineQuestionnaireValue", "questionnaires/" + baselineQuestionnaireSpinner.getSelectedItem().toString());
                 editor.putString("participantFirstName", participantFirstNameEditText.getText().toString());
                 editor.putString("participantLastName", participantLastNameEditText.getText().toString());
                 editor.putString("activityName", activityNameEditText.getText().toString());
@@ -726,7 +727,7 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
                 case TIMER_END:
                     feedbackNotification();
                     textViewTimer.setVisibility(View.INVISIBLE);
-                    showQuestionnaire(false);
+                    showQuestionnaire();
                     break;
             }
 
@@ -734,27 +735,21 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
         }
     }
 
-    void showQuestionnaire(boolean baselineQuestionnaire) {
+    void showQuestionnaire() { // boolean baselineQuestionnaire
         final Questionnaire questionnaire;
-        if(baselineQuestionnaire) {
-            questionnaire = new Questionnaire(this, baselineQuestionnaireFileName);
-        } else {
+        //if(baselineQuestionnaire) {
+        //    questionnaire = new Questionnaire(this, baselineQuestionnaireFileName);
+        //} else {
             questionnaire = new Questionnaire(this, questionnaireFileName);
-        }
+        //}
         Button saveButton = questionnaire.getSaveButton();
         saveButton.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View view) {
-                if (isFirstSelfReportRequest) {
-                    startSession();
+                if (isSessionStarted) {
                     questionnaire.saveQuestionnaireItems(root, isFirstSelfReportRequest, getHeaderComments(), null, startTimestamp);
-                    if (intervalConfigured) {
-                        startTimerThread();
-                    }
                     isFirstSelfReportRequest = false;
-                } else if (isSessionStarted) {
-                    questionnaire.saveQuestionnaireItems(root, false, getHeaderComments(), null, startTimestamp);
                     if (intervalConfigured) {
                         startTimerThread();
                     }
