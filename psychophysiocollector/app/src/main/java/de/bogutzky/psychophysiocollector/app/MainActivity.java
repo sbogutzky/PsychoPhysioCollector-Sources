@@ -368,7 +368,7 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
         int selfReportVarianceSpinnerPosition = sharedPref.getInt("selfReportVarianceSpinnerPosition", 0);
         int questionnaireSpinnerPosition = sharedPref.getInt("questionnaireSpinnerPosition", 0);
         //int baselineQuestionnaireSpinnerPosition = sharedPref.getInt("baselineQuestionnaireSpinnerPosition", 0);
-        String activityName = sharedPref.getString("activityName", "");
+        //String activityName = sharedPref.getString("activityName", "");
         String participantFirstName = sharedPref.getString("participantFirstName", "");
         String participantLastName = sharedPref.getString("participantLastName", "");
         boolean configureInterval = sharedPref.getBoolean("configureInterval", false);
@@ -409,10 +409,13 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
 
         final EditText participantFirstNameEditText = (EditText) dialog.findViewById(R.id.participant_first_name_edit_text);
         final EditText participantLastNameEditText = (EditText) dialog.findViewById(R.id.participant_last_name_edit_text);
-        final EditText activityNameEditText = (EditText) dialog.findViewById(R.id.activity_name_edit_text);
+        final Spinner activitySpinner = (Spinner) dialog.findViewById(R.id.activity_spinner);
         participantFirstNameEditText.setText(participantFirstName);
         participantLastNameEditText.setText(participantLastName);
-        activityNameEditText.setText(activityName);
+        String[] activities = new String[] {"Laufen", "Gehen", "Baseline"};
+        ArrayAdapter<String> activityAdapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_item, activities);
+        activitySpinner.setAdapter(activityAdapter);
 
         final Switch configureIntervalSwitch = (Switch) dialog.findViewById(R.id.configure_interval_switch);
         configureIntervalSwitch.setChecked(configureInterval);
@@ -435,7 +438,7 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
                 //baselineQuestionnaireFileName = "questionnaires/" + baselineQuestionnaireSpinner.getSelectedItem().toString();
                 MainActivity.this.participantFirstName = participantFirstNameEditText.getText().toString();
                 MainActivity.this.participantLastName = participantLastNameEditText.getText().toString();
-                MainActivity.this.activityName = activityNameEditText.getText().toString();
+                MainActivity.this.activityName = activitySpinner.getSelectedItem().toString();
                 MainActivity.this.intervalConfigured = configureIntervalSwitch.isChecked();
 
                 SharedPreferences.Editor editor = sharedPref.edit();
@@ -449,7 +452,7 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
                 //editor.putString("baselineQuestionnaireValue", "questionnaires/" + baselineQuestionnaireSpinner.getSelectedItem().toString());
                 editor.putString("participantFirstName", participantFirstNameEditText.getText().toString());
                 editor.putString("participantLastName", participantLastNameEditText.getText().toString());
-                editor.putString("activityName", activityNameEditText.getText().toString());
+                //editor.putString("activityName", activitySpinner.getText().toString());
                 editor.putBoolean("configureInterval", configureIntervalSwitch.isChecked());
                 editor.apply();
 

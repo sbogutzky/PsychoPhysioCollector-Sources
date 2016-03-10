@@ -60,12 +60,12 @@
             android:text="@string/settings_activity"
             />
 
-        <EditText
+        <Spinner
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:minEms="16"
-            android:id="@+id/activity_name_edit_text"
-            android:singleLine="true" />
+            android:id="@+id/activity_spinner"
+            />
 
     </LinearLayout>
 
