@@ -3,8 +3,7 @@ package de.bogutzky.psychophysiocollector.app.questionnaire;
 import android.app.Activity;
 import android.app.Dialog;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
-import android.support.v4.content.ContextCompat;
+import android.text.Html;
 import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.View;
@@ -74,7 +73,9 @@ public class Questionnaire {
         lp.width = WindowManager.LayoutParams.MATCH_PARENT;
         lp.height = WindowManager.LayoutParams.MATCH_PARENT;
         questionnaireDialog.getWindow().setAttributes(lp);
-        Button startQuestionnaireButton = (Button) questionnaireDialog.findViewById(R.id.startQuestionnaireButton);
+        final TextView descriptionTextView = (TextView) questionnaireDialog.findViewById(R.id.descriptionTextView);
+        descriptionTextView.setText(Html.fromHtml(description));
+        final Button startQuestionnaireButton = (Button) questionnaireDialog.findViewById(R.id.startQuestionnaireButton);
         startQuestionnaireButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -243,7 +244,6 @@ public class Questionnaire {
                     hidden++;
                     scaleTypes.add(q.getString("type"));
                     scaleViewIds.add(0);
-                    continue;
                 }
             }
             //saveParams.addRule(RelativeLayout.BELOW, relativeLayout.getId());

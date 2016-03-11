@@ -107,8 +107,8 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
     //private Spinner baselineQuestionnaireSpinner;
     private int selfReportInterval;
     private int selfReportVariance;
-    private String questionnaireFileName = "questionnaires/flow-short-scale.json";
-    //private String baselineQuestionnaireFileName = "questionnaires/flow-short-scale.json";
+    private String questionnaireFileName = "questionnaires/flow-short-scale-running.json";
+    //private String baselineQuestionnaireFileName = "questionnaires/flow-short-scale-running.json";
 
     private MenuItem addMenuItem;
     private MenuItem connectMenuItem;
@@ -152,8 +152,8 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
         final SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
         selfReportInterval = sharedPref.getInt("selfReportInterval", 15);
         selfReportVariance = sharedPref.getInt("selfReportVariance", 30);
-        questionnaireFileName = sharedPref.getString("questionnaireValue", "questionnaires/flow-short-scale.json");
-        //baselineQuestionnaireFileName = sharedPref.getString("baselineQuestionnaireValue", "questionnaires/flow-short-scale.json");
+        questionnaireFileName = sharedPref.getString("questionnaireValue", "questionnaires/flow-short-scale-running.json");
+        //baselineQuestionnaireFileName = sharedPref.getString("baselineQuestionnaireValue", "questionnaires/flow-short-scale-running.json");
         activityName = sharedPref.getString("activityName", "");
         participantFirstName = sharedPref.getString("participantFirstName", "");
         participantLastName = sharedPref.getString("participantLastName", "");
