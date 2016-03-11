@@ -98,6 +98,9 @@ public class Questionnaire {
     private void startQuestionnaire() {
         this.startTimestamp = System.currentTimeMillis();
         ScrollView scrollView = new ScrollView(activity);
+        float scale = activity.getResources().getDisplayMetrics().density;
+        int dpAsPixels = (int) (10*scale + 0.5f);
+        scrollView.setPadding(dpAsPixels,dpAsPixels,dpAsPixels,dpAsPixels);
         final RelativeLayout relativeLayout = new RelativeLayout(activity);
         Button nextButton = new Button(activity);
         RelativeLayout.LayoutParams slp = new RelativeLayout.LayoutParams(
