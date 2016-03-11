@@ -350,6 +350,9 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
         this.startTimestamp = System.currentTimeMillis();
         createRootDirectory();
 
+        if (intervalConfigured) {
+            startTimerThread();
+        }
         startStreamingOfAllShimmerImus(true);
         startStreamingBioHarness();
         startStreamingInternalSensorData();
@@ -449,9 +452,8 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
                 editor.putInt("selfReportVariance", Integer.valueOf(selfReportVarianceSpinner.getSelectedItem().toString()));
                 editor.putString("questionnaireValue", "questionnaires/" + questionnaireSpinner.getSelectedItem().toString());
                 //editor.putString("baselineQuestionnaireValue", "questionnaires/" + baselineQuestionnaireSpinner.getSelectedItem().toString());
-                editor.putString("participantFirstName", participantFirstNameEditText.getText().toString());
-                editor.putString("participantLastName", participantLastNameEditText.getText().toString());
-                editor.putString("activityName", activityNameEditText.getText().toString());
+                editor.putString("participantFirstName", participantFirstNameEditText.getText().toString().trim());
+                editor.putString("participantLastName", participantLastNameEditText.getText().toString().trim());
                 editor.putString("activityName", activityNameEditText.getText().toString().trim());
                 editor.putBoolean("configureInterval", configureIntervalSwitch.isChecked());
                 editor.apply();
