@@ -435,9 +435,9 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
                 selfReportVariance = Integer.valueOf(selfReportVarianceSpinner.getSelectedItem().toString());
                 questionnaireFileName = "questionnaires/" + questionnaireSpinner.getSelectedItem().toString();
                 //baselineQuestionnaireFileName = "questionnaires/" + baselineQuestionnaireSpinner.getSelectedItem().toString();
-                MainActivity.this.participantFirstName = participantFirstNameEditText.getText().toString();
-                MainActivity.this.participantLastName = participantLastNameEditText.getText().toString();
-                MainActivity.this.activityName = activityNameEditText.getText().toString();
+                MainActivity.this.participantFirstName = participantFirstNameEditText.getText().toString().trim();
+                MainActivity.this.participantLastName = participantLastNameEditText.getText().toString().trim();
+                MainActivity.this.activityName = activityNameEditText.getText().toString().trim();
                 MainActivity.this.intervalConfigured = configureIntervalSwitch.isChecked();
 
                 SharedPreferences.Editor editor = sharedPref.edit();
@@ -452,6 +452,7 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
                 editor.putString("participantFirstName", participantFirstNameEditText.getText().toString());
                 editor.putString("participantLastName", participantLastNameEditText.getText().toString());
                 editor.putString("activityName", activityNameEditText.getText().toString());
+                editor.putString("activityName", activityNameEditText.getText().toString().trim());
                 editor.putBoolean("configureInterval", configureIntervalSwitch.isChecked());
                 editor.apply();
 
