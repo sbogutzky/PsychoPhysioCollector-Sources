@@ -1,6 +1,6 @@
 {
   "questionnaire": {
-    "title": "Flow-Kurzskala",
+    "title": "Flow-Kurzskala (Baseline)",
     "description": "Im Folgenden findest du einige Aussagen, die sich auf die vergangenen 10 Minuten beziehen. Bitte <b>versetze dich</b> nun nochmal <b>in die vergangenen 10 Minuten hinein</b>. Inwieweit treffen die folgenden Aussagen für dich zu?<br/> Entscheidend ist dabei deine persönliche Einschätzung, es gibt keine richtigen oder falschen Antworten. Dazu steht dir die folgende Antwortskala zur Verfügung: <br/><br/>Durch Anklicken einer der Antwortalternativen gebe an, wie sehr die jeweilige Aussage auf <b>deine persönliche Einschätzung deines Erlebens während der vergangenen 10 Minuten</b> zutrifft oder nicht. Je weiter links du anklickst, umso weniger trifft die Aussage für die vergangenen 10 Minuten zu. Umgekehrt trifft eine Aussage umso mehr zu, je weiter rechts du anklickst.",
     "questions": [
       {
