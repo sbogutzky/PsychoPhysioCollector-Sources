@@ -752,14 +752,18 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
 
             @Override
             public void onClick(View view) {
+                String headerComments = "";
+                if (isFirstSelfReportRequest)
+                    headerComments = getHeaderComments();
+
                 if (isSessionStarted) {
-                    questionnaire.saveQuestionnaireItems(root, isFirstSelfReportRequest, getHeaderComments(), null, startTimestamp);
+                    questionnaire.saveQuestionnaireItems(root, isFirstSelfReportRequest, headerComments, null, startTimestamp);
                     isFirstSelfReportRequest = false;
                     if (intervalConfigured) {
                         startTimerThread();
                     }
                 } else {
-                    questionnaire.saveQuestionnaireItems(root, false, null, getFooterComments(), startTimestamp);
+                    questionnaire.saveQuestionnaireItems(root, isFirstSelfReportRequest, headerComments, getFooterComments(), startTimestamp);
                 }
                 questionnaire.getQuestionnaireDialog().dismiss();
             }
