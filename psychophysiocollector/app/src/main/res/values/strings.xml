@@ -61,6 +61,14 @@
     <string name="study_protocol_settings_configure_interval">Interval konfigurieren</string>
     <string name="study_protocol_settings_self_report_interval">Interval in Minuten</string>
     <string name="study_protocol_settings_self_report_variance">Intervalvarianz in Sekunden</string>
+    <string-array name="study_protocol_settings_activities">
+        <item>Baseline</item>
+        <item>Laufen</item>
+    </string-array>
+    <string-array name="study_protocol_settings_questionnaire_file_names">
+        <item>flow-short-scale-baseline.json</item>
+        <item>flow-short-scale-running.json</item>
+    </string-array>
     <string-array name="study_protocol_settings_self_report_interval_values">
         <item>5</item>
         <item>10</item>

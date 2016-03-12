@@ -17,7 +17,6 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.content.res.AssetManager;
 import android.location.GpsStatus;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -47,7 +46,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -101,14 +99,17 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
     private Vibrator vibrator;
     private long[] vibratorPatternFeedback = {0, 500, 200, 100, 100, 100, 100, 100};
 
-    private Spinner selfReportIntervalSpinner;
-    private Spinner selfReportVarianceSpinner;
-    private Spinner questionnaireSpinner;
+    private String activityName = "";
+    private String participantFirstName = "";
+    private String participantLastName = "";
+    //private Spinner questionnaireSpinner;
     //private Spinner baselineQuestionnaireSpinner;
+    private String questionnairePath = "questionnaires/flow-short-scale-running.json";
+    //private String baselineQuestionnaireFileName = "questionnaires/flow-short-scale-running.json";
+
+    private boolean intervalConfigured = false;
     private int selfReportInterval;
     private int selfReportVariance;
-    private String questionnaireFileName = "questionnaires/flow-short-scale-running.json";
-    //private String baselineQuestionnaireFileName = "questionnaires/flow-short-scale-running.json";
 
     private MenuItem addMenuItem;
     private MenuItem connectMenuItem;
@@ -122,10 +123,7 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
     private boolean isSessionStarted = false;
     private boolean isFirstSelfReportRequest;
 
-    private String activityName = "";
-    private String participantFirstName = "";
-    private String participantLastName = "";
-    private boolean intervalConfigured = false;
+
 
     private InternalSensorManager internalSensorManager;
 
@@ -150,14 +148,20 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
         textViewTimer.setVisibility(View.INVISIBLE);
 
         final SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
-        selfReportInterval = sharedPref.getInt("selfReportInterval", 15);
-        selfReportVariance = sharedPref.getInt("selfReportVariance", 30);
-        questionnaireFileName = sharedPref.getString("questionnaireValue", "questionnaires/flow-short-scale-running.json");
-        //baselineQuestionnaireFileName = sharedPref.getString("baselineQuestionnaireValue", "questionnaires/flow-short-scale-running.json");
-        activityName = sharedPref.getString("activityName", "");
+
         participantFirstName = sharedPref.getString("participantFirstName", "");
         participantLastName = sharedPref.getString("participantLastName", "");
+
+        String[] questionnaireFileNames = getResources().getStringArray(R.array.study_protocol_settings_questionnaire_file_names);
+        String[] activities = getResources().getStringArray(R.array.study_protocol_settings_activities);
+        activityName = activities[sharedPref.getInt("activityNamePosition", 0)];
+        questionnairePath = "questionnaires/" + questionnaireFileNames[sharedPref.getInt("activityNamePosition", 0)];
+        //questionnairePath = sharedPref.getString("questionnairePath", "questionnaires/flow-short-scale-running.json");
+        //baselineQuestionnaireFileName = sharedPref.getString("baselineQuestionnairePath", "questionnaires/flow-short-scale-running.json");
+
         intervalConfigured = sharedPref.getBoolean("configureInterval", false);
+        selfReportInterval = sharedPref.getInt("selfReportInterval", 15);
+        selfReportVariance = sharedPref.getInt("selfReportVariance", 0);
 
         getListView().setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
@@ -371,12 +375,16 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
         final SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
         int selfReportIntervalSpinnerPosition = sharedPref.getInt("selfReportIntervalSpinnerPosition", 2);
         int selfReportVarianceSpinnerPosition = sharedPref.getInt("selfReportVarianceSpinnerPosition", 0);
-        int questionnaireSpinnerPosition = sharedPref.getInt("questionnaireSpinnerPosition", 0);
-        //int baselineQuestionnaireSpinnerPosition = sharedPref.getInt("baselineQuestionnaireSpinnerPosition", 0);
-        String activityName = sharedPref.getString("activityName", "");
+
         String participantFirstName = sharedPref.getString("participantFirstName", "");
         String participantLastName = sharedPref.getString("participantLastName", "");
+        int activityPosition = sharedPref.getInt("activityNamePosition", 0);
+
+        //int questionnaireSpinnerPosition = sharedPref.getInt("questionnaireSpinnerPosition", 0);
+        //int baselineQuestionnaireSpinnerPosition = sharedPref.getInt("baselineQuestionnaireSpinnerPosition", 0);
+
         boolean configureInterval = sharedPref.getBoolean("configureInterval", false);
+
         final Dialog dialog = new Dialog(this);
         dialog.setContentView(R.layout.settings);
         dialog.setTitle(getString(R.string.action_settings));
@@ -386,19 +394,21 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
         lp.width = WindowManager.LayoutParams.MATCH_PARENT;
         lp.height = WindowManager.LayoutParams.MATCH_PARENT;
         dialog.getWindow().setAttributes(lp);
-        selfReportIntervalSpinner = (Spinner) dialog.findViewById(R.id.self_report_interval_spinner);
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
-                R.array.study_protocol_settings_self_report_interval_values, android.R.layout.simple_spinner_item);
-        selfReportIntervalSpinner.setAdapter(adapter);
-        selfReportIntervalSpinner.setSelection(selfReportIntervalSpinnerPosition);
-        selfReportVarianceSpinner = (Spinner) dialog.findViewById(R.id.self_report_variance_spinner);
-        ArrayAdapter<CharSequence> adapter2 = ArrayAdapter.createFromResource(this,
-                R.array.study_protocol_settings_self_report_variance_values, android.R.layout.simple_spinner_item);
-        selfReportVarianceSpinner.setAdapter(adapter2);
-        selfReportVarianceSpinner.setSelection(selfReportVarianceSpinnerPosition);
 
+        final EditText participantFirstNameEditText = (EditText) dialog.findViewById(R.id.participant_first_name_edit_text);
+        final EditText participantLastNameEditText = (EditText) dialog.findViewById(R.id.participant_last_name_edit_text);
+        participantFirstNameEditText.setText(participantFirstName);
+        participantLastNameEditText.setText(participantLastName);
+
+        final Spinner activitySpinner = (Spinner) dialog.findViewById(R.id.activity_spinner);
+        ArrayAdapter<CharSequence> activityArrayAdapter = ArrayAdapter.createFromResource(this,
+                R.array.study_protocol_settings_activities, android.R.layout.simple_spinner_item);
+        activitySpinner.setAdapter(activityArrayAdapter);
+        activitySpinner.setSelection(activityPosition);
+
+        /*
         questionnaireSpinner = (Spinner) dialog.findViewById(R.id.questionnaireSpinner);
-        //baselineQuestionnaireSpinner = (Spinner) dialog.findViewById(R.id.baseline_questionnaireSpinner);
+        baselineQuestionnaireSpinner = (Spinner) dialog.findViewById(R.id.baseline_questionnaireSpinner);
         AssetManager assetManager = getApplicationContext().getAssets();
         String[] questionnaires = new String[0];
         try {
@@ -406,18 +416,24 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
         } catch (IOException e) {
             e.printStackTrace();
         }
-        ArrayAdapter<String> qSpinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, questionnaires);
-        questionnaireSpinner.setAdapter(qSpinnerAdapter);
+        ArrayAdapter<String> questionnaireArrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, questionnaires);
+        questionnaireSpinner.setAdapter(questionnaireArrayAdapter);
         questionnaireSpinner.setSelection(questionnaireSpinnerPosition);
-        //baselineQuestionnaireSpinner.setAdapter(qSpinnerAdapter);
-        //baselineQuestionnaireSpinner.setSelection(baselineQuestionnaireSpinnerPosition);
+        baselineQuestionnaireSpinner.setAdapter(questionnaireArrayAdapter);
+        baselineQuestionnaireSpinner.setSelection(baselineQuestionnaireSpinnerPosition);
+        */
 
-        final EditText participantFirstNameEditText = (EditText) dialog.findViewById(R.id.participant_first_name_edit_text);
-        final EditText participantLastNameEditText = (EditText) dialog.findViewById(R.id.participant_last_name_edit_text);
-        final EditText activityNameEditText = (EditText) dialog.findViewById(R.id.activity_name_edit_text);
-        participantFirstNameEditText.setText(participantFirstName);
-        participantLastNameEditText.setText(participantLastName);
-        activityNameEditText.setText(activityName);
+        final Spinner selfReportIntervalSpinner = (Spinner) dialog.findViewById(R.id.self_report_interval_spinner);
+        ArrayAdapter<CharSequence> intervalArrayAdapter = ArrayAdapter.createFromResource(this,
+                R.array.study_protocol_settings_self_report_interval_values, android.R.layout.simple_spinner_item);
+        selfReportIntervalSpinner.setAdapter(intervalArrayAdapter);
+        selfReportIntervalSpinner.setSelection(selfReportIntervalSpinnerPosition);
+
+        final Spinner selfReportVarianceSpinner = (Spinner) dialog.findViewById(R.id.self_report_variance_spinner);
+        ArrayAdapter<CharSequence> varianceArrayAdapter = ArrayAdapter.createFromResource(this,
+                R.array.study_protocol_settings_self_report_variance_values, android.R.layout.simple_spinner_item);
+        selfReportVarianceSpinner.setAdapter(varianceArrayAdapter);
+        selfReportVarianceSpinner.setSelection(selfReportVarianceSpinnerPosition);
 
         final Switch configureIntervalSwitch = (Switch) dialog.findViewById(R.id.configure_interval_switch);
         configureIntervalSwitch.setChecked(configureInterval);
@@ -434,28 +450,39 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
 
             @Override
             public void onClick(View view) {
-                selfReportInterval = Integer.valueOf(selfReportIntervalSpinner.getSelectedItem().toString());
-                selfReportVariance = Integer.valueOf(selfReportVarianceSpinner.getSelectedItem().toString());
-                questionnaireFileName = "questionnaires/" + questionnaireSpinner.getSelectedItem().toString();
-                //baselineQuestionnaireFileName = "questionnaires/" + baselineQuestionnaireSpinner.getSelectedItem().toString();
                 MainActivity.this.participantFirstName = participantFirstNameEditText.getText().toString().trim();
                 MainActivity.this.participantLastName = participantLastNameEditText.getText().toString().trim();
-                MainActivity.this.activityName = activityNameEditText.getText().toString().trim();
+
+                MainActivity.this.activityName = activitySpinner.getSelectedItem().toString();
+                String[] questionnaireFileNames = getResources().getStringArray(R.array.study_protocol_settings_questionnaire_file_names);
+                questionnairePath = "questionnaires/" + questionnaireFileNames[activitySpinner.getSelectedItemPosition()];
+
+                // questionnairePath = "questionnaires/" + questionnaireSpinner.getSelectedItem().toString();
+                // baselineQuestionnaireFileName = "questionnaires/" + baselineQuestionnaireSpinner.getSelectedItem().toString();
+
                 MainActivity.this.intervalConfigured = configureIntervalSwitch.isChecked();
+                selfReportInterval = Integer.valueOf(selfReportIntervalSpinner.getSelectedItem().toString());
+                selfReportVariance = Integer.valueOf(selfReportVarianceSpinner.getSelectedItem().toString());
 
                 SharedPreferences.Editor editor = sharedPref.edit();
-                editor.putInt("selfReportIntervalSpinnerPosition", selfReportIntervalSpinner.getSelectedItemPosition());
-                editor.putInt("selfReportVarianceSpinnerPosition", selfReportVarianceSpinner.getSelectedItemPosition());
-                editor.putInt("questionnaireSpinnerPosition", questionnaireSpinner.getSelectedItemPosition());
-                //editor.putInt("baselineQuestionnaireSpinnerPosition", baselineQuestionnaireSpinner.getSelectedItemPosition());
-                editor.putInt("selfReportInterval", Integer.valueOf(selfReportIntervalSpinner.getSelectedItem().toString()));
-                editor.putInt("selfReportVariance", Integer.valueOf(selfReportVarianceSpinner.getSelectedItem().toString()));
-                editor.putString("questionnaireValue", "questionnaires/" + questionnaireSpinner.getSelectedItem().toString());
-                //editor.putString("baselineQuestionnaireValue", "questionnaires/" + baselineQuestionnaireSpinner.getSelectedItem().toString());
+
                 editor.putString("participantFirstName", participantFirstNameEditText.getText().toString().trim());
                 editor.putString("participantLastName", participantLastNameEditText.getText().toString().trim());
-                editor.putString("activityName", activityNameEditText.getText().toString().trim());
+                editor.putInt("activityNamePosition", activitySpinner.getSelectedItemPosition());
+
+                //editor.putInt("questionnaireSpinnerPosition", questionnaireSpinner.getSelectedItemPosition());
+                //editor.putInt("baselineQuestionnaireSpinnerPosition", baselineQuestionnaireSpinner.getSelectedItemPosition());
+                //editor.putString("questionnairePath", "questionnaires/" + questionnaireSpinner.getSelectedItem().toString());
+                //editor.putString("baselineQuestionnairePath", "questionnaires/" + baselineQuestionnaireSpinner.getSelectedItem().toString());
+
+                editor.putString("questionnairePath", questionnairePath);
+
                 editor.putBoolean("configureInterval", configureIntervalSwitch.isChecked());
+                editor.putInt("selfReportIntervalSpinnerPosition", selfReportIntervalSpinner.getSelectedItemPosition());
+                editor.putInt("selfReportVarianceSpinnerPosition", selfReportVarianceSpinner.getSelectedItemPosition());
+                editor.putInt("selfReportInterval", Integer.valueOf(selfReportIntervalSpinner.getSelectedItem().toString()));
+                editor.putInt("selfReportVariance", Integer.valueOf(selfReportVarianceSpinner.getSelectedItem().toString()));
+
                 editor.apply();
 
                 dialog.dismiss();
@@ -745,7 +772,7 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
         //if(baselineQuestionnaire) {
         //    questionnaire = new Questionnaire(this, baselineQuestionnaireFileName);
         //} else {
-            questionnaire = new Questionnaire(this, questionnaireFileName);
+            questionnaire = new Questionnaire(this, questionnairePath);
         //}
         Button saveButton = questionnaire.getSaveButton();
         saveButton.setOnClickListener(new View.OnClickListener() {
