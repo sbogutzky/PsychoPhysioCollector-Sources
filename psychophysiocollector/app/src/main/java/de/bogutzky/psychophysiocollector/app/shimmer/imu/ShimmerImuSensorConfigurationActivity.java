@@ -43,9 +43,9 @@ import de.bogutzky.psychophysiocollector.app.R;
 
 public class ShimmerImuSensorConfigurationActivity extends Activity {
     //private static final String TAG = "ShimmerSConfigActivity";
-	public final static String[] samplingRates = {"10","51,2","102,4","128","170,7","204,8","256","512"};
-	public final static String[] accelerometerRanges = {"+/- 1,5g","+/- 6g"};
-	public final static String[] gyroscopeRanges = {"+/- 250 dps","+/- 500 dps","+/- 1000 dps","+/- 2000 dps"};
+	public final static String[] samplingRates = {"51,2","102,4","128","170,7","204,8","256","512","1024"};
+	public final static String[] accelerometerRanges = {"+/- 1,5","+/- 6"};
+	public final static String[] gyroscopeRanges = {"+/- 250","+/- 500"}; // {"+/- 250","+/- 500","+/- 1000","+/- 2000"}
 
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,10 +76,10 @@ public class ShimmerImuSensorConfigurationActivity extends Activity {
         }
         
         if (accelerometerRange == 0){
-        	textViewCurrentAccelerometerRange.setText(R.string.acceleration_range_1_5g);
+        	textViewCurrentAccelerometerRange.setText(R.string.acceleration_range_1_5);
         }
         else if (accelerometerRange == 3){
-        	textViewCurrentAccelerometerRange.setText(R.string.acceleration_range_6_0g);
+        	textViewCurrentAccelerometerRange.setText(R.string.acceleration_range_6_0);
         } else {
         	textViewCurrentAccelerometerRange.setText("");
         }
@@ -142,9 +142,9 @@ public class ShimmerImuSensorConfigurationActivity extends Activity {
 
 				Object o = listViewAccelerometerRange.getItemAtPosition(position);
 				int accelerometerRange = 0;
-				if (o.toString().equals(getString(R.string.acceleration_range_1_5g))) {
+				if (o.toString().equals(getString(R.string.acceleration_range_1_5))) {
 					accelerometerRange = 0;
-				} else if (o.toString().equals(getString(R.string.acceleration_range_6_0g))) {
+				} else if (o.toString().equals(getString(R.string.acceleration_range_6_0))) {
 					accelerometerRange = 3;
 				}
 				Intent intent = new Intent();

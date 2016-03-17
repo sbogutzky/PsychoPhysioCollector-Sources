@@ -150,11 +150,11 @@
     <string name="delete">Löschen?</string>
 
     <string name="connection_to_shimmer_imu_resetted">Die Verbindung zu einem der Shimmer IMUs wurde zurückgesetzt.</string>
-    <string name="acceleration_range_1_5g">+/- 1,5g</string>
-    <string name="acceleration_range_6_0g">+/- 6g</string>
+    <string name="acceleration_range_1_5">+/- 1,5</string>
+    <string name="acceleration_range_6_0">+/- 6</string>
     <string name="imu_settings_sampling_rate">Abstastrate (Hz)</string>
     <string name="imu_settings_accelerometer_range">Accelerometer Range (g)</string>
-    <string name="imu_settings_gyroscope_range">Gyroscope Range (dps)</string>
+    <string name="imu_settings_gyroscope_range">Gyroscope Range (deg/s)</string>
     <string name="imu_settings_led_toggle">LED an/aus</string>
 
     <string name="permission_granted">Berechtigung gegeben</string>
