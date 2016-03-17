@@ -135,6 +135,10 @@ public class ShimmerImuHandler extends Handler {
         switch (msg.what) {
             case Shimmer.MESSAGE_READ:
 
+                Double[] graphData = null;
+                if(graphView != null)
+                    graphData = new Double[fields.length];
+
                 if (msg.obj instanceof ObjectCluster) {
                     ObjectCluster objectCluster = (ObjectCluster) msg.obj;
                     for (int i = 0; i < fields.length; i++) {
@@ -143,12 +147,17 @@ public class ShimmerImuHandler extends Handler {
                             if (!clusterCollection.isEmpty()) {
                                 FormatCluster formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "CAL");
                                 this.buffer[batchRowCount][i] = formatCluster.mData;
+
+                                if (graphView != null) {
+                                    formatCluster = ObjectCluster.returnFormatCluster(clusterCollection, "RAW");
+                                    graphData[i] = formatCluster.mData;
+                                }
                             }
                         }
                     }
 
                     if (graphView != null)
-                        graphView.setDataWithAdjustment(buffer[batchRowCount], filename, "i8");
+                        graphView.setDataWithAdjustment(graphData, filename, "u12");
 
                     if (this.saveData) {
                         if (this.isFirstDataRow) {
