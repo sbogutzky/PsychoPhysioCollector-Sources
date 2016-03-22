@@ -363,8 +363,10 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
 
     @Override
     public void connectionResetted() {
-        disconnectDevices();
-        Toast.makeText(this, getString(R.string.connection_to_shimmer_imu_resetted), Toast.LENGTH_LONG).show();
+        if(!connectMenuItem.isEnabled()) {
+            disconnectDevices();
+            Toast.makeText(this, getString(R.string.connection_to_shimmer_imu_resetted), Toast.LENGTH_LONG).show();
+        }
     }
 
     public void startSession() {
