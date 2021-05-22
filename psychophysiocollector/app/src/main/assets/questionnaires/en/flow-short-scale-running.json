@@ -1,0 +1,104 @@
+{
+  "questionnaire": {
+    "title": "Flow-Short-Scale (Run)",
+    "description": "Below you will find some statements that should you relate to the recently finished run. Please <b>remind you back to the run</b>. To what extent do the following statements apply for you?<br/> The crucial factor is your personal opinion; there are no right or wrong answers. You have the following answer possibilities: <br/><br/>Give by clicking, in which extend each statement apply or not apply to <b>your personal assessment of your experience during the run</b>. Further left you are selecting, the less the statement applies for you. Conversely, a statement applies more for you, the further right you are selecting.",
+    "questions": [
+      {
+        "type": "rating",
+        "stars": 7,
+        "question": "I feel just the right amount of challenge.",
+        "ratings": ["not at all", "very much"]
+      },
+      {
+        "type": "rating",
+        "stars": 7,
+        "question": "My thoughts/activities run fluidly and smoothly.",
+        "ratings": ["not at all", "very much"]
+      },
+      {
+        "type": "rating",
+        "stars": 7,
+        "question": "I don’t notice time passing.",
+        "ratings": ["not at all", "very much"]
+      },
+      {
+        "type": "rating",
+        "stars": 7,
+        "question": "I have no difficulty concentrating.",
+        "ratings": ["not at all", "very much"]
+      },
+      {
+        "type": "rating",
+        "stars": 7,
+        "question": "My mind is completely clear.",
+        "ratings": ["not at all", "very much"]
+      },
+      {
+        "type": "rating",
+        "stars": 7,
+        "question": "I am totally absorbed in what I am doing.",
+        "ratings": ["not at all", "very much"]
+      },
+      {
+        "type": "rating",
+        "stars": 7,
+        "question": "The right thoughts/movements occur of their own accord.",
+        "ratings": ["not at all", "very much"]
+      },
+      {
+        "type": "rating",
+        "stars": 7,
+        "question": "I know what I have to do each step of the way.",
+        "ratings": ["not at all", "very much"]
+      },
+      {
+        "type": "rating",
+        "stars": 7,
+        "question": "I feel that I have everything under control.",
+        "ratings": ["not at all", "very much"]
+      },
+      {
+        "type": "rating",
+        "stars": 7,
+        "question": "I am completely lost in thought.",
+        "ratings": ["not at all", "very much"]
+      },
+      {
+        "type": "rating",
+        "stars": 7,
+        "question": "Something important to me is at stake here.",
+        "ratings": ["not at all", "very much"]
+      },
+      {
+        "type": "rating",
+        "stars": 7,
+        "question": "I won’t make any mistake here.",
+        "ratings": ["not at all", "very much"]
+      },
+      {
+        "type": "rating",
+        "stars": 7,
+        "question": "I am worried about failing.",
+        "ratings": ["not at all", "very much"]
+      },
+      {
+        "type": "rating",
+        "stars": 9,
+        "question": "Compared to all other activities which I partake in, this one is ...",
+        "ratings": ["easy", "difficult"]
+      },
+      {
+        "type": "rating",
+        "stars": 9,
+        "question": "I think that my competence in this area is ...",
+        "ratings": ["low", "high"]
+      },
+      {
+        "type": "rating",
+        "stars": 9,
+        "question": "For me personally, the current demands are ...",
+        "ratings": ["too low", "too high"]
+      }
+    ]
+  }
+}

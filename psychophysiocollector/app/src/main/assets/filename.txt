@@ -1,9 +1,0 @@
-imu-rn42-3b70.csv
-imu-rn42-bc98.csv
-linear-acceleration.csv
-rr-interval.csv
-self-report.csv
-acceleration.csv
-angular-velocity.csv
-ecg.csv
-gps-position.csv
