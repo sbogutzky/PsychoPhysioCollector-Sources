@@ -1,6 +1,6 @@
 /**
  * The MIT License (MIT)
- Copyright (c) 2016 Simon Bogutzky, Jan Christoph Schrader
+ Copyright (c) 2016 Copyright (c) 2016 University of Applied Sciences Bremen
 
  Permission is hereby granted, free of charge, to any person obtaining a copy of this software
  and associated documentation files (the "Software"), to deal in the Software without restriction,

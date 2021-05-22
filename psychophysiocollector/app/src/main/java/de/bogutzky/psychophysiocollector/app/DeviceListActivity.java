@@ -24,7 +24,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
@@ -67,9 +66,9 @@ public class DeviceListActivity extends Activity {
                 // When discovery is finished, change the Activity title
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                 setProgressBarIndeterminateVisibility(false);
-                setTitle(getString(R.string.select_device));
+                setTitle(getString(R.string.device_list_select_device));
                 if (mNewDevicesArrayAdapter.getCount() == 0) {
-                    String noDevices = getString(R.string.none_found);
+                    String noDevices = getString(R.string.device_list_none_found);
                     mNewDevicesArrayAdapter.add(noDevices);
                 }
             }
@@ -157,7 +156,7 @@ public class DeviceListActivity extends Activity {
                 mPairedDevicesArrayAdapter.add(device.getName() + "\n" + device.getAddress());
             }
         } else {
-            String noDevices = getString(R.string.non_paired);
+            String noDevices = getString(R.string.device_list_non_paired);
             mPairedDevicesArrayAdapter.add(noDevices);
         }
     }
@@ -182,7 +181,7 @@ public class DeviceListActivity extends Activity {
 
         // Indicate scanning in the title
         setProgressBarIndeterminateVisibility(true);
-        setTitle(getString(R.string.scanning));
+        setTitle(getString(R.string.device_list_scanning));
 
         // Turn on sub-title for new devices
         findViewById(R.id.title_new_devices).setVisibility(View.VISIBLE);

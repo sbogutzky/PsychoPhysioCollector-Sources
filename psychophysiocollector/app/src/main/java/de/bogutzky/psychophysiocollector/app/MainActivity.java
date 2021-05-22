@@ -1,6 +1,6 @@
 /**
  * The MIT License (MIT)
- Copyright (c) 2016 Simon Bogutzky, Jan Christoph Schrader
+ Copyright (c) 2016 Copyright (c) 2016 University of Applied Sciences Bremen
 
  Permission is hereby granted, free of charge, to any person obtaining a copy of this software
  and associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -38,7 +38,6 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.content.res.AssetManager;
 import android.location.GpsStatus;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -66,6 +65,9 @@ import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
@@ -128,8 +130,10 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
     //private Spinner baselineQuestionnaireSpinner;
     private int selfReportInterval;
     private int selfReportVariance;
-    private String questionnaireFileName = "questionnaires/flow-short-scale-running.json";
-    //private String baselineQuestionnaireFileName = "questionnaires/flow-short-scale-running.json";
+    private String[] questionnaireFilenames;
+    private int questionnaireCount;
+    private String questionnaireFilePath = "";
+    //private String baselineQuestionnaireFilePath = "";
 
     private MenuItem addMenuItem;
     private MenuItem connectMenuItem;
@@ -152,6 +156,8 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
 
     private TextView infoGpsConnectionStatus;
 
+    private String localeString = "de";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -173,8 +179,23 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
         final SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
         selfReportInterval = sharedPref.getInt("selfReportInterval", 15);
         selfReportVariance = sharedPref.getInt("selfReportVariance", 30);
-        questionnaireFileName = sharedPref.getString("questionnaireValue", "questionnaires/flow-short-scale-running.json");
-        //baselineQuestionnaireFileName = sharedPref.getString("baselineQuestionnaireValue", "questionnaires/flow-short-scale-running.json");
+
+        localeString = this.getResources().getConfiguration().locale.getLanguage().substring(0, 2).toLowerCase();
+        try {
+            questionnaireFilenames = getAssets().list("questionnaires/" + localeString);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        questionnaireCount = questionnaireFilenames.length;
+
+        if(questionnaireCount == 0) {
+            Toast.makeText(this, R.string.no_questionnaires_available, Toast.LENGTH_SHORT).show();
+            questionnaireFilePath = "";
+        } else {
+            int questionnaireSpinnerPosition = sharedPref.getInt("questionnaireSpinnerPosition", 0);
+            questionnaireFilePath = "questionnaires/" + localeString + "/" + questionnaireFilenames[questionnaireSpinnerPosition];
+        }
+
         activityName = sharedPref.getString("activityName", "");
         participantFirstName = sharedPref.getString("participantFirstName", "");
         participantLastName = sharedPref.getString("participantLastName", "");
@@ -422,14 +443,25 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
 
         questionnaireSpinner = (Spinner) dialog.findViewById(R.id.questionnaireSpinner);
         //baselineQuestionnaireSpinner = (Spinner) dialog.findViewById(R.id.baseline_questionnaireSpinner);
-        AssetManager assetManager = getApplicationContext().getAssets();
-        String[] questionnaires = new String[0];
+
+        String[] questionnaireTitles = new String[0];
         try {
-            questionnaires = assetManager.list("questionnaires");
+            questionnaireTitles = new String[questionnaireCount];
+            for (int i = 0; i < questionnaireCount; i++) {
+                String questionnaireFilename = questionnaireFilenames[i];
+                String questionnairePath = "questionnaires/" + localeString + "/" + questionnaireFilename;
+                try {
+                    JSONObject questionnaire = Utils.getJSONObjectFromInputStream(getAssets().open(questionnairePath));
+                    String questionnaireTitle = questionnaire.getJSONObject("questionnaire").getString("title");
+                    questionnaireTitles[i] = questionnaireTitle;
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
-        ArrayAdapter<String> qSpinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, questionnaires);
+        ArrayAdapter<String> qSpinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, questionnaireTitles);
         questionnaireSpinner.setAdapter(qSpinnerAdapter);
         questionnaireSpinner.setSelection(questionnaireSpinnerPosition);
         //baselineQuestionnaireSpinner.setAdapter(qSpinnerAdapter);
@@ -459,8 +491,7 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
             public void onClick(View view) {
                 selfReportInterval = Integer.valueOf(selfReportIntervalSpinner.getSelectedItem().toString());
                 selfReportVariance = Integer.valueOf(selfReportVarianceSpinner.getSelectedItem().toString());
-                questionnaireFileName = "questionnaires/" + questionnaireSpinner.getSelectedItem().toString();
-                //baselineQuestionnaireFileName = "questionnaires/" + baselineQuestionnaireSpinner.getSelectedItem().toString();
+
                 MainActivity.this.participantFirstName = participantFirstNameEditText.getText().toString().trim();
                 MainActivity.this.participantLastName = participantLastNameEditText.getText().toString().trim();
                 MainActivity.this.activityName = activityNameEditText.getText().toString().trim();
@@ -473,8 +504,7 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
                 //editor.putInt("baselineQuestionnaireSpinnerPosition", baselineQuestionnaireSpinner.getSelectedItemPosition());
                 editor.putInt("selfReportInterval", Integer.valueOf(selfReportIntervalSpinner.getSelectedItem().toString()));
                 editor.putInt("selfReportVariance", Integer.valueOf(selfReportVarianceSpinner.getSelectedItem().toString()));
-                editor.putString("questionnaireValue", "questionnaires/" + questionnaireSpinner.getSelectedItem().toString());
-                //editor.putString("baselineQuestionnaireValue", "questionnaires/" + baselineQuestionnaireSpinner.getSelectedItem().toString());
+
                 editor.putString("participantFirstName", participantFirstNameEditText.getText().toString().trim());
                 editor.putString("participantLastName", participantLastNameEditText.getText().toString().trim());
                 editor.putString("activityName", activityNameEditText.getText().toString().trim());
@@ -764,33 +794,35 @@ public class MainActivity extends ListActivity implements ShimmerImuHandlerInter
     }
 
     void showQuestionnaire() { // boolean baselineQuestionnaire
-        final Questionnaire questionnaire;
-        //if(baselineQuestionnaire) {
-        //    questionnaire = new Questionnaire(this, baselineQuestionnaireFileName);
-        //} else {
-            questionnaire = new Questionnaire(this, questionnaireFileName);
-        //}
-        Button saveButton = questionnaire.getSaveButton();
-        saveButton.setOnClickListener(new View.OnClickListener() {
+        if(!"".equals(questionnaireFilePath)) {
+            final Questionnaire questionnaire;
+            //if(baselineQuestionnaire) {
+            //    questionnaire = new Questionnaire(this, baselineQuestionnaireFileName);
+            //} else {
+            questionnaire = new Questionnaire(this, questionnaireFilePath);
+            //}
+            Button saveButton = questionnaire.getSaveButton();
+            saveButton.setOnClickListener(new View.OnClickListener() {
 
-            @Override
-            public void onClick(View view) {
-                String headerComments = "";
-                if (isFirstSelfReportRequest)
-                    headerComments = getHeaderComments();
+                @Override
+                public void onClick(View view) {
+                    String headerComments = "";
+                    if (isFirstSelfReportRequest)
+                        headerComments = getHeaderComments();
 
-                if (isSessionStarted) {
-                    questionnaire.saveQuestionnaireItems(root, isFirstSelfReportRequest, headerComments, null, startTimestamp);
-                    isFirstSelfReportRequest = false;
-                    if (intervalConfigured) {
-                        startTimerThread();
+                    if (isSessionStarted) {
+                        questionnaire.saveQuestionnaireItems(root, isFirstSelfReportRequest, headerComments, null, startTimestamp);
+                        isFirstSelfReportRequest = false;
+                        if (intervalConfigured) {
+                            startTimerThread();
+                        }
+                    } else {
+                        questionnaire.saveQuestionnaireItems(root, isFirstSelfReportRequest, headerComments, getFooterComments(), startTimestamp);
                     }
-                } else {
-                    questionnaire.saveQuestionnaireItems(root, isFirstSelfReportRequest, headerComments, getFooterComments(), startTimestamp);
+                    questionnaire.getQuestionnaireDialog().dismiss();
                 }
-                questionnaire.getQuestionnaireDialog().dismiss();
-            }
-        });
+            });
+        }
     }
 
     private void startTimerThread() {

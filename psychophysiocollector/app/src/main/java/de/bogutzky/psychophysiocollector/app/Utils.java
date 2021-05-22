@@ -1,6 +1,6 @@
 /**
  * The MIT License (MIT)
- Copyright (c) 2016 Simon Bogutzky, Jan Christoph Schrader
+ Copyright (c) 2016 Copyright (c) 2016 University of Applied Sciences Bremen
 
  Permission is hereby granted, free of charge, to any person obtaining a copy of this software
  and associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -23,7 +23,12 @@ package de.bogutzky.psychophysiocollector.app;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Random;
@@ -51,5 +56,21 @@ public class Utils {
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(milliSeconds);
         return formatter.format(calendar.getTime());
+    }
+
+    public static JSONObject getJSONObjectFromInputStream(InputStream inputStream) throws IOException, JSONException {
+        BufferedReader input;
+        JSONObject jsonObject = null;
+        input = new BufferedReader(new InputStreamReader(inputStream));
+
+        StringBuilder content = new StringBuilder();
+        char[] buffer = new char[1024];
+        int num;
+        while ((num = input.read(buffer)) > 0) {
+            content.append(buffer, 0, num);
+        }
+        jsonObject = new JSONObject(content.toString());
+
+        return jsonObject;
     }
 }

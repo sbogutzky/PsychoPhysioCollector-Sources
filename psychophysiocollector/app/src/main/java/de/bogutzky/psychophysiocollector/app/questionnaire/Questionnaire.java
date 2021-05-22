@@ -1,6 +1,6 @@
 /**
  * The MIT License (MIT)
- Copyright (c) 2016 Simon Bogutzky, Jan Christoph Schrader
+ Copyright (c) 2016 Copyright (c) 2016 University of Applied Sciences Bremen
 
  Permission is hereby granted, free of charge, to any person obtaining a copy of this software
  and associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -41,16 +41,15 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Random;
 
 import de.bogutzky.psychophysiocollector.app.R;
+import de.bogutzky.psychophysiocollector.app.Utils;
 
 public class Questionnaire {
 
@@ -58,7 +57,7 @@ public class Questionnaire {
     private Activity activity;
     private ArrayList<String> scaleTypes;
     private ArrayList<Integer> scaleViewIds;
-    private String questionnaireFileName;
+    private String questionnaireFilePath;
     private Dialog questionnaireDialog;
     private JSONObject questionnaire;
     private int questionsCount = 0;
@@ -67,45 +66,52 @@ public class Questionnaire {
     private long showTimestamp;
     private long startTimestamp;
 
-    public Questionnaire(Activity activity, String questionnaireFileName) {
+    public Questionnaire(Activity activity, String questionnaireFilePath) {
         this.activity = activity;
         this.scaleTypes = new ArrayList<>();
         this.scaleViewIds = new ArrayList<>();
         this.questionsCount = 0;
         this.questionsAmount = 0;
-        this.questionnaireFileName = questionnaireFileName;
-        this.questionnaire = readQuestionnaireFromJSON();
-        this.questionnaireDialog = new Dialog(activity);
-        String title = activity.getString(R.string.questionnaire);
-        String description = "";
+        this.questionnaireFilePath = questionnaireFilePath;
         try {
-            title = questionnaire.getJSONObject("questionnaire").getString("title");
-            description = questionnaire.getJSONObject("questionnaire").getString("description");
-        } catch (JSONException e) {
-            e.printStackTrace();
+            this.questionnaire = Utils.getJSONObjectFromInputStream(activity.getAssets().open(this.questionnaireFilePath));
+        } catch (Exception e) {
+            this.questionnaireFilePath = null;
+            this.questionnaire = null;
         }
-        this.questionnaireDialog.setTitle(title);
-        this.questionnaireDialog.setCancelable(false);
-
-        this.showTimestamp = System.currentTimeMillis();
-        questionnaireDialog.setContentView(R.layout.questionnaire);
-        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
-        lp.copyFrom(questionnaireDialog.getWindow().getAttributes());
-        lp.width = WindowManager.LayoutParams.MATCH_PARENT;
-        lp.height = WindowManager.LayoutParams.MATCH_PARENT;
-        questionnaireDialog.getWindow().setAttributes(lp);
-        final TextView descriptionTextView = (TextView) questionnaireDialog.findViewById(R.id.descriptionTextView);
-        descriptionTextView.setText(Html.fromHtml(description));
-        final Button startQuestionnaireButton = (Button) questionnaireDialog.findViewById(R.id.startQuestionnaireButton);
-        startQuestionnaireButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startQuestionnaire();
+        if(this.questionnaire != null) {
+            this.questionnaireDialog = new Dialog(activity);
+            String title = activity.getString(R.string.questionnaire);
+            String description = "";
+            try {
+                title = questionnaire.getJSONObject("questionnaire").getString("title");
+                description = questionnaire.getJSONObject("questionnaire").getString("description");
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
-        });
-        questionnaireDialog.show();
+            this.questionnaireDialog.setTitle(title);
+            this.questionnaireDialog.setCancelable(false);
 
+            this.showTimestamp = System.currentTimeMillis();
+            questionnaireDialog.setContentView(R.layout.questionnaire);
+            WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+            lp.copyFrom(questionnaireDialog.getWindow().getAttributes());
+            lp.width = WindowManager.LayoutParams.MATCH_PARENT;
+            lp.height = WindowManager.LayoutParams.MATCH_PARENT;
+            questionnaireDialog.getWindow().setAttributes(lp);
+            final TextView descriptionTextView = (TextView) questionnaireDialog.findViewById(R.id.descriptionTextView);
+            descriptionTextView.setText(Html.fromHtml(description));
+            final Button startQuestionnaireButton = (Button) questionnaireDialog.findViewById(R.id.startQuestionnaireButton);
+            startQuestionnaireButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    startQuestionnaire();
+                }
+            });
+            questionnaireDialog.show();
+        }
         this.saveButton = new Button(activity);
+
     }
 
     public Button getSaveButton() {
@@ -368,26 +374,6 @@ public class Questionnaire {
         if(footerComments != null) {
             writeFooter(footerComments, root, activity.getString(R.string.file_name_self_report));
         }
-    }
-
-    private JSONObject readQuestionnaireFromJSON() {
-        BufferedReader input;
-        JSONObject jsonObject = null;
-        try {
-            input = new BufferedReader(new InputStreamReader(
-                    activity.getAssets().open(this.questionnaireFileName)));
-            StringBuilder content = new StringBuilder();
-            char[] buffer = new char[1024];
-            int num;
-            while ((num = input.read(buffer)) > 0) {
-                content.append(buffer, 0, num);
-            }
-            jsonObject = new JSONObject(content.toString());
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return jsonObject;
     }
 
     private void writeFooter (String data, File root, String filename) {
