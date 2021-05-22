@@ -2,30 +2,23 @@
 <resources>
 
     <string name="app_name">PsychoPhysioCollector</string>
-    <string name="service_name">PPC-Service</string>
-    <string name="service_running">Service läuft</string>
     <string name="action_add_sensor">Sensor hinzufügen</string>
-    <string name="ensure_no_device_is_streaming">Bitte gehe sicher, dass kein Gerät gerade Daten überträgt</string>
-    <string name="device_is_already_in_list">Gerät ist schon in der Liste</string>
-    <string name="paired_devices">Gekoppelte Geräte</string>
-    <string name="other_devices">Weitere Geräte</string>
-    <string name="scan">Scan</string>
-    <string name="select_device">Wähle Gerät aus</string>
-    <string name="non_paired">Keine gekoppelt</string>
-    <string name="scanning">Scanning</string>
-    <string name="none_found">Keine gefunden</string>
+    <string name="device_is_already_in_list">Der Sensor ist bereits hinzugefügt.</string>
+    <string name="device_list_paired_devices">Gekoppelte Geräte</string>
+    <string name="device_list_other_devices">Weitere Geräte</string>
+    <string name="device_list_scan">Scan</string>
+    <string name="device_list_select_device">Wähle Gerät aus</string>
+    <string name="device_list_non_paired">Keine Geräte gekoppelt.</string>
+    <string name="device_list_scanning">Scanning</string>
+    <string name="device_list_none_found">Keine Geräte gefunden.</string>
     <string name="questionnaire">Fragebogen</string>
     <string name="questionnaire_not_available_item">NA</string>
     <string name="gps_not_available">GPS ist nicht verfügbar.</string>
     <string name="save">Speichern</string>
-    <string name="low">niedrig</string>
-    <string name="high">hoch</string>
-    <string name="easy">leicht</string>
-    <string name="difficult">schwer</string>
 
     <string name="is_ready">ist bereit</string>
 
-    <string name="enable_sensors_done">Done</string>
+    <string name="enable_sensors_done">Fertig</string>
 
     <string name="settings_activity">Aktivität</string>
     <string name="settings_participant_first_name">Vorname</string>
@@ -40,27 +33,27 @@
 
     <string name="action_connect_sensors">Sensoren verbinden</string>
     <string name="action_disconnect_sensors">Sensoren trennen</string>
-    <string name="action_stop_test">Untersuchung stoppen</string>
-    <string name="action_start_test">Untersuchung starten</string>
+    <string name="action_stop_test">Sitzung stoppen</string>
+    <string name="action_start_test">Sitzung starten</string>
     <string name="action_toggle_led">LEDs ein/ausschalten</string>
     <string name="action_settings">Einstellungen</string>
-    <string name="action_info">Info</string>
+    <string name="action_info">Information</string>
 
     <string name="info_session">Sitzung: </string>
     <string name="info_started">gestartet</string>
-    <string name="info_not_started">nicht gestartet</string>
-    <string name="info_number_connected">%1$d verbunden</string>
-    <string name="info_connected">verbunden</string>
-    <string name="info_not_connected">nicht verbunden</string>
-    <string name="info_connected_fix_received">verbunden und Fix erhalten</string>
-    <string name="info_could_not_read">konnte nicht gelesen werde.</string>
+    <string name="info_not_started">nicht gestartet.</string>
+    <string name="info_number_connected">%1$d verbunden.</string>
+    <string name="info_connected">verbunden.</string>
+    <string name="info_not_connected">nicht verbunden.</string>
+    <string name="info_connected_fix_received">verbunden und Fix erhalten.</string>
+    <string name="info_could_not_read">konnte nicht gelesen werden.</string>
 
-    <string name="study_protocol_settings">Einstellung des Untersuchungsprotokolls</string>
+    <string name="study_protocol_settings">Einstellung des Sitzungsprotokolls</string>
     <string name="study_protocol_settings_questionnaire">Fragebogen</string>
     <string name="study_protocol_settings_baseline_questionnaire">Baseline-Fragebogen</string>
-    <string name="study_protocol_settings_configure_interval">Interval konfigurieren</string>
-    <string name="study_protocol_settings_self_report_interval">Interval in Minuten</string>
-    <string name="study_protocol_settings_self_report_variance">Intervalvarianz in Sekunden</string>
+    <string name="study_protocol_settings_configure_interval">Intervall-kontingentes Protokoll konfigurieren</string>
+    <string name="study_protocol_settings_self_report_interval">Intervall in Minuten</string>
+    <string name="study_protocol_settings_self_report_variance">Intervallvarianz in Sekunden</string>
     <string-array name="study_protocol_settings_self_report_interval_values">
         <item>5</item>
         <item>10</item>
@@ -82,46 +75,46 @@
     </string-array>
 
     <!-- File names -->
-    <string name="file_name_acceleration">acceleration.csv</string>
-    <string name="file_name_axis_acceleration">axis-acceleration.csv</string>
-    <string name="file_name_breathing">breathing.csv</string>
-    <string name="file_name_ecg">ecg.csv</string>
-    <string name="file_name_linear_acceleration">linear-acceleration.csv</string>
-    <string name="file_name_angular_velocity">angular-velocity.csv</string>
-    <string name="file_name_gps_position">gps-position.csv</string>
-    <string name="file_name_self_report">self-report.csv</string>
-    <string name="file_name_heart_rate">heart-rate.csv</string>
-    <string name="file_name_respiration_rate">respiration-rate.csv</string>
-    <string name="file_name_posture">posture.csv</string>
-    <string name="file_name_skin_temperature">skin-temperature.csv</string>
-    <string name="file_name_peak_acceleration">peak-acceleration.csv</string>
-    <string name="file_name_rr_interval">rr-interval.csv</string>
+    <string name="file_name_acceleration" translatable="false">acceleration.csv</string>
+    <string name="file_name_axis_acceleration" translatable="false">axis-acceleration.csv</string>
+    <string name="file_name_breathing" translatable="false">breathing.csv</string>
+    <string name="file_name_ecg" translatable="false">ecg.csv</string>
+    <string name="file_name_linear_acceleration" translatable="false">linear-acceleration.csv</string>
+    <string name="file_name_angular_velocity" translatable="false">angular-velocity.csv</string>
+    <string name="file_name_gps_position" translatable="false">gps-position.csv</string>
+    <string name="file_name_self_report" translatable="false">self-report.csv</string>
+    <string name="file_name_heart_rate" translatable="false">heart-rate.csv</string>
+    <string name="file_name_respiration_rate" translatable="false">respiration-rate.csv</string>
+    <string name="file_name_posture" translatable="false">posture.csv</string>
+    <string name="file_name_skin_temperature" translatable="false">skin-temperature.csv</string>
+    <string name="file_name_peak_acceleration" translatable="false">peak-acceleration.csv</string>
+    <string name="file_name_rr_interval" translatable="false">rr-interval.csv</string>
 
     <!-- File headers -->
-    <string name="file_header_timestamp">"timestamp.ms"</string>
-    <string name="file_header_acceleration_x">"acceleration.x.ms.2"</string>
-    <string name="file_header_acceleration_y">"acceleration.y.ms.2"</string>
-    <string name="file_header_acceleration_z">"acceleration.z.ms.2"</string>
-    <string name="file_header_system_time">"system.time.ms"</string>
-    <string name="file_header_angular_velocity_x">"angular.velocity.x.deg.s"</string>
-    <string name="file_header_angular_velocity_y">"angular.velocity.y.deg.s"</string>
-    <string name="file_header_angular_velocity_z">"angular.velocity.z.deg.s"</string>
-    <string name="file_header_heart_rate">heart.rate</string>
-    <string name="file_header_respiration_rate">respiration.rate</string>
-    <string name="file_header_posture">posture.deg</string>
-    <string name="file_header_skin_temperature">skin.temperature</string>
-    <string name="file_header_peak_acceleration">peak.acceleration.g.s</string>
-    <string name="file_header_rr_interval">"rr.interval.s"</string>
-    <string name="file_header_timestamp_show">"timestamp.show.ms"</string>
-    <string name="file_header_timestamp_start">"timestamp.start.ms"</string>
-    <string name="file_header_timestamp_stop">"timestamp.stop.ms"</string>
-    <string name="file_header_gps_latitude">"latitude"</string>
-    <string name="file_header_gps_longitude">"longitude"</string>
-    <string name="file_header_gps_altitude">"altitude"</string>
-    <string name="file_header_ecg_ra_ll">"ecg.ra.ll"</string>
-    <string name="file_header_ecg_la_ll">"ecg.la.ll"</string>
-    <string name="file_header_interval">"breathing.interval.s"</string>
-    <string name="file_header_voltage">"voltage.mv"</string>
+    <string name="file_header_timestamp" translatable="false">"timestamp.ms"</string>
+    <string name="file_header_acceleration_x" translatable="false">"acceleration.x.ms.2"</string>
+    <string name="file_header_acceleration_y" translatable="false">"acceleration.y.ms.2"</string>
+    <string name="file_header_acceleration_z" translatable="false">"acceleration.z.ms.2"</string>
+    <string name="file_header_system_time" translatable="false">"system.time.ms"</string>
+    <string name="file_header_angular_velocity_x" translatable="false">"angular.velocity.x.deg.s"</string>
+    <string name="file_header_angular_velocity_y" translatable="false">"angular.velocity.y.deg.s"</string>
+    <string name="file_header_angular_velocity_z" translatable="false">"angular.velocity.z.deg.s"</string>
+    <string name="file_header_heart_rate" translatable="false">"heart.rate"</string>
+    <string name="file_header_respiration_rate" translatable="false">"respiration.rate"</string>
+    <string name="file_header_posture" translatable="false">"posture.deg"</string>
+    <string name="file_header_skin_temperature" translatable="false">"skin.temperature"</string>
+    <string name="file_header_peak_acceleration" translatable="false">"peak.acceleration.g.s"</string>
+    <string name="file_header_rr_interval" translatable="false">"rr.interval.s"</string>
+    <string name="file_header_timestamp_show" translatable="false">"timestamp.show.ms"</string>
+    <string name="file_header_timestamp_start" translatable="false">"timestamp.start.ms"</string>
+    <string name="file_header_timestamp_stop" translatable="false">"timestamp.stop.ms"</string>
+    <string name="file_header_gps_latitude" translatable="false">"latitude"</string>
+    <string name="file_header_gps_longitude" translatable="false">"longitude"</string>
+    <string name="file_header_gps_altitude" translatable="false">"altitude"</string>
+    <string name="file_header_ecg_ra_ll" translatable="false">"ecg.ra.ll"</string>
+    <string name="file_header_ecg_la_ll" translatable="false">"ecg.la.ll"</string>
+    <string name="file_header_interval" translatable="false">"breathing.interval.s"</string>
+    <string name="file_header_voltage" translatable="false">"voltage.mv"</string>
 
     <string name="imu_config_enable_sensors">Sensoren aktivieren</string>
     <string name="imu_config_configure_sensors">Sensoren konfigurieren</string>
@@ -129,24 +122,24 @@
     <string name="imu_config_shimmer_imu_configuration">Shimmer IMU Konfiguration</string>
     <string name="imu_config_bio_harness_configuration">BioHarness Konfiguration</string>
 
-    <string name="bluetooth_activated">Bluetooth wurde aktiviert</string>
-    <string name="bluetooth_not_supported">Bluetooth wird von diesem Gerät nicht unterstützt</string>
+    <string name="bluetooth_activated">Bluetooth ist aktiv.</string>
+    <string name="bluetooth_not_supported">Bluetooth wird von diesem Gerät nicht unterstützt.</string>
     <string name="activate_bluetooth">Bluetooth aktivieren?</string>
 
     <string name="accuracy">Genauigkeit:</string>
-    <string name="gyroscope">Gyroskop</string>
-    <string name="acceleration">Accelerometer</string>
-    <string name="ecg_name">ECG</string>
+    <string name="gyroscope">Kreiselinstrument</string>
+    <string name="acceleration">Beschleunigungsmesser</string>
+    <string name="ecg_name">EKG</string>
     <string name="select_graph_data">Sensor wählen</string>
 
     <string name="delete">Löschen?</string>
 
     <string name="connection_to_shimmer_imu_resetted">Die Verbindung zu einem der Shimmer IMUs wurde zurückgesetzt.</string>
     <string name="acceleration_range_1_5">+/- 1,5</string>
-    <string name="acceleration_range_6_0">+/- 6</string>
+    <string name="acceleration_range_6_0">+/- 6,0</string>
     <string name="imu_settings_sampling_rate">Abstastrate (Hz)</string>
-    <string name="imu_settings_accelerometer_range">Accelerometer Range (g)</string>
-    <string name="imu_settings_gyroscope_range">Gyroscope Range (deg/s)</string>
+    <string name="imu_settings_accelerometer_range">Beschleunigungsmesser Messbereich (g)</string>
+    <string name="imu_settings_gyroscope_range">Kreiselinstrument Messbereich (deg/s)</string>
     <string name="imu_settings_led_toggle">LED an/aus</string>
 
     <string name="permission_granted">Berechtigung gegeben</string>
@@ -159,5 +152,17 @@
     <string name="shimmer_imu_service_started">Shimmer IMU Service gestarted</string>
     <string name="bio_harness_service_started">BioHarness Service gestartet</string>
     <string name="bio_harness_service_stopped">BioHarness Service gestoppt</string>
+    <string name="configure_magnetometer">Magnetometer</string>
+    <string name="configure_bridge_amplifier" translatable="false">Bridge Amplifier</string>
+    <string name="configure_expboarda0" translatable="false">ExpBoardA0</string>
+    <string name="configure_accelerometer">Beschleunigungsmesser</string>
+    <string name="configure_expboarda7" translatable="false">ExpBoardA7</string>
+    <string name="configure_gyroscope">Kreiselinstrument</string>
+    <string name="configure_heart_rate">Herzfrequenz</string>
+    <string name="configure_battery">Batterie</string>
+    <string name="configure_gsr" translatable="false">GSR</string>
+    <string name="configure_emg" translatable="false">EMG</string>
+    <string name="configure_ecg">EKG</string>
+    <string name="no_questionnaires_available">Kein Fragebogen vorhanden.</string>
 
 </resources>

@@ -22,8 +22,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="#666"
-        android:paddingLeft="5dp"
-        android:text="@string/paired_devices"
+        android:paddingStart="5dp"
+        android:paddingEnd="5dp"
+        android:text="@string/device_list_paired_devices"
         android:textColor="#fff"
         android:visibility="gone" />
 
@@ -39,8 +40,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="#666"
-        android:paddingLeft="5dp"
-        android:text="@string/other_devices"
+        android:paddingStart="5dp"
+        android:paddingEnd="5dp"
+        android:text="@string/device_list_other_devices"
         android:textColor="#fff"
         android:visibility="gone" />
 
@@ -55,5 +57,5 @@
         android:id="@+id/button_scan"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/scan" />
+        android:text="@string/device_list_scan" />
 </LinearLayout>

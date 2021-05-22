@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PsychoPhysioCollector</string>
+    <string name="acceleration">Accelerometer</string>
+    <string name="acceleration_range_1_5">+/- 1.5</string>
+    <string name="acceleration_range_6_0">+/- 6.0</string>
+    <string name="accuracy">Accuracy</string>
+    <string name="action_add_sensor">Add Sensor</string>
+    <string name="action_connect_sensors">Connect Sensor</string>
+    <string name="action_disconnect_sensors">Disconnect Sensor</string>
+    <string name="action_info">Information</string>
+    <string name="action_settings">Settings</string>
+    <string name="action_start_test">Start Session</string>
+    <string name="action_stop_test">Stop Session</string>
+    <string name="action_toggle_led">Toggle LEDs</string>
+    <string name="activate_bluetooth">Activate Bluetooth?</string>
+    <string name="bio_harness_paired">BioHarness paired</string>
+    <string name="bio_harness_removed">BioHarness removed</string>
+    <string name="bio_harness_service_started">BioHarness Service startet</string>
+    <string name="bio_harness_service_stopped">BioHarness Service stopped</string>
+    <string name="bluetooth_activated">Bluetooth is active.</string>
+    <string name="bluetooth_not_supported">Bluetooth is not supported by the device.</string>
+    <string name="connection_to_shimmer_imu_resetted">The connection to one of the Shimmer IMU has been reset.</string>
+    <string name="delete">Delete?</string>
+    <string name="device_is_already_in_list">Sensor is already added.</string>
+    <string name="ecg_name">ECG</string>
+    <string name="enable_sensors_done">Done</string>
+    <string name="gps_not_available">GPS is not available.</string>
+    <string name="graph">Graph</string>
+    <string name="gyroscope">Gyroskope</string>
+    <string name="imu_config_bio_harness_configuration">BioHarness Configuration</string>
+    <string name="imu_config_configure_sensors">Configure Sensors</string>
+    <string name="imu_config_enable_sensors">Activate Sensors</string>
+    <string name="imu_config_shimmer_imu_configuration">Shimmer IMU Configuration</string>
+    <string name="imu_config_show_sensor_data">Show sensor data</string>
+    <string name="imu_settings_accelerometer_range">Accelerometer Range (g)</string>
+    <string name="imu_settings_gyroscope_range">Gyroscope Rante (deg/s)</string>
+    <string name="imu_settings_led_toggle">Toggle LED</string>
+    <string name="imu_settings_sampling_rate">Sampling Rate (Hz)</string>
+    <string name="info_connected">connected.</string>
+    <string name="info_connected_fix_received">connected and fix received.</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="save">Save</string>
+    <string name="questionnaire_not_available_item">NA</string>
+    <string name="questionnaire">Questionnaire</string>
+    <string name="settings_participant_first_name">First Name</string>
+    <string name="settings_participant_last_name">Last Name</string>
+    <string name="settings_save">Save</string>
+    <string name="settings_undefined">not defined</string>
+    <string name="study_protocol_settings_questionnaire">Questionnaire</string>
+    <string name="info_not_connected">not connected</string>
+    <string name="info_not_started">not running</string>
+    <string name="info_session">Session:</string>
+    <string name="info_number_connected">%1$d connected.</string>
+    <string name="info_started">running</string>
+    <string name="is_ready">is ready</string>
+    <string name="next">Next</string>
+    <string name="device_list_non_paired">No devices paired.</string>
+    <string name="shimmer_imu_paired">Shimmer IMU paired</string>
+    <string name="shimmer_imu_removed">Shimmer IMU removed</string>
+    <string name="shimmer_imu_service_started">Shimmer IMU started</string>
+    <string name="shimmer_imu_service_stopped">Shimmer IMU stopped</string>
+    <string name="start_questionnaire">Start Questionnaire</string>
+    <string name="study_protocol_settings">Session protocol settings</string>
+    <string name="settings_activity">Activity</string>
+    <string name="select_graph_data">Select sSensor</string>
+    <string name="device_list_select_device">Select Device</string>
+    <string name="device_list_scanning">Scanning</string>
+    <string name="device_list_scan">Scan</string>
+    <string name="info_could_not_read">could not be read.</string>
+    <string name="study_protocol_settings_self_report_interval">Interval in minutes</string>
+    <string name="study_protocol_settings_self_report_variance">Interval variance in seconds</string>
+    <string name="study_protocol_settings_configure_interval">Configure interval kontigent protocol</string>
+    <string name="study_protocol_settings_baseline_questionnaire">Baseline-Questionnaire</string>
+    <string name="permission_granted">Permission granted</string>
+    <string name="device_list_paired_devices">Paired Devices</string>
+    <string name="device_list_other_devices">Other Devices</string>
+    <string name="device_list_none_found">Found no devices.</string>
+    <string name="configure_magnetometer">Magnetometer</string>
+    <string name="configure_ecg">ECG</string>
+    <string name="configure_gyroscope">Gyroscope</string>
+    <string name="configure_heart_rate">Heart Rate</string>
+    <string name="configure_battery">Battery</string>
+    <string name="configure_accelerometer">Accelerometer</string>
+    <string name="no_questionnaires_available">No questionnaire available.</string>
+    <string-array name="study_protocol_settings_self_report_interval_values">
+        <item>5</item>
+        <item>10</item>
+        <item>15</item>
+        <item>20</item>
+        <item>25</item>
+        <item>30</item>
+        <item>45</item>
+        <item>60</item>
+    </string-array>
+    <string-array name="study_protocol_settings_self_report_variance_values">
+        <item>0</item>
+        <item>30</item>
+        <item>60</item>
+        <item>90</item>
+        <item>120</item>
+        <item>150</item>
+        <item>180</item>
+    </string-array>
+</resources>

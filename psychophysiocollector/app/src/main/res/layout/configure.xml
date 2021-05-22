@@ -8,72 +8,72 @@
     android:layout_height="wrap_content"
     android:orientation="vertical" >
 
-    <Button android:layout_height="wrap_content" android:layout_width="match_parent" android:text="@string/enable_sensors_done" android:id="@+id/enable_sensors_done"></Button>
+    <Button android:layout_height="wrap_content" android:layout_width="match_parent" android:text="@string/enable_sensors_done" android:id="@+id/enable_sensors_done"/>
 
     <CheckBox
         android:id="@+id/checkBoxAccelerometer"
         android:layout_width="215dp"
         android:layout_height="wrap_content"
-        android:text="Accelerometer" />
+        android:text="@string/configure_accelerometer" />
 
     <CheckBox
         android:id="@+id/checkBoxGyroscope"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Gyroscope" />
+        android:text="@string/configure_gyroscope" />
     
     <CheckBox
         android:id="@+id/checkBoxMagnetometer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Magnetometer" />
+        android:text="@string/configure_magnetometer" />
         
     <CheckBox
         android:id="@+id/checkBoxBridgeAmplifier"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Bridge Amplifier" />
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:text="@string/configure_bridge_amplifier" />
     
 	<CheckBox
         android:id="@+id/checkBoxExpBoardA0"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="ExpBoardA0" />
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:text="@string/configure_expboarda0" />
         
     <CheckBox
         android:id="@+id/checkBoxExpBoardA7"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="ExpBoardA7" />
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:text="@string/configure_expboarda7" />
     
     <CheckBox
         android:id="@+id/checkBoxECG"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="ECG" />
+        android:text="@string/configure_ecg" />
      
     <CheckBox
         android:id="@+id/checkBoxEMG"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="EMG" />
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:text="@string/configure_emg" />
     
     <CheckBox
         android:id="@+id/checkBoxHeartRate"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:text="Heart Rate" />
+        android:text="@string/configure_heart_rate" />
     
      <CheckBox
         android:id="@+id/checkBoxGSR"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="GSR" />
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:text="@string/configure_gsr" />
     
      <CheckBox
         android:id="@+id/checkBoxBatt"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:text="Battery" />
+        android:text="@string/configure_battery" />
 </LinearLayout>
 </ScrollView>
