@@ -1,0 +1,41 @@
+{
+  "@context": "https://raw.githubusercontent.com/mbjones/codemeta/master/codemeta.jsonld",
+  "@type": "Code",
+  "author": [
+    {
+      "@id": "http://orcid.org/0000-0002-9279-6549",
+	  "@type": "Person",
+      "email": "simon.bogutzky@hs-bremen.de",
+      "name": "Simon Bogutzky",
+      "affiliation": "University of Applied Sciences Bremen"
+    },
+    {
+      "@type": "Person",
+      "email": "jan.schrader@stud.hs-bremen.de",
+      "name": "Jan Christoph Schrader",
+      "affiliation": "University of Applied Sciences Bremen"
+    },
+    {
+      "@type": "Person",
+      "email": "nassrin.hajinejad@hs-bremen.de",
+      "name": "Nassrin Hajinejad",
+      "affiliation": "University of Applied Sciences Bremen"
+    },
+    {
+      "@type": "Person",
+      "email": "barbara.grueter@hs-bremen.de",
+      "name": "Barbara Grüter",
+      "affiliation": "University of Applied Sciences Bremen"
+    }
+  ],
+  "identifier": "",
+  "codeRepository": "https://github.com/sbogutzky/PsychoPhysioCollector",
+  "datePublished": "2016-08-03",
+  "dateModified": "2016-08-03",
+  "dateCreated": "2016-07-18",
+  "description": "The PsychoPhysioCollector is an App for Android OS to collect physiological, kinematical data by internal and external sensors and subjective data by questionnaires.",
+  "keywords": "physiological data, kinematical data, experience sampling, sensors",
+  "license": "MIT",
+  "title": "PsychoPhysioCollector",
+  "version": "v2.0.5"
+}
