@@ -16,7 +16,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".DeviceListActivity" android:label="@string/select_device" android:theme="@android:style/Theme.Dialog" />
+        <activity android:name=".DeviceListActivity" android:label="@string/device_list_select_device" android:theme="@android:style/Theme.Dialog" />
         <activity android:name=".shimmer.imu.ShimmerImuSensorConfigurationActivity" android:theme="@android:style/Theme.Dialog" android:label="@string/imu_config_configure_sensors" />
         <activity android:name=".shimmer.imu.ShimmerImuSensorActivationActivity" android:theme="@android:style/Theme.Dialog" android:label="@string/imu_config_enable_sensors" />
         <activity android:name=".shimmer.imu.ShimmerImuMainConfigurationActivity" android:theme="@android:style/Theme.Dialog" android:label="@string/imu_config_shimmer_imu_configuration" />
